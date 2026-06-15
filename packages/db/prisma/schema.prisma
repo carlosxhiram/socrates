@@ -1,0 +1,155 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Sócrates — esquema de datos. La ESPINA es el Expediente.
+//
+// DESARROLLO: SQLite (corre sin Docker). PRODUCCIÓN: Postgres en Railway.
+//   Para migrar a Postgres en prod, cambiar provider a "postgresql" y la
+//   DATABASE_URL a la cadena interna de Railway. Los enums del dominio se
+//   modelan como String (SQLite no tiene enums nativos); los valores válidos
+//   los garantiza la capa de aplicación vía @socrates/shared/glosario.
+//   El contenido del Reporte (JSONB en Postgres) se guarda como String (JSON
+//   serializado) en SQLite — el mismo helper parsea en ambos.
+//
+// Doctrina de migraciones (Director): cartas ya enviadas. Se corrige hacia
+// adelante; jamás se reescribe el historial.
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Identidad / tenencia ─────────────────────────────────────────────────────
+model Asesor {
+  id            String       @id @default(cuid())
+  clerkUserId   String       @unique // viene del JWT de Clerk (D-1)
+  nombre        String?
+  email         String?
+  expedientes   Expediente[]
+  creadoEn      DateTime     @default(now())
+  actualizadoEn DateTime     @updatedAt
+}
+
+// ── ESPINA: el Expediente ────────────────────────────────────────────────────
+model Expediente {
+  id            String       @id @default(cuid())
+  asesor        Asesor       @relation(fields: [asesorId], references: [id])
+  asesorId      String // tenencia (NFR-8)
+  empresa       String
+  ciudad        String
+  industria     String
+  sitioWeb      String?
+  rfc           String?
+  sucursales    Int?
+  notas         String?
+  etapa         String       @default("PROSPECTO") // EtapaExpediente (glosario)
+  progreso      Int          @default(0) // derivado, persistido para listar rápido
+  motivoCierre  String? // si GANADO/PERDIDO
+  tareas        Tarea[]
+  entregables   Entregable[]
+  creadoEn      DateTime     @default(now())
+  actualizadoEn DateTime     @updatedAt
+
+  @@index([asesorId, etapa])
+}
+
+// ── Empleados (catálogo de roles) ────────────────────────────────────────────
+model Empleado {
+  rol         String  @id // RolEmpleado (glosario)
+  nombre      String // "El Investigador"
+  descripcion String // lenguaje de oficina
+  tareas      Tarea[]
+}
+
+// ── Tareas (unidad de trabajo delegada) ──────────────────────────────────────
+model Tarea {
+  id             String      @id @default(cuid())
+  expediente     Expediente  @relation(fields: [expedienteId], references: [id])
+  expedienteId   String
+  empleado       Empleado    @relation(fields: [empleadoRol], references: [rol])
+  empleadoRol    String // RolEmpleado
+  descripcion    String // legible para el Asesor
+  estado         String      @default("ENCARGADA") // EstadoTarea
+  motivo         String? // si BLOQUEADA (progreso honesto)
+  dependeDeId    String? // dependencia entre Tareas (FR-2)
+  idempotencyKey String?     @unique // anti doble efecto
+  entregable     Entregable?
+  creadoEn       DateTime    @default(now())
+  actualizadoEn  DateTime    @updatedAt
+
+  @@index([expedienteId, estado])
+}
+
+// ── Entregables (artefactos) + versionado ────────────────────────────────────
+model Entregable {
+  id            String              @id @default(cuid())
+  expediente    Expediente          @relation(fields: [expedienteId], references: [id])
+  expedienteId  String
+  tarea         Tarea?              @relation(fields: [tareaId], references: [id])
+  tareaId       String?             @unique
+  empleadoRol   String? // quién lo produjo (RolEmpleado), para la bandeja
+  tipo          String // "reporte_inteligencia" | "guion" | ...
+  estado        String              @default("BORRADOR") // Gate humano (NFR-4)
+  versiones     EntregableVersion[]
+  versionActual Int                 @default(1)
+  creadoEn      DateTime            @default(now())
+  actualizadoEn DateTime            @updatedAt
+
+  @@index([expedienteId])
+}
+
+model EntregableVersion {
+  id            String          @id @default(cuid())
+  entregable    Entregable      @relation(fields: [entregableId], references: [id])
+  entregableId  String
+  version       Int
+  contenido     String // JSON serializado (ReporteV1, GuionV1, ...) — JSONB en Postgres
+  aprobado      Boolean         @default(false)
+  pdfR2Key      String? // objeto en R2 si se exportó
+  verificacion  String? // auditoría de Verificación de citas (C-2), JSON serializado
+  recomendaciones Recomendacion[]
+  creadoEn      DateTime        @default(now())
+
+  @@unique([entregableId, version])
+}
+
+// ── Catálogo SOC (el foso) ───────────────────────────────────────────────────
+model Institucion {
+  id        String     @id // id estable del catalogo-soc.json ("banorte", ...)
+  nombre    String     @unique // Banorte, Konfío, ...
+  tipo      String // banco | fintech | ...
+  cobertura String?
+  notas     String?
+  fuente    String?
+  productos Producto[]
+}
+
+model Producto {
+  id               String          @id // id estable ("banorte-credito-revolvente", ...)
+  institucion      Institucion     @relation(fields: [institucionId], references: [id])
+  institucionId    String
+  nombre           String
+  tipo             String
+  paraQueSirve     String
+  cuandoRecomendar String // JSON serializado (array de strings)
+  condiciones      String // JSON serializado (condicionesTipicas)
+  fuente           String?
+  recomendaciones  Recomendacion[]
+
+  @@unique([institucionId, nombre])
+}
+
+// ── Recomendaciones (capa de síntesis, C-1: FK real al Catálogo) ─────────────
+model Recomendacion {
+  id              String            @id @default(cuid())
+  version         EntregableVersion @relation(fields: [versionId], references: [id])
+  versionId       String
+  producto        Producto          @relation(fields: [productoId], references: [id]) // C-1
+  productoId      String
+  hallazgo        String // qué necesidad la originó (trazable)
+  argumentoCierre String
+}

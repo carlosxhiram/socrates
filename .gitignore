@@ -1,0 +1,32 @@
+# dependencias
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# Prisma — cliente generado y base de datos local de desarrollo (SQLite)
+packages/db/src/generated/
+packages/db/prisma/*.db
+packages/db/prisma/*.db-journal
+*.db
+*.db-journal
+
+# entorno (las llaves de Carlos NO se versionan)
+.env
+.env.local
+.env.*.local
+
+# logs / sistema
+*.log
+.DS_Store
+coverage/
+
+# herramientas locales del entorno (no son del proyecto)
+.claude/
+.playwright-mcp/
+tavily-home.png

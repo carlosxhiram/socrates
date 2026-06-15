@@ -1,0 +1,39 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "globalEnv": [
+    "DATABASE_URL",
+    "CLERK_SECRET_KEY",
+    "CLERK_JWT_KEY",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "NEXT_PUBLIC_API_URL",
+    "AI_GATEWAY_API_KEY",
+    "TAVILY_API_KEY",
+    "R2_ACCOUNT_ID",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_BUCKET",
+    "R2_ENDPOINT",
+    "WEB_ORIGIN",
+    "PORT"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "src/generated/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    }
+  }
+}

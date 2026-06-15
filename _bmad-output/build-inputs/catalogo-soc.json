@@ -1,0 +1,663 @@
+{
+  "_meta": {
+    "version": "v1",
+    "descripcion": "Catálogo curado SOC v1 — subconjunto de ~17 instituciones y ~10 tipos de producto documentados en los reportes reales (Las Aliadas, Probemedic) y el research de mercado ECO v0.2. Carlos debe expandir hasta las 55 instituciones aliadas validando condiciones directamente con cada institución. Ninguna cifra fue inventada; las condiciones marcadas '_supuesto: true' son inferencias razonadas a partir del contexto del reporte, no datos confirmados por la institución.",
+    "fuentes": [
+      "Probemedic_Reporte_Inteligencia_Financiera_SOC_TALENT.pdf (18 mar 2026)",
+      "reporte_las-aliadas_talent.pdf (mar 2026)",
+      "08-research-de-mercado.md (ECO v0.2, jun 2026)",
+      "reporte-innovacion-v0.2.md (Consejo SIM, 13 jun 2026)",
+      "decisiones-bloqueantes.md (Director, 14 jun 2026)"
+    ],
+    "totalInstituciones": 17,
+    "totalProductos": 37,
+    "institucionesFaltantesParaLas55": "~38 instituciones adicionales pendientes de validación con Carlos y SOC Corporativo",
+    "fechaConstruccion": "2026-06-14",
+    "advertencia": "Este archivo es insumo para el motor de matching del Investigador. NO entregar al cliente sin revisión humana (gate obligatorio). Condiciones financieras cambian; verificar vigencia antes de cada recomendación."
+  },
+  "instituciones": [
+    {
+      "id": "banorte",
+      "nombre": "Banorte",
+      "tipo": "banco",
+      "cobertura": "nacional",
+      "notas": "Banco mexicano con expediente activo para caso Probemedic (proceso lento al momento del reporte). Tasa mínima publicada TIIEF+4.5%. Mencionado en reporte Las Aliadas como institución recomendada para crédito simple y revolvente.",
+      "fuente": "Probemedic_Reporte p.12; Las Aliadas p.2, p.3",
+      "productos": [
+        {
+          "id": "banorte-credito-revolvente",
+          "nombre": "Línea de Crédito Revolvente Empresarial",
+          "tipo": "credito_revolvente",
+          "paraQueSirve": "Capital de trabajo recurrente: pago de nóminas, insumos, inventario. El límite se restablece conforme se liquida, sin necesidad de tramitar un nuevo crédito cada ciclo.",
+          "cuandoRecomendar": [
+            "Empresa con ciclos de caja cortos y necesidades periódicas de liquidez (p.ej. restaurante con picos de demanda, distribuidora con plazos de cobro 30-55 días)",
+            "Prospecto que ya tiene cuenta empresarial en Banorte",
+            "Necesidad de flujo continuo, no de un solo desembolso"
+          ],
+          "condicionesTipicas": {
+            "tasa": "TIIEF + 4.5% a TIIEF + 7.0% (~11.5%-14% anual, mar 2026)",
+            "comisionApertura": "Hasta 2% sobre monto autorizado",
+            "comisionRenovacion": "1.5% sobre monto autorizado",
+            "plazo": "12-36 meses renovable",
+            "factoraje": "Sí, disponible en paralelo",
+            "tiempoAprobacion": "Actualmente lento — riesgo 8-12 semanas (según brief Probemedic)",
+            "_supuesto": false
+          },
+          "institucion": "banorte",
+          "fuente": "Probemedic_Reporte p.11-12; Las Aliadas p.3"
+        },
+        {
+          "id": "banorte-credito-simple",
+          "nombre": "Crédito Simple Empresarial",
+          "tipo": "credito_simple",
+          "paraQueSirve": "Financiamiento de un solo desembolso para proyecto específico: apertura de sucursal, remodelación, compra de equipo, depósito e inventario inicial.",
+          "cuandoRecomendar": [
+            "Prospecto que abre una nueva unidad o sucursal",
+            "Inversión claramente acotada en monto y plazo",
+            "Empresa con historial limpio de buró y contabilidad dictaminada"
+          ],
+          "condicionesTipicas": {
+            "tasa": "TIIEF + 4.5% a TIIEF + 7.0% estimado (~11.5%-14% anual)",
+            "montoHasta": "$30M MXN (referencia caso Las Aliadas)",
+            "plazoHasta": "60 meses",
+            "CAT": "Desde 14.9% (referencia reporte Las Aliadas)",
+            "garantia": "Quirografaria o hipotecaria según monto",
+            "_supuesto": true,
+            "_notaSupuesto": "El rango de tasa y CAT se toma del reporte Las Aliadas p.11; confirmar vigencia con Banorte."
+          },
+          "institucion": "banorte",
+          "fuente": "Las Aliadas p.3, p.11"
+        }
+      ]
+    },
+    {
+      "id": "mifel",
+      "nombre": "Banco Mifel",
+      "tipo": "banco",
+      "cobertura": "nacional",
+      "notas": "Identificado como opción PRIORITARIA para el caso Probemedic. Especialización en créditos quirografarios de alto monto para empresas medianas-grandes. Ventaja: acceso gerencial directo de Carlos con directivos. Atiende empresas con ventas >$200M MXN.",
+      "fuente": "Probemedic_Reporte p.10-11",
+      "productos": [
+        {
+          "id": "mifel-credito-revolvente",
+          "nombre": "Línea de Crédito Revolvente / Simple (Empresarial)",
+          "tipo": "credito_revolvente",
+          "paraQueSirve": "Capital de trabajo para empresas medianas con ventas superiores a $200M MXN. Respuesta ágil, ministraciones el mismo día. Línea quirografaria con aval del dueño.",
+          "cuandoRecomendar": [
+            "Empresa con ventas anuales superiores a $200M MXN",
+            "Perfil de riesgo bajo-medio: buró impecable, contabilidad dictaminada",
+            "Urgencia de aprobación (Mifel expresó precalificación 'ágil')",
+            "Garantía preferida quirografaria (sin hipoteca)"
+          ],
+          "condicionesTipicas": {
+            "tasa": "TIIEF + 4.5% a TIIEF + 6.5% (~11.5%-13.5% anual, mar 2026)",
+            "monto": "$25M a $50M MXN (quirografario)",
+            "plazo": "12 meses renovable",
+            "comisionApertura": "1.5%-2.0% sobre monto autorizado",
+            "tiempoAprobacion": "4-6 semanas con expediente completo",
+            "garantia": "Quirografaria con aval del dueño",
+            "_supuesto": false
+          },
+          "institucion": "mifel",
+          "fuente": "Probemedic_Reporte p.10-11"
+        },
+        {
+          "id": "mifel-factoraje",
+          "nombre": "Factoraje para Cadenas Productivas / Proveedores",
+          "tipo": "factoraje",
+          "paraQueSirve": "Adelanto de liquidez sobre cuentas por cobrar a clientes ancla. Permite cobrar hoy facturas con vencimiento a 30-60 días sin esperar. Con recurso (el cedente responde si el deudor no paga).",
+          "cuandoRecomendar": [
+            "Empresa con cartera de clientes solventes y reconocidos (aseguradoras, gobierno, grandes corporativos)",
+            "Ciclo de cobro estructuralmente largo (30-55 días) que genera necesidad permanente de capital",
+            "Se busca liquidez inmediata sin aumentar el pasivo bancario tradicional"
+          ],
+          "condicionesTipicas": {
+            "comision": "0.5% por 30 días (modalidad con recurso)",
+            "limiteFactoraje": "Hasta $30M MXN (o $2M USD)",
+            "_supuesto": false
+          },
+          "institucion": "mifel",
+          "fuente": "Probemedic_Reporte p.10"
+        }
+      ]
+    },
+    {
+      "id": "afirme",
+      "nombre": "Banco Afirme",
+      "tipo": "banco",
+      "cobertura": "nacional_noreste",
+      "notas": "Banco con expediente activo pero proceso lento para caso Probemedic. Mencionado como opción secundaria en ese caso. Recomendado en Las Aliadas para crédito simple de apertura de sucursal.",
+      "fuente": "Probemedic_Reporte p.12; Las Aliadas p.3",
+      "productos": [
+        {
+          "id": "afirme-credito-simple",
+          "nombre": "Crédito Simple Empresarial",
+          "tipo": "credito_simple",
+          "paraQueSirve": "Financiamiento para proyectos específicos: apertura de sucursal, remodelación, equipamiento, depósito e inventario inicial.",
+          "cuandoRecomendar": [
+            "Empresa con operaciones o presencia en noreste de México",
+            "Proyecto de expansión de sucursal con inversión acotada",
+            "Banorte rechazó o su proceso está lento — Afirme como alternativa"
+          ],
+          "condicionesTipicas": {
+            "tasa": "N/D (no publicado en reportes disponibles)",
+            "tiempoAprobacion": "Actualmente lento (según brief Probemedic)",
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones no reportadas; solo se confirma la existencia del producto y su recomendación en los reportes de campo."
+          },
+          "institucion": "afirme",
+          "fuente": "Probemedic_Reporte p.12; Las Aliadas p.3"
+        }
+      ]
+    },
+    {
+      "id": "bbva-mexico",
+      "nombre": "BBVA México",
+      "tipo": "banco",
+      "cobertura": "nacional",
+      "notas": "Opción complementaria en el caso Probemedic. Producto estrella para PYME: Crédito Líquido Flex. Requiere cuenta de cheques BBVA activa y acceso a BBVA Net Cash.",
+      "fuente": "Probemedic_Reporte p.11-12",
+      "productos": [
+        {
+          "id": "bbva-credito-liquido-flex",
+          "nombre": "Crédito Líquido Flex",
+          "tipo": "credito_revolvente",
+          "paraQueSirve": "Capital de trabajo adaptable para empresas medianas. Plazos hasta 36 meses. Requiere domiciliación de cuenta empresarial en BBVA.",
+          "cuandoRecomendar": [
+            "Empresa ya tiene cuenta de cheques BBVA activa",
+            "Necesita plazo largo (hasta 36 meses) para pagar capital de trabajo",
+            "Acepta relación bancaria integral con BBVA"
+          ],
+          "condicionesTipicas": {
+            "tasa": "TIIEF + 5% a TIIEF + 8% (~12%-15% anual, mar 2026)",
+            "plazoMaximo": "36 meses",
+            "comisionApertura": "Desde 1.6%",
+            "comisionAdministracion": "Desde 1.6% variable",
+            "requiere": "Cuenta de Cheques BBVA activa + BBVA Net Cash",
+            "tiempoAprobacion": "6-10 semanas",
+            "_supuesto": false
+          },
+          "institucion": "bbva-mexico",
+          "fuente": "Probemedic_Reporte p.11"
+        },
+        {
+          "id": "bbva-carta-credito-standby",
+          "nombre": "Carta de Crédito Standby (SBLC)",
+          "tipo": "standby_letter_of_credit",
+          "paraQueSirve": "Garantía bancaria que respalda una obligación comercial ante un tercero (proveedor, laboratorio ancla). No desembolsa dinero directamente; actúa como 'carta compromiso' que le dice al proveedor: 'si mi cliente no te paga, el banco lo hace'. Catalizador crítico para relaciones con laboratorios ancla.",
+          "cuandoRecomendar": [
+            "Proveedor o laboratorio ancla exige carta compromiso bancaria como condición de asignación de cuotas o inventario",
+            "Empresa necesita respaldar una relación comercial sin desembolsar efectivo",
+            "Prospecto del sector farmacéutico, manufactura o distribución con proveedor internacional"
+          ],
+          "condicionesTipicas": {
+            "plazoDisponible": "Hasta 360 días",
+            "monedas": "Moneda nacional, dólares y otras divisas",
+            "requiere": "Línea de crédito BBVA vigente como respaldo",
+            "_supuesto": false
+          },
+          "institucion": "bbva-mexico",
+          "fuente": "Probemedic_Reporte p.11"
+        },
+        {
+          "id": "bbva-factoraje",
+          "nombre": "Factoraje Empresarial BBVA",
+          "tipo": "factoraje",
+          "paraQueSirve": "Anticipo de liquidez sobre cuentas por cobrar a clientes solventes.",
+          "cuandoRecomendar": [
+            "Empresa con clientes deudores reconocidos (aseguradoras, corporativos)",
+            "Necesidad de liquidez inmediata sin aumentar deuda bancaria tradicional"
+          ],
+          "condicionesTipicas": {
+            "montoFactoraje": "$50,000 a $15,000,000 MXN por operación",
+            "condicion": "Sujeto a análisis de la cartera",
+            "_supuesto": false
+          },
+          "institucion": "bbva-mexico",
+          "fuente": "Probemedic_Reporte p.11"
+        }
+      ]
+    },
+    {
+      "id": "hsbc-mexico",
+      "nombre": "HSBC México",
+      "tipo": "banco",
+      "cobertura": "nacional",
+      "notas": "Opción de respaldo para el caso Probemedic. Crédito revolvente empresarial con mecánica similar a tarjeta corporativa. Requiere cuenta de cheques HSBC activa.",
+      "fuente": "Probemedic_Reporte p.11-12",
+      "productos": [
+        {
+          "id": "hsbc-credito-revolvente",
+          "nombre": "Crédito Revolvente Empresarial",
+          "tipo": "credito_revolvente",
+          "paraQueSirve": "Capital de trabajo: pago de insumos, nómina, inventario. Intereses solo sobre el monto dispuesto. Disponibilidad inmediata una vez aprobado.",
+          "cuandoRecomendar": [
+            "Empresa con cuenta de cheques HSBC activa",
+            "Necesita flexibilidad de disposición y pago",
+            "Opciones prioritarias (Mifel, Santander) ya están en proceso — HSBC como respaldo"
+          ],
+          "condicionesTipicas": {
+            "tasa": "TIIEF + 5.5% a TIIEF + 9% (~12.5%-16% anual, mar 2026)",
+            "plazo": "12-24 meses",
+            "modelo": "Revolvente — intereses sobre saldo utilizado",
+            "tiempoAprobacion": "6-10 semanas",
+            "requiere": "Cuenta de cheques HSBC activa + evaluación de flujo de caja",
+            "_supuesto": false
+          },
+          "institucion": "hsbc-mexico",
+          "fuente": "Probemedic_Reporte p.11-12"
+        }
+      ]
+    },
+    {
+      "id": "santander-mexico",
+      "nombre": "Santander México",
+      "tipo": "banco",
+      "cobertura": "nacional",
+      "notas": "Segunda opción estratégica en el caso Probemedic. Producto Crédito Ágil. Límite de factoraje más alto del grupo analizado ($60M MXN). Tasas preferenciales si se domicilia nómina.",
+      "fuente": "Probemedic_Reporte p.11-12",
+      "productos": [
+        {
+          "id": "santander-credito-agil",
+          "nombre": "Crédito Ágil PYME / Empresa",
+          "tipo": "credito_revolvente",
+          "paraQueSirve": "Líneas de crédito revolventes y simples múltiples. Tasas preferenciales si el cliente domicilia nómina o tiene terminal punto de venta Santander.",
+          "cuandoRecomendar": [
+            "Empresa dispuesta a domiciliar nómina en Santander (activa el mejor precio)",
+            "Necesita el límite de factoraje más alto del mercado para su tamaño",
+            "Busca condiciones competitivas en tasa con producto bancario integral"
+          ],
+          "condicionesTipicas": {
+            "tasa": "TIIEF + 4.5% a TIIEF + 7% con condicionantes",
+            "plazo": "12-36 meses",
+            "limiteFactoraje": "Hasta $60M MXN / $4M USD (mayor límite entre bancos analizados en reporte Probemedic)",
+            "condicionanteTasaPreferencial": "Nómina Santander activa o TPV domiciliado",
+            "tiempoAprobacion": "6-8 semanas",
+            "_supuesto": false
+          },
+          "institucion": "santander-mexico",
+          "fuente": "Probemedic_Reporte p.11-12"
+        }
+      ]
+    },
+    {
+      "id": "konfio",
+      "nombre": "Konfío",
+      "tipo": "fintech",
+      "cobertura": "nacional",
+      "notas": "Fintech de crédito PYME digital. Mencionada en Las Aliadas como institución recomendada para crédito revolvente y retail. Proceso 100% digital, 48 horas, sin garantía hipotecaria. Parte de las 17 instituciones aliadas SOC en línea empresarial.",
+      "fuente": "Las Aliadas p.2, p.3, p.11-12",
+      "productos": [
+        {
+          "id": "konfio-credito-revolvente",
+          "nombre": "Crédito Revolvente Empresarial Digital",
+          "tipo": "credito_revolvente",
+          "paraQueSirve": "Capital de trabajo rápido sin garantía hipotecaria. Proceso 100% digital. Ideal para PYME que necesita liquidez en 48 horas sin la burocracia bancaria tradicional.",
+          "cuandoRecomendar": [
+            "PYME con necesidad urgente de capital de trabajo (48 horas)",
+            "Empresa sin garantía hipotecaria disponible",
+            "Prospecto que rechaza proceso bancario largo o con mal historial burocrático previo",
+            "Sector restaurantero, retail, comercio en general"
+          ],
+          "condicionesTipicas": {
+            "proceso": "100% digital",
+            "tiempoAprobacion": "48 horas (referencia reporte Las Aliadas)",
+            "garantia": "Sin garantía hipotecaria requerida",
+            "_supuesto": true,
+            "_notaSupuesto": "Tasa y monto máximo no documentados en los reportes disponibles; confirmar directamente con Konfío."
+          },
+          "institucion": "konfio",
+          "fuente": "Las Aliadas p.3, p.11-12"
+        }
+      ]
+    },
+    {
+      "id": "covalto",
+      "nombre": "Covalto",
+      "tipo": "fintech",
+      "cobertura": "nacional",
+      "notas": "Fintech de crédito PYME. Mencionada en Las Aliadas como institución recomendada para crédito revolvente empresarial (dark kitchen y capital de trabajo). Parte de las 17 instituciones aliadas SOC en línea empresarial.",
+      "fuente": "Las Aliadas p.2, p.11-12",
+      "productos": [
+        {
+          "id": "covalto-credito-revolvente",
+          "nombre": "Crédito Revolvente PYME",
+          "tipo": "credito_revolvente",
+          "paraQueSirve": "Capital de trabajo para PYME. Recomendado específicamente para cubrir capital de trabajo inicial de operaciones nuevas (dark kitchens, nuevas unidades).",
+          "cuandoRecomendar": [
+            "PYME en fase de expansión con nueva unidad operativa",
+            "Empresa que necesita capital de trabajo sin proceso bancario tradicional",
+            "Konfío ya fue utilizado y se busca alternativa"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones específicas (tasa, monto, plazo) no documentadas en los reportes disponibles; solo se confirma la recomendación en campo."
+          },
+          "institucion": "covalto",
+          "fuente": "Las Aliadas p.11-12"
+        }
+      ]
+    },
+    {
+      "id": "hey-banco",
+      "nombre": "Hey Banco",
+      "tipo": "banco_digital",
+      "cobertura": "nacional",
+      "notas": "Banco digital filial de Banregio. Mencionado en Las Aliadas como institución para tarjeta de crédito empresarial (tecnología y marketing digital). Parte de las 17 instituciones aliadas SOC en línea empresarial.",
+      "fuente": "Las Aliadas p.2, p.12",
+      "productos": [
+        {
+          "id": "hey-tarjeta-empresarial",
+          "nombre": "Tarjeta de Crédito Empresarial Hey Banco",
+          "tipo": "tarjeta_empresarial",
+          "paraQueSirve": "Financiamiento de gastos operativos recurrentes: tecnología, marketing digital, suscripciones, gastos de oficina. Control de gastos por empleado con tarjetas adicionales.",
+          "cuandoRecomendar": [
+            "Empresa con gasto digital recurrente (publicidad, software, plataformas)",
+            "Necesita separar gastos operativos del crédito de capital de trabajo",
+            "Digitalización del negocio como prioridad (POS, CRM, plataformas digitales)"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones específicas (tasa, límite, beneficios) no documentadas en los reportes; solo se confirma la recomendación en campo."
+          },
+          "institucion": "hey-banco",
+          "fuente": "Las Aliadas p.12"
+        }
+      ]
+    },
+    {
+      "id": "xepelin",
+      "nombre": "Xepelin",
+      "tipo": "fintech",
+      "cobertura": "nacional_latam",
+      "notas": "Fintech de anticipo de ventas / factoraje digital. Mencionada en Las Aliadas como opción para crédito anticipo de ventas sin consulta de buró y sin garantías.",
+      "fuente": "Las Aliadas p.2, p.3",
+      "productos": [
+        {
+          "id": "xepelin-anticipo-ventas",
+          "nombre": "Crédito Anticipo de Ventas (Factoraje Digital)",
+          "tipo": "anticipo_ventas",
+          "paraQueSirve": "Liquidez inmediata basada en ventas con tarjeta o cuentas por cobrar. Sin consulta de buró, sin garantías. Ideal para negocios con flujo de ventas constante pero necesidad de liquidez inmediata.",
+          "cuandoRecomendar": [
+            "Negocio con ventas recurrentes en tarjeta (restaurante, retail, comercio)",
+            "Prospecto con historial de buró irregular o sin historial — Xepelin no lo revisa",
+            "Necesidad de liquidez en menos de 48 horas",
+            "Monto pequeño-mediano para oportunidades de corto plazo"
+          ],
+          "condicionesTipicas": {
+            "consultaBuro": "Sin consulta de buró",
+            "garantias": "Sin garantías requeridas",
+            "tiempoLiquidez": "48 horas (referencia reporte Las Aliadas)",
+            "_supuesto": true,
+            "_notaSupuesto": "Tasa y monto máximo no documentados; solo se confirma el mecanismo (anticipo de ventas) y las condiciones de elegibilidad en el reporte."
+          },
+          "institucion": "xepelin",
+          "fuente": "Las Aliadas p.3"
+        }
+      ]
+    },
+    {
+      "id": "finsus",
+      "nombre": "Finsus / Finsus Anticipa",
+      "tipo": "sofom",
+      "cobertura": "nacional",
+      "notas": "SOFOM de crédito PYME. Finsus Anticipa es el producto de anticipo de ventas. Mencionada en Las Aliadas como alternativa a Xepelin para crédito anticipo de ventas. Parte de las 17 instituciones aliadas SOC en línea empresarial.",
+      "fuente": "Las Aliadas p.2, p.3",
+      "productos": [
+        {
+          "id": "finsus-anticipa",
+          "nombre": "Finsus Anticipa (Anticipo de Ventas)",
+          "tipo": "anticipo_ventas",
+          "paraQueSirve": "Liquidez inmediata sobre ventas con tarjeta o cuentas por cobrar. Alternativa a Xepelin en el segmento de anticipo de ventas PYME.",
+          "cuandoRecomendar": [
+            "Mismo perfil que Xepelin: negocio con ventas en tarjeta, necesidad rápida de liquidez",
+            "Xepelin ya está al límite o el prospecto prefiere alternativa",
+            "Oportunidad de corto plazo que requiere liquidez en horas"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones específicas no documentadas en los reportes; solo se confirma la recomendación en campo como alternativa a Xepelin."
+          },
+          "institucion": "finsus",
+          "fuente": "Las Aliadas p.3"
+        },
+        {
+          "id": "finsus-credito-simple",
+          "nombre": "Crédito Simple PYME",
+          "tipo": "credito_simple",
+          "paraQueSirve": "Crédito para capital de trabajo del proyecto retail/digital. Mencionado como alternativa a Konfío para financiar proyectos de retail o digitalización.",
+          "cuandoRecomendar": [
+            "Proyecto específico de capital de trabajo (retail, lanzamiento de producto)",
+            "Konfío sin disponibilidad o condiciones no favorables"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones no documentadas; solo se confirma la mención como opción alternativa."
+          },
+          "institucion": "finsus",
+          "fuente": "Las Aliadas p.12"
+        }
+      ]
+    },
+    {
+      "id": "ion-financiera",
+      "nombre": "ION Financiera",
+      "tipo": "arrendadora",
+      "cobertura": "nacional",
+      "notas": "Arrendadora especializada. Mencionada en Las Aliadas como institución recomendada para arrendamiento puro de equipo de cocina y tecnología. Parte de las 17 instituciones aliadas SOC en línea empresarial.",
+      "fuente": "Las Aliadas p.3, p.11-12",
+      "productos": [
+        {
+          "id": "ion-arrendamiento-puro",
+          "nombre": "Arrendamiento Puro",
+          "tipo": "arrendamiento_puro",
+          "paraQueSirve": "Uso de equipo (cocina, tecnología, maquinaria) sin comprometer capital ni adquirir el activo. El arrendatario paga renta mensual; al final del contrato puede renovar, devolver o comprar. 100% deducible fiscalmente. Sin compromiso de compra.",
+          "cuandoRecomendar": [
+            "Empresa que necesita equipo pero prefiere no inmovilizar capital",
+            "Negocio que busca deducibilidad fiscal del 100% de la renta",
+            "Equipo tecnológico que se vuelve obsoleto pronto (POS, sistemas)",
+            "Apertura de nueva unidad: renovar equipo de cocina sin descapitalizar la operación existente"
+          ],
+          "condicionesTipicas": {
+            "plazoTypico": "Hasta 60 meses",
+            "antiguedadMinima": "2 años de antigüedad empresarial mínima (referencia reporte Las Aliadas)",
+            "garantia": "El equipo arrendado queda como garantía",
+            "deducibilidad": "100% deducible fiscalmente",
+            "_supuesto": true,
+            "_notaSupuesto": "La antigüedad mínima de 2 años y el plazo de 60 meses se extraen del reporte Las Aliadas; confirmar con ION Financiera."
+          },
+          "institucion": "ion-financiera",
+          "fuente": "Las Aliadas p.3, p.11-12"
+        }
+      ]
+    },
+    {
+      "id": "finbe-abc",
+      "nombre": "Finbe ABC",
+      "tipo": "arrendadora",
+      "cobertura": "nacional",
+      "notas": "Arrendadora. Mencionada en Las Aliadas como alternativa a ION Financiera para arrendamiento puro de equipo. Parte de las 17 instituciones aliadas SOC en línea empresarial.",
+      "fuente": "Las Aliadas p.3, p.11-12",
+      "productos": [
+        {
+          "id": "finbe-arrendamiento-puro",
+          "nombre": "Arrendamiento Puro",
+          "tipo": "arrendamiento_puro",
+          "paraQueSirve": "Mismo uso que ION Financiera: acceso a equipo de cocina, tecnología o maquinaria sin comprometer capital. Alternativa cuando ION Financiera no aprueba o el cliente prefiere segunda opción.",
+          "cuandoRecomendar": [
+            "ION Financiera rechazó o sus condiciones no son competitivas",
+            "Mismos disparadores que ION: equipo de cocina, tecnología, activos con vida útil definida"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones específicas no documentadas; solo se confirma la mención como alternativa a ION Financiera en el reporte Las Aliadas."
+          },
+          "institucion": "finbe-abc",
+          "fuente": "Las Aliadas p.3, p.11-12"
+        }
+      ]
+    },
+    {
+      "id": "ve-por-mas-bx",
+      "nombre": "Ve por Más (BX+)",
+      "tipo": "banco",
+      "cobertura": "nacional",
+      "notas": "Banco mencionado en Las Aliadas como opción para tarjeta de crédito empresarial. Parte de las 17 instituciones aliadas SOC en línea empresarial.",
+      "fuente": "Las Aliadas p.2, p.12",
+      "productos": [
+        {
+          "id": "bxplus-tarjeta-empresarial",
+          "nombre": "Tarjeta de Crédito Empresarial BX+",
+          "tipo": "tarjeta_empresarial",
+          "paraQueSirve": "Financiamiento de gastos operativos: tecnología, marketing digital, gastos de oficina. Mencionada como alternativa a Hey Banco para gastos de digitalización.",
+          "cuandoRecomendar": [
+            "Empresa con gasto digital recurrente que quiere alternativa a Hey Banco",
+            "Prospecto ya cliente de Ve por Más / BX+"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones no documentadas; solo se confirma la mención en campo como alternativa."
+          },
+          "institucion": "ve-por-mas-bx",
+          "fuente": "Las Aliadas p.12"
+        }
+      ]
+    },
+    {
+      "id": "unifin",
+      "nombre": "Unifin",
+      "tipo": "arrendadora_sofom",
+      "cobertura": "nacional",
+      "notas": "Arrendadora / SOFOM mencionada en la lista de instituciones aliadas SOC en línea empresarial del reporte Las Aliadas. Sin producto específico documentado en los reportes disponibles.",
+      "fuente": "Las Aliadas p.2",
+      "productos": [
+        {
+          "id": "unifin-arrendamiento",
+          "nombre": "Arrendamiento Financiero / Puro",
+          "tipo": "arrendamiento_puro",
+          "paraQueSirve": "Financiamiento de activos productivos (maquinaria, equipo, vehículos) mediante arrendamiento. Históricamente especializada en arrendamiento de flota vehicular y equipo industrial.",
+          "cuandoRecomendar": [
+            "Empresa con necesidad de arrendamiento de activos de alto valor",
+            "ION Financiera y Finbe ABC no disponibles o sin condiciones favorables",
+            "Flota vehicular o equipo industrial de gran escala"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Condiciones no documentadas en los reportes de campo; solo se confirma la membresía en la red aliada SOC."
+          },
+          "institucion": "unifin",
+          "fuente": "Las Aliadas p.2"
+        }
+      ]
+    },
+    {
+      "id": "axionen",
+      "nombre": "Axionen",
+      "tipo": "fintech_sofom",
+      "cobertura": "nacional",
+      "notas": "Institución mencionada en la lista de 17 aliadas SOC en línea empresarial del reporte Las Aliadas. Sin producto específico documentado en los reportes disponibles.",
+      "fuente": "Las Aliadas p.2",
+      "productos": [
+        {
+          "id": "axionen-credito-pyme",
+          "nombre": "Crédito PYME",
+          "tipo": "credito_simple",
+          "paraQueSirve": "Crédito para PYME. Perfil exacto del producto pendiente de documentación.",
+          "cuandoRecomendar": [
+            "Cuando las instituciones principales no tienen disponibilidad",
+            "Requiere validación directa con Carlos y SOC Corporativo"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Producto y condiciones no documentados en reportes de campo. Pendiente de ficha técnica de SOC Corporativo."
+          },
+          "institucion": "axionen",
+          "fuente": "Las Aliadas p.2"
+        }
+      ]
+    },
+    {
+      "id": "fondeadora",
+      "nombre": "Fondeadora",
+      "tipo": "banco_digital",
+      "cobertura": "nacional",
+      "notas": "Banco digital mencionado en la lista de 17 aliadas SOC en línea empresarial del reporte Las Aliadas. Sin producto específico documentado en los reportes disponibles.",
+      "fuente": "Las Aliadas p.2",
+      "productos": [
+        {
+          "id": "fondeadora-cuenta-credito",
+          "nombre": "Cuenta Empresarial / Crédito Digital",
+          "tipo": "credito_simple",
+          "paraQueSirve": "Servicios financieros digitales para PYME. Perfil exacto pendiente de documentación.",
+          "cuandoRecomendar": [
+            "Empresa que busca alternativa 100% digital",
+            "Requiere validación directa con Carlos y SOC Corporativo"
+          ],
+          "condicionesTipicas": {
+            "_supuesto": true,
+            "_notaSupuesto": "Producto y condiciones no documentados en reportes de campo. Pendiente de ficha técnica de SOC Corporativo."
+          },
+          "institucion": "fondeadora",
+          "fuente": "Las Aliadas p.2"
+        }
+      ]
+    }
+  ],
+  "tiposDeProducto": {
+    "_nota": "Catálogo de tipos canónicos usados en el campo 'tipo' de cada producto. El motor de matching usará estos tipos para filtrar y comparar.",
+    "credito_revolvente": {
+      "nombre": "Crédito Revolvente Empresarial",
+      "descripcion": "Línea de crédito que se renueva conforme se liquida. Ideal para necesidades cíclicas de capital de trabajo.",
+      "señalesProspecto": ["ciclos de caja cortos", "nómina que pagar antes de cobrar al cliente", "inventario de alta rotación", "picos de demanda estacionales"]
+    },
+    "credito_simple": {
+      "nombre": "Crédito Simple",
+      "descripcion": "Desembolso único para proyecto específico. Se amortiza en cuotas. No se renueva automáticamente.",
+      "señalesProspecto": ["apertura de sucursal", "remodelación", "compra de equipo grande", "proyecto acotado con monto y plazo definidos"]
+    },
+    "arrendamiento_puro": {
+      "nombre": "Arrendamiento Puro",
+      "descripcion": "Uso de activo (equipo, tecnología) sin adquirirlo. Renta mensual 100% deducible. Sin opción de compra obligatoria al vencimiento.",
+      "señalesProspecto": ["necesita equipo pero sin capital", "busca deducibilidad fiscal", "equipo tecnológico con obsolescencia rápida", "no quiere inmovilizar capital en activos"]
+    },
+    "anticipo_ventas": {
+      "nombre": "Anticipo de Ventas / Factoraje sobre TPV",
+      "descripcion": "Liquidez inmediata sobre ventas con tarjeta o cuentas por cobrar. Sin garantías ni buró en algunos casos. Plazo muy corto.",
+      "señalesProspecto": ["ventas en tarjeta recurrentes", "necesita liquidez en 24-48 horas", "historial de buró irregular", "monto pequeño-mediano para oportunidad inmediata"]
+    },
+    "factoraje": {
+      "nombre": "Factoraje sobre Cuentas por Cobrar",
+      "descripcion": "Venta o cesión de facturas emitidas a clientes solventes a cambio de liquidez inmediata. El factor cobra la cartera al vencimiento.",
+      "señalesProspecto": ["ciclo de cobro 30-90 días", "clientes de primer nivel (aseguradoras, corporativos, gobierno)", "necesita liquidez sin aumentar pasivo bancario", "cartera concentrada en pocos clientes muy solventes"]
+    },
+    "standby_letter_of_credit": {
+      "nombre": "Carta de Crédito Standby / Carta Compromiso Bancaria",
+      "descripcion": "Garantía bancaria emitida a favor de un tercero (proveedor, laboratorio). No desembolsa dinero; actúa como aval bancario ante el beneficiario.",
+      "señalesProspecto": ["proveedor ancla exige carta compromiso como condición de asignación", "relación con laboratorio o importador internacional", "sector farmacéutico o manufactura de alto valor", "necesita respaldar relación comercial sin desembolsar efectivo"]
+    },
+    "tarjeta_empresarial": {
+      "nombre": "Tarjeta de Crédito Empresarial",
+      "descripcion": "Instrumento de pago y crédito revolving para gastos operativos recurrentes. Control de gastos por área o empleado.",
+      "señalesProspecto": ["gasto digital recurrente (publicidad, software)", "múltiples empleados con gastos operativos", "quiere separar gastos del crédito de capital de trabajo", "digitalización del negocio"]
+    },
+    "hipotecario_empresarial": {
+      "nombre": "Hipotecario Empresarial",
+      "descripcion": "Crédito con garantía de bien inmueble para montos mayores. Para adquisición de local, bodega o como garantía alternativa en créditos de gran escala.",
+      "señalesProspecto": ["empresa con inmueble propio libre de gravamen", "necesidad de monto >$30M MXN", "banco exige garantía real para aprobar", "adquisición de local comercial o bodega"],
+      "_nota": "Mencionado en reporte Las Aliadas (Crédito Hipotecario Empresarial desde $1M MXN como opción para inmueble propio) y en reporte Probemedic (hipotecaria como garantía alternativa). Institución específica: Banorte/Afirme (supuesto basado en recomendación del reporte). Ficha completa pendiente.",
+      "_supuesto": true
+    },
+    "seguro_pyme": {
+      "nombre": "Seguro PYME / Empresarial",
+      "descripcion": "Protección del activo físico del negocio: instalaciones, equipo, inventario. Complemento obligatorio en financiamientos sobre activos.",
+      "señalesProspecto": ["empresa con activos físicos relevantes", "banco lo exige como condición del crédito", "alta rotación de personal que aumenta riesgo operacional"],
+      "_nota": "Mencionado en reporte Las Aliadas (R5: Seguro PYMES). SOC tiene 22 aseguradoras aliadas declaradas (reporte Las Aliadas p.4). Instituciones específicas pendientes de catálogo de seguros."
+    },
+    "gmm_empresarial": {
+      "nombre": "GMM Empresarial (Gastos Médicos Mayores Colectivo)",
+      "descripcion": "Seguro de salud colectivo para empleados. Diferenciador para retención de talento en industrias con alta rotación.",
+      "señalesProspecto": ["industria con alta rotación de personal (restaurantes, retail, manufactura)", "empresa con +10 empleados que busca retener talento", "competidores ya ofrecen GMM y el prospecto no"],
+      "_nota": "Mencionado en reporte Las Aliadas (R5). SOC tiene 22 aseguradoras aliadas. Instituciones específicas pendientes."
+    }
+  }
+}

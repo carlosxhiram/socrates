@@ -1,0 +1,35 @@
+{
+  "name": "@socrates/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:reset": "prisma migrate reset --force",
+    "seed": "tsx src/seed/seed.ts",
+    "build": "prisma generate && tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test --experimental-strip-types"
+  },
+  "prisma": {
+    "seed": "tsx src/seed/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.1",
+    "@socrates/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "prisma": "^6.2.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
