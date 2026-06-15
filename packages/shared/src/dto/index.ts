@@ -131,6 +131,7 @@ export const SesionResumenDTOSchema = z.object({
   titulo: z.string(),
   actualizadoEn: z.string(), // ISO
   cantidadMensajes: z.number().int(),
+  resumen: z.string().optional(), // vista previa del último mensaje
 });
 export type SesionResumenDTO = z.infer<typeof SesionResumenDTOSchema>;
 

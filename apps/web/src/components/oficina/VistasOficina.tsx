@@ -8,7 +8,7 @@
 import { useState } from "react";
 import type { ExpedienteResumenDTO, SesionResumenDTO } from "@socrates/shared";
 import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
-import { ChatSesiones } from "@/components/socrates/ChatSesiones";
+import { ListaSesiones } from "@/components/socrates/ListaSesiones";
 
 type Vista = "expedientes" | "sesiones";
 
@@ -52,7 +52,7 @@ export function VistasOficina({
           </div>
         )
       ) : (
-        <ChatSesiones sesionesIniciales={sesionesIniciales} />
+        <ListaSesiones sesionesIniciales={sesionesIniciales} />
       )}
     </div>
   );

@@ -56,8 +56,8 @@ export function TopBar({
       <div className="flex items-center gap-3">
         {/* Logotipo */}
         <span className="text-xl" aria-hidden>🐢</span>
-        <span className="font-semibold tracking-tight text-oficina-texto">
-          Sócrates
+        <span className="font-semibold tracking-wide text-oficina-texto">
+          SOCRATES
         </span>
 
         {/* Separador visual */}

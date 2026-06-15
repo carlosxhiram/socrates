@@ -21,16 +21,26 @@ sesionesRouter.get("/", async (c) => {
   const asesorId = c.get("asesorId");
   const sesiones = await prisma.sesion.findMany({
     where: { asesorId },
-    include: { _count: { select: { mensajes: true } } },
+    include: {
+      _count: { select: { mensajes: true } },
+      mensajes: { orderBy: { creadoEn: "desc" }, take: 1 }, // último, para el resumen
+    },
     orderBy: { actualizadoEn: "desc" },
   });
   return c.json(
-    sesiones.map((s) => ({
-      id: s.id,
-      titulo: s.titulo,
-      actualizadoEn: s.actualizadoEn.toISOString(),
-      cantidadMensajes: s._count.mensajes,
-    })),
+    sesiones.map((s) => {
+      const ultimo = s.mensajes[0];
+      const resumen = ultimo
+        ? ultimo.contenido.replace(/\s+/g, " ").trim().slice(0, 140)
+        : undefined;
+      return {
+        id: s.id,
+        titulo: s.titulo,
+        actualizadoEn: s.actualizadoEn.toISOString(),
+        cantidadMensajes: s._count.mensajes,
+        resumen,
+      };
+    }),
   );
 });
 

@@ -11,9 +11,9 @@
 :root {
   color-scheme: light;
 
-  --marca: 30 58 95;
-  --marca-fuerte: 22 41 63;
-  --marca-suave: 45 82 128;
+  --marca: 31 111 67; /* verde bosque (acento de marca) */
+  --marca-fuerte: 22 84 50; /* hover: más oscuro */
+  --marca-suave: 47 140 92;
 
   --oficina-fondo: 247 248 250;
   --oficina-panel: 255 255 255;
@@ -32,9 +32,9 @@
   color-scheme: dark;
 
   /* Acentos más luminosos para leer bien sobre fondo oscuro */
-  --marca: 88 140 214;
-  --marca-fuerte: 116 162 226;
-  --marca-suave: 74 130 200;
+  --marca: 64 160 105; /* verde bosque luminoso para modo oscuro */
+  --marca-fuerte: 90 190 132; /* hover: más claro sobre oscuro */
+  --marca-suave: 74 168 116;
 
   --oficina-fondo: 11 15 23; /* navy casi negro (fondo) */
   --oficina-panel: 21 26 35; /* superficies / tarjetas */
