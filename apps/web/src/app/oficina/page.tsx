@@ -4,6 +4,7 @@
  * Renderiza el seed (Las Aliadas, Probemedic) vía la api.
  */
 import { obtenerExpedientes, obtenerEquipo, apiViva } from "@/lib/api-client";
+import { requerirAcceso } from "@/lib/portero";
 import { PanelEquipo } from "@/components/oficina/PanelEquipo";
 import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
 import { BarraComando } from "@/components/socrates/BarraComando";
@@ -20,6 +21,9 @@ export default async function OficinaPage() {
       </Marco>
     );
   }
+
+  // Portero: si al asesor le falta un paso del recibimiento, a /bienvenida.
+  await requerirAcceso();
 
   const [expedientes, equipo] = await Promise.all([
     obtenerExpedientes().catch(() => []),

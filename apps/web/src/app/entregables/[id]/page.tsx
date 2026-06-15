@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { obtenerEntregable } from "@/lib/api-client";
+import { requerirAcceso } from "@/lib/portero";
 import type { ReporteV1 } from "@socrates/shared";
 import { fechaCorta } from "@/lib/format-esmx";
 
@@ -17,6 +18,7 @@ export default async function EntregablePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await requerirAcceso();
   let ent;
   try {
     ent = await obtenerEntregable(id);

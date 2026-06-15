@@ -4,11 +4,12 @@
  * servidor con la sesión de Clerk y hablan con la api por el api-client.
  */
 import {
+  obtenerYo,
   guardarPerfil,
   iniciarCheckout,
   completarBienvenida,
 } from "@/lib/api-client";
-import { GuardarPerfilSchema } from "@socrates/shared";
+import { GuardarPerfilSchema, type YoDTO } from "@socrates/shared";
 
 export interface ResultadoPerfil {
   ok: boolean;
@@ -44,4 +45,9 @@ export async function iniciarPruebaAction(): Promise<{ url: string; modo: "strip
 /** Paso 3: marca la bienvenida vista. Lanza si aún falta acceso (la api lo valida). */
 export async function completarBienvenidaAction(): Promise<void> {
   await completarBienvenida();
+}
+
+/** Sondeo del estado actual (lo usa el paso "confirmando" tras volver de Stripe). */
+export async function estadoAction(): Promise<YoDTO> {
+  return obtenerYo();
 }

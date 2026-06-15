@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { obtenerExpediente } from "@/lib/api-client";
+import { requerirAcceso } from "@/lib/portero";
 import {
   EMPLEADOS,
   etiquetaEtapaActual,
@@ -26,6 +27,7 @@ export default async function ExpedientePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await requerirAcceso();
   let exp;
   try {
     exp = await obtenerExpediente(id);
