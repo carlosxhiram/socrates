@@ -8,8 +8,10 @@ import { Hono } from "hono";
 import { prisma } from "@socrates/db";
 import { EMPLEADOS, ROLES_PANEL, type RolEmpleado } from "@socrates/shared";
 import type { AuthedVars } from "../middleware/auth.js";
+import { requiereSuscripcion } from "../middleware/suscripcion.js";
 
 export const empleadosRouter = new Hono<{ Variables: AuthedVars }>();
+empleadosRouter.use("*", requiereSuscripcion);
 
 empleadosRouter.get("/", async (c) => {
   const asesorId = c.get("asesorId");

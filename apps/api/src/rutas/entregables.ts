@@ -8,8 +8,10 @@
 import { Hono } from "hono";
 import { prisma } from "@socrates/db";
 import type { AuthedVars } from "../middleware/auth.js";
+import { requiereSuscripcion } from "../middleware/suscripcion.js";
 
 export const entregablesRouter = new Hono<{ Variables: AuthedVars }>();
+entregablesRouter.use("*", requiereSuscripcion);
 
 /** Verifica que el Entregable pertenezca al Asesor; devuelve el registro o null. */
 async function cargarConTenencia(entregableId: string, asesorId: string) {

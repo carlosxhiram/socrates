@@ -16,8 +16,10 @@ import {
   type EtapaExpediente,
 } from "@socrates/shared";
 import type { AuthedVars } from "../middleware/auth.js";
+import { requiereSuscripcion } from "../middleware/suscripcion.js";
 
 export const expedientesRouter = new Hono<{ Variables: AuthedVars }>();
+expedientesRouter.use("*", requiereSuscripcion);
 
 type ExpedienteConRelaciones = {
   id: string;

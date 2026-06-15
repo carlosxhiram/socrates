@@ -95,7 +95,10 @@ async function vincularCustomer(session: Stripe.Checkout.Session): Promise<void>
   const customerId =
     typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
   if (!asesorId || !customerId) return;
+  // Vínculo redundante (la suscripción ya trae metadata.asesorId y /pago/checkout
+  // ya fijó el customerId). Si falla, lo registramos pero no tumbamos el webhook:
+  // la activación real llega por el evento de suscripción.
   await prisma.asesor
     .update({ where: { id: asesorId }, data: { stripeCustomerId: customerId } })
-    .catch(() => undefined);
+    .catch((e) => console.warn("[webhook] no pude vincular customer→asesor:", e));
 }
