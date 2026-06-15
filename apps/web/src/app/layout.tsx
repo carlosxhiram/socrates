@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const cuerpo = (
-    <html lang="es-MX">
+    <html lang="es-MX" className={GeistSans.variable}>
       <body>{children}</body>
     </html>
   );
