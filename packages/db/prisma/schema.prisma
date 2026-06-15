@@ -29,9 +29,33 @@ model Asesor {
   clerkUserId   String       @unique // viene del JWT de Clerk (D-1)
   nombre        String?
   email         String?
+
+  // ── Perfil de onboarding (lo que el asesor captura al entrar) ──────────────
+  nombreOficina String?
+  zona          String?
+  especialidad  String?
+
+  // ── Estado de onboarding y suscripción (la VERDAD del acceso vive aquí) ─────
+  // onboardingEtapa: perfil | pago | bienvenida | completo (glosario ETAPAS_ONBOARDING)
+  onboardingEtapa   String    @default("perfil")
+  // estadoSuscripcion: ninguna | prueba | activa | vencida | cancelada (ESTADOS_SUSCRIPCION)
+  // Lo escribe SOLO el webhook firmado de Stripe (nunca el navegador). NFR-dinero.
+  estadoSuscripcion String    @default("ninguna")
+  stripeCustomerId  String?   @unique
+  pruebaTermina     DateTime?
+
   expedientes   Expediente[]
   creadoEn      DateTime     @default(now())
   actualizadoEn DateTime     @updatedAt
+}
+
+// ── Idempotencia del webhook de Stripe ───────────────────────────────────────
+// Una fila por evento de Stripe ya procesado. Si Stripe reintenta el mismo
+// evento, el @id choca y NO se vuelve a aplicar (jamás doble efecto con dinero).
+model EventoStripe {
+  id          String   @id // event.id de Stripe ("evt_...")
+  tipo        String
+  procesadoEn DateTime @default(now())
 }
 
 // ── ESPINA: el Expediente ────────────────────────────────────────────────────
