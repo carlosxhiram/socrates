@@ -44,6 +44,9 @@ importers:
       hono:
         specifier: ^4.12.0
         version: 4.12.25
+      stripe:
+        specifier: ^22.2.1
+        version: 22.2.1(@types/node@22.19.21)
       zod:
         specifier: ^3.24.1
         version: 3.25.76
@@ -1396,6 +1399,15 @@ packages:
   std-env@3.10.0:
     resolution: {integrity: sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg==}
 
+  stripe@22.2.1:
+    resolution: {integrity: sha512-ULAtq25USBEx3yeN5zimEkfYVFETVMP5om25Ryr8ol11P62imaCZLBIEW78T7zm7Wg3wnZi+80S72yf3LCpNhw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': '>=18'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+
   strnum@2.4.0:
     resolution: {integrity: sha512-sHrVyWWdq28RbhjuJdZsA1SnGRJV6NiXbk6AXBxDOsgAcA+lmpUZCYjOdLBxkXMwis6RRe7dlZt4VlIWFVzkmg==}
 
@@ -2746,6 +2758,10 @@ snapshots:
       fast-sha256: 1.3.0
 
   std-env@3.10.0: {}
+
+  stripe@22.2.1(@types/node@22.19.21):
+    optionalDependencies:
+      '@types/node': 22.19.21
 
   strnum@2.4.0:
     dependencies:

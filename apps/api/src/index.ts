@@ -18,6 +18,10 @@ import { expedientesRouter } from "./rutas/expedientes.js";
 import { empleadosRouter } from "./rutas/empleados.js";
 import { catalogoRouter } from "./rutas/catalogo.js";
 import { entregablesRouter } from "./rutas/entregables.js";
+import { yoRouter } from "./rutas/yo.js";
+import { pagoRouter } from "./rutas/pago.js";
+import { manejarWebhookStripe } from "./pago/webhook.js";
+import { stripeHabilitado } from "./pago/proveedor-stripe.js";
 import { esModoSinClaves } from "./ia/proveedor-ia.js";
 import { crearProveedorBusqueda } from "./busqueda/proveedor-busqueda.js";
 import { crearAlmacenR2 } from "./storage/r2-client.js";
@@ -51,8 +55,14 @@ app.get("/health", async (c) => {
     modoSinClavesIA: esModoSinClaves(),
     busqueda: crearProveedorBusqueda().nombre,
     almacenamiento: crearAlmacenR2().disponible ? "configurado" : "modo-sin-claves",
+    cobro: stripeHabilitado() ? "stripe" : "modo-demo",
   });
 });
+
+// ── Webhook de Stripe (PÚBLICO: Stripe no manda token; va ANTES del auth) ─────
+// Verifica firma + idempotente. Necesita el cuerpo CRUDO (c.req.text()), por eso
+// se monta antes de cualquier middleware que pudiera consumir el body.
+app.post("/pago/webhook", manejarWebhookStripe);
 
 // ── Auth (todo lo demás requiere identidad) ──────────────────────────────────
 app.use("*", authMiddleware);
@@ -62,6 +72,8 @@ app.route("/expedientes", expedientesRouter);
 app.route("/empleados", empleadosRouter);
 app.route("/catalogo", catalogoRouter);
 app.route("/entregables", entregablesRouter);
+app.route("/yo", yoRouter);
+app.route("/pago", pagoRouter);
 
 const port = Number(process.env.PORT ?? 8787);
 
