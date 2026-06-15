@@ -112,3 +112,40 @@ export async function verificarWebhook(
   const evento = await stripe.webhooks.constructEventAsync(cuerpoCrudo, firma, secret);
   return { id: evento.id, tipo: evento.type, objeto: evento.data.object };
 }
+
+export interface ResultadoCancelacion {
+  modo: "stripe" | "demo";
+  /** Cuántas suscripciones vigentes quedaron programadas para cancelar. */
+  programadas: number;
+}
+
+/**
+ * Programa la cancelación de la(s) suscripción(es) vigente(s) del Customer al
+ * FINAL del periodo ya pagado (`cancel_at_period_end`). NO cancela de inmediato:
+ * el asesor conserva lo que pagó y no se le hace un cargo nuevo.
+ *
+ * Igual que el checkout, NO escribe el estado aquí — el cambio lo aplica el
+ * webhook: `customer.subscription.updated` mantiene el acceso hasta el cierre, y
+ * `customer.subscription.deleted` al cierre lo baja a "cancelada".
+ * Idempotente: re-programar la misma cancelación fija el mismo flag, sin efecto extra.
+ */
+export async function cancelarSuscripcion(opts: {
+  stripeCustomerId: string;
+}): Promise<ResultadoCancelacion> {
+  if (!stripeHabilitado()) {
+    return { modo: "demo", programadas: 0 };
+  }
+  const stripe = await cliente();
+  const subs = await stripe.subscriptions.list({
+    customer: opts.stripeCustomerId,
+    status: "all",
+    limit: 100,
+  });
+  const vigentes = subs.data.filter(
+    (s) => s.status === "active" || s.status === "trialing" || s.status === "past_due",
+  );
+  for (const s of vigentes) {
+    await stripe.subscriptions.update(s.id, { cancel_at_period_end: true });
+  }
+  return { modo: "stripe", programadas: vigentes.length };
+}
