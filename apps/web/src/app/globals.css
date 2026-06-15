@@ -13,8 +13,8 @@ body {
 }
 
 body {
-  background-color: #f7f8fa;
-  color: #1a2230;
+  background-color: #fefcf5; /* crema cálido (estilo Tavily) */
+  color: #1e2a23;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
