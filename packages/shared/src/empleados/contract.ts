@@ -62,6 +62,15 @@ export interface ProductoCatalogo {
 }
 
 /**
+ * Mensaje de historial para el chat con Sócrates.
+ * Duplicado intencionalmente en shared para que las Server Actions lo usen.
+ */
+export interface MensajeChatIA {
+  rol: "USUARIO" | "ASISTENTE";
+  contenido: string;
+}
+
+/**
  * Wrapper de IA (D-6). En Modo sin claves, `disponible` es false y los empleados
  * caen a su ruta de seed. Toda llamada a IA pasa por aquí (regla §5.5 #4).
  */
@@ -69,6 +78,8 @@ export interface ProveedorIA {
   readonly disponible: boolean;
   /** Genera texto libre. En modo sin claves lanza o el empleado ni lo llama. */
   generarTexto(opts: { sistema?: string; prompt: string; modelo?: string }): Promise<string>;
+  /** Chat con historial para las sesiones de Sócrates. Fallback cálido si no hay clave. */
+  chatear(historial: MensajeChatIA[], modelo?: string): Promise<string>;
 }
 
 /** Contexto de ejecución que el worker arma para cada Empleado. */

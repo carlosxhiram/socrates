@@ -1,14 +1,27 @@
 /**
- * P-1 La Oficina — la vista raíz (FR-5, UX P-2).
- * Panel "Tu equipo" + lista de Expedientes con progreso + barra de Sócrates.
- * Renderiza el seed (Las Aliadas, Probemedic) vía la api.
+ * P-1 La Oficina — la vista raíz.
+ * Barra superior (marca + espacio + tema) · hero de Sócrates con chips ·
+ * pestañas Expedientes/Sesiones · panel "Tu equipo". Renderiza el seed vía api.
  */
 import { obtenerExpedientes, obtenerEquipo, apiViva } from "@/lib/api-client";
+import { listarSesiones } from "@/lib/sesiones-actions";
 import { PanelEquipo } from "@/components/oficina/PanelEquipo";
-import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
-import { BarraComando } from "@/components/socrates/BarraComando";
+import { TopBar } from "@/components/oficina/TopBar";
+import { BotonNuevoExpediente } from "@/components/oficina/BotonNuevoExpediente";
+import { VistasOficina } from "@/components/oficina/VistasOficina";
+import { BarraComando, type AccionRapida } from "@/components/socrates/BarraComando";
 
 export const dynamic = "force-dynamic";
+
+/** Chips de acción rápida: rellenan la barra con un arranque en lenguaje natural. */
+const ACCIONES: AccionRapida[] = [
+  { etiqueta: "Investigar", plantilla: "Investiga a " },
+  { etiqueta: "Prospectar", plantilla: "Prospecta a " },
+  { etiqueta: "Recomendar", plantilla: "Recomienda un producto para " },
+  { etiqueta: "Redactar", plantilla: "Redacta " },
+  { etiqueta: "Tramitar", plantilla: "Arma la cotización de " },
+  { etiqueta: "Seguir", plantilla: "Dale seguimiento a " },
+];
 
 export default async function OficinaPage() {
   const viva = await apiViva();
@@ -21,44 +34,35 @@ export default async function OficinaPage() {
     );
   }
 
-  const [expedientes, equipo] = await Promise.all([
+  const [expedientes, equipo, sesiones] = await Promise.all([
     obtenerExpedientes().catch(() => []),
     obtenerEquipo().catch(() => []),
+    listarSesiones().catch(() => []),
   ]);
 
   return (
     <Marco>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
-        {/* Columna izquierda: el equipo */}
+      {/* Hero: la línea directa con Sócrates */}
+      <section className="mb-10 mt-2 text-center">
+        <h1 className="text-3xl font-semibold tracking-tight text-oficina-texto sm:text-4xl">
+          ¿Qué preparamos hoy?
+        </h1>
+        <p className="mt-2 text-sm text-oficina-tenue">
+          Dile a Sócrates qué necesitas y reparte el trabajo entre tu equipo.
+        </p>
+        <div className="mx-auto mt-6 max-w-2xl text-left">
+          <BarraComando contexto="oficina" acciones={ACCIONES} />
+        </div>
+      </section>
+
+      {/* Dos columnas: expedientes/sesiones (ancho) + tu equipo (angosto) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+        <div>
+          <VistasOficina expedientes={expedientes} sesionesIniciales={sesiones} />
+        </div>
         <aside>
           <PanelEquipo equipo={equipo} />
         </aside>
-
-        {/* Columna derecha: los expedientes */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-oficina-tenue">
-              Expedientes
-            </h2>
-            <span className="text-xs text-oficina-tenue">
-              {expedientes.length} {expedientes.length === 1 ? "carpeta" : "carpetas"}
-            </span>
-          </div>
-
-          {expedientes.length === 0 ? (
-            <EstadoVacio />
-          ) : (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {expedientes.map((e) => (
-                <TarjetaExpediente key={e.id} expediente={e} />
-              ))}
-            </div>
-          )}
-
-          <div className="pt-2">
-            <BarraComando contexto="oficina" />
-          </div>
-        </div>
       </div>
     </Marco>
   );
@@ -66,34 +70,9 @@ export default async function OficinaPage() {
 
 function Marco({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto min-h-screen max-w-[1400px] px-6 py-8">
-      <header className="mb-8 flex items-center gap-3">
-        <span className="text-2xl" aria-hidden>
-          🐢
-        </span>
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-oficina-texto">
-            Tu oficina
-          </h1>
-          <p className="text-sm text-oficina-tenue">
-            Sócrates y tu equipo, organizados por prospecto.
-          </p>
-        </div>
-      </header>
-      {children}
-    </main>
-  );
-}
-
-function EstadoVacio() {
-  return (
-    <div className="rounded-xl border border-dashed border-oficina-borde bg-oficina-panel p-8 text-center">
-      <p className="text-sm text-oficina-texto">
-        <span className="mr-1" aria-hidden>
-          🐢
-        </span>
-        Aún no hay expedientes. Abre el primero o escríbeme aquí abajo y lo armamos juntos.
-      </p>
+    <div className="min-h-screen">
+      <TopBar extra={<BotonNuevoExpediente />} />
+      <main className="mx-auto max-w-[1400px] px-6 py-8">{children}</main>
     </div>
   );
 }

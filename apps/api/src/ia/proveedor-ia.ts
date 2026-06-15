@@ -8,7 +8,10 @@
  * MODO SIN CLAVES (NFR-11): si falta AI_GATEWAY_API_KEY, `disponible = false` y
  * los empleados caen a su ruta de seed. NUNCA burbujea un 500 crudo.
  */
-import type { ProveedorIA } from "@socrates/shared";
+import type { ProveedorIA, MensajeChatIA } from "@socrates/shared";
+
+/** Re-exportamos para que las rutas lo usen sin importar shared directamente. */
+export type { MensajeChatIA };
 
 /** Modelos por defecto, por nivel de riesgo (configurable por env). */
 export const MODELOS = {
@@ -17,6 +20,18 @@ export const MODELOS = {
   mecanico: process.env.MODELO_MECANICO ?? "anthropic/claude-haiku-4.5",
 } as const;
 
+/** System prompt de Sócrates para el chat con el Asesor. */
+const SYSTEM_SOCRATES = `Eres Sócrates, el gerente de un equipo de agentes de inteligencia financiera al servicio de un asesor de SOC | TALENT.
+Tu voz es cálida, clara y de oficina: hablas en español sin jerga técnica. Eres el punto de contacto del asesor; escuchas, priorizas y delegas.
+Tu equipo es:
+  • El Prospector — identifica y cualifica oportunidades de venta.
+  • El Investigador — analiza empresas y elabora reportes de inteligencia.
+  • El Asesor de producto — recomienda los mejores productos financieros del catálogo SOC.
+  • El Negociador — prepara guiones y argumentos de cierre.
+  • El Tramitador — gestiona el proceso de solicitud y documentación.
+  • El Gestor — da seguimiento post-venta y cultiva la relación con el cliente.
+Cuando el asesor te pide algo, confirmas que lo entendiste, le dices a quién del equipo se lo encargarás y cuál es el siguiente paso concreto. Sé breve: dos o tres oraciones como máximo.`;
+
 class ProveedorIAFallback implements ProveedorIA {
   readonly disponible = false;
   async generarTexto(): Promise<string> {
@@ -24,11 +39,37 @@ class ProveedorIAFallback implements ProveedorIA {
     // devolvemos una señal honesta en lugar de tronar.
     return "[sin conexión para investigación en vivo]";
   }
+
+  async chatear(historial: MensajeChatIA[]): Promise<string> {
+    // Fallback cálido: Sócrates acusa recibo y ofrece el siguiente paso.
+    const ultimoMensaje = historial.filter((m) => m.rol === "USUARIO").at(-1);
+    const texto = ultimoMensaje?.contenido ?? "";
+    if (!texto) {
+      return "Aquí estoy. ¿En qué te puedo ayudar hoy?";
+    }
+    const resumen = texto.length > 60 ? texto.slice(0, 57) + "..." : texto;
+    return (
+      `Recibí tu mensaje: "${resumen}". ` +
+      `Hoy no tengo conexión con el equipo de IA, pero en cuanto esté disponible, ` +
+      `le encargaré esto al integrante más adecuado de tu equipo y te aviso. ` +
+      `¿Hay algo más urgente en lo que pueda orientarte mientras tanto?`
+    );
+  }
 }
 
 class ProveedorIAGateway implements ProveedorIA {
   readonly disponible = true;
   constructor(private readonly apiKey: string) {}
+
+  private async _gateway() {
+    const { generateText } = await import("ai");
+    const gatewayPkg = "@ai-sdk/gateway";
+    const { createGateway } = (await import(gatewayPkg)) as {
+      createGateway: (cfg: { apiKey: string }) => (modelo: string) => unknown;
+    };
+    const gateway = createGateway({ apiKey: this.apiKey });
+    return { generateText, gateway };
+  }
 
   async generarTexto(opts: {
     sistema?: string;
@@ -41,12 +82,7 @@ class ProveedorIAGateway implements ProveedorIA {
       // variable para no acoplar el typecheck del arranque sin claves a un paquete
       // opcional; cuando Carlos pegue la clave, se instala `@ai-sdk/gateway` y este
       // camino queda activo (arquitectura D-6).
-      const { generateText } = await import("ai");
-      const gatewayPkg = "@ai-sdk/gateway";
-      const { createGateway } = (await import(gatewayPkg)) as {
-        createGateway: (cfg: { apiKey: string }) => (modelo: string) => unknown;
-      };
-      const gateway = createGateway({ apiKey: this.apiKey });
+      const { generateText, gateway } = await this._gateway();
       const { text } = await generateText({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         model: gateway(opts.modelo ?? MODELOS.estandar) as never,
@@ -58,6 +94,27 @@ class ProveedorIAGateway implements ProveedorIA {
       // Cualquier fallo de red/IA se traduce a señal manejable (nunca 500 crudo).
       console.warn("[ProveedorIA] llamada falló, devolviendo señal de fallback:", err);
       return "[no fue posible completar la consulta de investigación]";
+    }
+  }
+
+  async chatear(historial: MensajeChatIA[], modelo?: string): Promise<string> {
+    try {
+      const { generateText, gateway } = await this._gateway();
+      const messages = historial.map((m) => ({
+        role: (m.rol === "USUARIO" ? "user" : "assistant") as "user" | "assistant",
+        content: m.contenido,
+      }));
+      const { text } = await generateText({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        model: gateway(modelo ?? MODELOS.estandar) as never,
+        system: SYSTEM_SOCRATES,
+        messages,
+      });
+      return text;
+    } catch (err) {
+      console.warn("[ProveedorIA] chat falló, devolviendo fallback cálido:", err);
+      const fallback = new ProveedorIAFallback();
+      return fallback.chatear(historial);
     }
   }
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,9 +15,13 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // suppressHydrationWarning: next-themes ajusta la clase de <html> en cliente
+  // antes de la hidratación; sin esto React advierte por el desajuste esperado.
   const cuerpo = (
-    <html lang="es-MX">
-      <body>{children}</body>
+    <html lang="es-MX" suppressHydrationWarning>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 

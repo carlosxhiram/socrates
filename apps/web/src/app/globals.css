@@ -2,8 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Tokens de color como triplete RGB SIN coma (formato "R G B") para que Tailwind
+ * pueda inyectar la opacidad con rgb(var(--token) / <alpha-value>).
+ *   :root  = tema claro (la paleta original de Sócrates)
+ *   .dark  = tema oscuro estilo Tavily (navy casi negro, acentos luminosos)
+ */
 :root {
   color-scheme: light;
+
+  --marca: 30 58 95;
+  --marca-fuerte: 22 41 63;
+  --marca-suave: 45 82 128;
+
+  --oficina-fondo: 247 248 250;
+  --oficina-panel: 255 255 255;
+  --oficina-borde: 227 231 237;
+  --oficina-texto: 26 34 48;
+  --oficina-tenue: 107 117 133;
+
+  --estado-libre: 154 163 178;
+  --estado-trabajando: 45 82 128;
+  --estado-entrego: 31 138 91;
+  --estado-alerta: 200 134 26;
+  --estado-bloqueo: 192 57 43;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Acentos más luminosos para leer bien sobre fondo oscuro */
+  --marca: 88 140 214;
+  --marca-fuerte: 116 162 226;
+  --marca-suave: 74 130 200;
+
+  --oficina-fondo: 11 15 23; /* navy casi negro (fondo) */
+  --oficina-panel: 21 26 35; /* superficies / tarjetas */
+  --oficina-borde: 38 45 58;
+  --oficina-texto: 230 233 239;
+  --oficina-tenue: 138 147 166;
+
+  --estado-libre: 107 117 135;
+  --estado-trabajando: 116 162 226;
+  --estado-entrego: 63 185 80;
+  --estado-alerta: 217 164 65;
+  --estado-bloqueo: 229 83 75;
 }
 
 html,
@@ -13,8 +56,8 @@ body {
 }
 
 body {
-  background-color: #f7f8fa;
-  color: #1a2230;
+  background-color: rgb(var(--oficina-fondo));
+  color: rgb(var(--oficina-texto));
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }

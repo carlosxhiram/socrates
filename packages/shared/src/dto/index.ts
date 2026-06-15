@@ -112,3 +112,44 @@ export const EmpleadoEstadoDTOSchema = z.object({
     .optional(),
 });
 export type EmpleadoEstadoDTO = z.infer<typeof EmpleadoEstadoDTOSchema>;
+
+// ── Sesiones de chat con Sócrates ────────────────────────────────────────────
+
+export const RolMensajeSchema = z.enum(["USUARIO", "ASISTENTE"]);
+export type RolMensaje = z.infer<typeof RolMensajeSchema>;
+
+export const MensajeDTOSchema = z.object({
+  id: z.string(),
+  rol: RolMensajeSchema,
+  contenido: z.string(),
+  creadoEn: z.string(), // ISO
+});
+export type MensajeDTO = z.infer<typeof MensajeDTOSchema>;
+
+export const SesionResumenDTOSchema = z.object({
+  id: z.string(),
+  titulo: z.string(),
+  actualizadoEn: z.string(), // ISO
+  cantidadMensajes: z.number().int(),
+});
+export type SesionResumenDTO = z.infer<typeof SesionResumenDTOSchema>;
+
+export const SesionDetalleDTOSchema = z.object({
+  id: z.string(),
+  titulo: z.string(),
+  creadoEn: z.string(), // ISO
+  actualizadoEn: z.string(), // ISO
+  mensajes: z.array(MensajeDTOSchema),
+});
+export type SesionDetalleDTO = z.infer<typeof SesionDetalleDTOSchema>;
+
+// ── Schemas de entrada para la ruta de sesiones ──────────────────────────────
+export const CrearSesionSchema = z.object({
+  titulo: z.string().max(100).optional(),
+});
+export type CrearSesion = z.infer<typeof CrearSesionSchema>;
+
+export const EnviarMensajeSchema = z.object({
+  texto: z.string().min(1, "El mensaje no puede estar vacío."),
+});
+export type EnviarMensaje = z.infer<typeof EnviarMensajeSchema>;

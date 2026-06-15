@@ -18,6 +18,7 @@ import { expedientesRouter } from "./rutas/expedientes.js";
 import { empleadosRouter } from "./rutas/empleados.js";
 import { catalogoRouter } from "./rutas/catalogo.js";
 import { entregablesRouter } from "./rutas/entregables.js";
+import { sesionesRouter } from "./rutas/sesiones.js";
 import { esModoSinClaves } from "./ia/proveedor-ia.js";
 import { crearProveedorBusqueda } from "./busqueda/proveedor-busqueda.js";
 import { crearAlmacenR2 } from "./storage/r2-client.js";
@@ -62,6 +63,7 @@ app.route("/expedientes", expedientesRouter);
 app.route("/empleados", empleadosRouter);
 app.route("/catalogo", catalogoRouter);
 app.route("/entregables", entregablesRouter);
+app.route("/sesiones", sesionesRouter);
 
 const port = Number(process.env.PORT ?? 8787);
 

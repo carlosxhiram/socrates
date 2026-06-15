@@ -1,32 +1,40 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Paleta de Sócrates: neutral dominante (blancos, grises fríos) con un acento
- * corporativo (azul oscuro). Estética premium sin ostentación (UX P-6).
+ * Paleta de Sócrates con tema claro/oscuro.
+ *
+ * Los colores se resuelven vía variables CSS (definidas en globals.css) con el
+ * patrón rgb(var(--token) / <alpha-value>) para CONSERVAR el soporte de opacidad
+ * de Tailwind (p. ej. bg-marca/5, border-oficina-borde/30, bg-estado-alerta/5).
+ * El modo oscuro se activa con la clase `.dark` en <html> (next-themes), así que
+ * TODAS las utilidades de color heredan el tema sin tocar cada componente.
  */
+const conAlpha = (token: string) => `rgb(var(${token}) / <alpha-value>)`;
+
 const config: Config = {
+  darkMode: "class",
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
         marca: {
-          DEFAULT: "#1e3a5f", // azul oscuro corporativo
-          fuerte: "#16293f",
-          suave: "#2d5280",
+          DEFAULT: conAlpha("--marca"),
+          fuerte: conAlpha("--marca-fuerte"),
+          suave: conAlpha("--marca-suave"),
         },
         oficina: {
-          fondo: "#f7f8fa", // gris muy frío de fondo
-          panel: "#ffffff",
-          borde: "#e3e7ed",
-          texto: "#1a2230",
-          tenue: "#6b7585",
+          fondo: conAlpha("--oficina-fondo"),
+          panel: conAlpha("--oficina-panel"),
+          borde: conAlpha("--oficina-borde"),
+          texto: conAlpha("--oficina-texto"),
+          tenue: conAlpha("--oficina-tenue"),
         },
         estado: {
-          libre: "#9aa3b2",
-          trabajando: "#2d5280",
-          entrego: "#1f8a5b",
-          alerta: "#c8861a",
-          bloqueo: "#c0392b",
+          libre: conAlpha("--estado-libre"),
+          trabajando: conAlpha("--estado-trabajando"),
+          entrego: conAlpha("--estado-entrego"),
+          alerta: conAlpha("--estado-alerta"),
+          bloqueo: conAlpha("--estado-bloqueo"),
         },
       },
       fontFamily: {
