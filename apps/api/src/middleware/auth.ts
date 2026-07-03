@@ -121,7 +121,9 @@ export async function authMiddleware(c: Context, next: Next) {
       jwtKey: process.env.CLERK_JWT_KEY,
       secretKey: process.env.CLERK_SECRET_KEY,
       // El claim azp debe ser nuestro frontend (anti re-uso de tokens ajenos).
-      authorizedParties: [process.env.WEB_ORIGIN ?? "http://localhost:3000"],
+      // Solo se exige cuando WEB_ORIGIN está configurado: un default de
+      // localhost rechazaría TODOS los tokens legítimos en producción.
+      ...(process.env.WEB_ORIGIN ? { authorizedParties: [process.env.WEB_ORIGIN] } : {}),
     });
     const clerkUserId = payload.sub;
     if (!clerkUserId) {

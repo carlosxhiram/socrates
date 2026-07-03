@@ -32,7 +32,7 @@ export const CrearExpedienteSchema = z.object({
   empresa: z.string().min(1, "Falta el nombre de la empresa."),
   ciudad: z.string().min(1, "Falta la ciudad."),
   industria: z.string().min(1, "Falta la industria."),
-  sitioWeb: z.string().url().optional().or(z.literal("")),
+  sitioWeb: z.string().url().startsWith("http", "El sitio web debe empezar con http:// o https://.").optional().or(z.literal("")),
   rfc: z.string().optional(),
   sucursales: z.number().int().nonnegative().optional(),
   notas: z.string().optional(),
@@ -46,7 +46,7 @@ export const EditarExpedienteSchema = z
     ciudad: z.string().min(1, "El expediente no puede quedarse sin ciudad.").optional(),
     industria: z.string().min(1, "El expediente no puede quedarse sin giro.").optional(),
     // Paridad con CrearExpedienteSchema: URL válida o vacío (que limpia el dato).
-    sitioWeb: z.string().url("Escribe el sitio web completo (con https://).").optional().or(z.literal("")),
+    sitioWeb: z.string().url("Escribe el sitio web completo (con https://).").startsWith("http", "El sitio web debe empezar con http:// o https://.").optional().or(z.literal("")),
     rfc: z.string().optional(),
     sucursales: z.number().int().nonnegative().optional(),
     notas: z.string().optional(),
