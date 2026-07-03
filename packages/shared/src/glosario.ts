@@ -159,6 +159,39 @@ export const ESTADO_EMPLEADO_ETIQUETA: Record<EstadoEmpleadoUI, string> = {
   ENTREGO: "Entregó",
 };
 
+// ── Onboarding: los pasos del recibimiento del asesor ──────────────────────
+// perfil → pago → bienvenida → completo. El servidor deriva el "siguiente paso"
+// (derivarSiguientePaso) y el cliente solo obedece.
+export const ETAPAS_ONBOARDING = ["perfil", "pago", "bienvenida", "completo"] as const;
+export type EtapaOnboarding = (typeof ETAPAS_ONBOARDING)[number];
+
+export const ETAPA_ONBOARDING_ETIQUETA: Record<EtapaOnboarding, string> = {
+  perfil: "Tu oficina",
+  pago: "Tu prueba",
+  bienvenida: "Conoce a tu equipo",
+  completo: "Listo",
+};
+
+// ── Estado de suscripción (la VERDAD del acceso; la escribe SOLO el webhook) ──
+// "prueba" y "activa" dan acceso (los abre el webhook firmado de Stripe).
+// "demo" es un estado EXPLÍCITO del modo demostración (sin llaves de Stripe): da
+// acceso para operar la oficina, pero NO finge un pago real — se distingue de
+// "activa" a propósito, para que nadie confunda una demo con una suscripción
+// pagada (doctrina del dinero: sin evento verificado, nada se hace pasar por
+// cobrado). El resto de estados NO dan acceso.
+export const ESTADOS_SUSCRIPCION = [
+  "ninguna",
+  "demo",
+  "prueba",
+  "activa",
+  "vencida",
+  "cancelada",
+] as const;
+export type EstadoSuscripcion = (typeof ESTADOS_SUSCRIPCION)[number];
+
+/** Los estados que dan acceso a La Oficina (incluye la demo explícita). */
+export const SUSCRIPCION_CON_ACCESO: EstadoSuscripcion[] = ["demo", "prueba", "activa"];
+
 // ── Tipos de Entregable ─────────────────────────────────────────────────────
 export const TIPOS_ENTREGABLE = [
   "reporte_inteligencia",
