@@ -35,6 +35,9 @@ app.use(
 );
 
 // ── Salud (pública, DB-aware) ────────────────────────────────────────────────
+// Con la base caída responde 503: un healthcheck (Railway) debe reprobar un
+// servicio que no puede servir datos — "vivo pero degradado" se reporta, no se
+// disfraza de sano. El proceso NO truena (NFR-11): sigue respondiendo honesto.
 app.get("/health", async (c) => {
   let db = "ok";
   try {
@@ -42,14 +45,22 @@ app.get("/health", async (c) => {
   } catch {
     db = "error";
   }
-  return c.json({
-    estado: "vivo",
-    db,
-    modoSinClavesIA: esModoSinClaves(),
-    busqueda: crearProveedorBusqueda().nombre,
-    almacenamiento: crearAlmacenR2().disponible ? "configurado" : "modo-sin-claves",
-  });
+  return c.json(
+    {
+      estado: "vivo",
+      db,
+      modoSinClavesIA: esModoSinClaves(),
+      busqueda: crearProveedorBusqueda().nombre,
+      almacenamiento: crearAlmacenR2().disponible ? "configurado" : "modo-sin-claves",
+    },
+    db === "ok" ? 200 : 503,
+  );
 });
+
+// ── 404 dentro del contrato de error (nada de texto plano) ──────────────────
+app.notFound((c) =>
+  c.json({ error: { codigo: "NO_EXISTE", mensaje: "Esa ruta no existe en la oficina." } }, 404),
+);
 
 // ── Auth (todo lo demás requiere identidad) ──────────────────────────────────
 app.use("*", authMiddleware);

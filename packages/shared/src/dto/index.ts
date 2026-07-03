@@ -40,17 +40,22 @@ export const CrearExpedienteSchema = z.object({
 export type CrearExpediente = z.infer<typeof CrearExpedienteSchema>;
 
 // ── Editar Expediente / avanzar Etapa (FR-4, FR-7) ──────────────────────────
-export const EditarExpedienteSchema = z.object({
-  empresa: z.string().min(1).optional(),
-  ciudad: z.string().min(1).optional(),
-  industria: z.string().min(1).optional(),
-  sitioWeb: z.string().optional(),
-  rfc: z.string().optional(),
-  sucursales: z.number().int().nonnegative().optional(),
-  notas: z.string().optional(),
-  etapa: EtapaSchema.optional(),
-  motivoCierre: z.string().optional(),
-});
+export const EditarExpedienteSchema = z
+  .object({
+    empresa: z.string().min(1, "El expediente no puede quedarse sin empresa.").optional(),
+    ciudad: z.string().min(1, "El expediente no puede quedarse sin ciudad.").optional(),
+    industria: z.string().min(1, "El expediente no puede quedarse sin giro.").optional(),
+    // Paridad con CrearExpedienteSchema: URL válida o vacío (que limpia el dato).
+    sitioWeb: z.string().url("Escribe el sitio web completo (con https://).").optional().or(z.literal("")),
+    rfc: z.string().optional(),
+    sucursales: z.number().int().nonnegative().optional(),
+    notas: z.string().optional(),
+    etapa: EtapaSchema.optional(),
+    motivoCierre: z.string().optional(),
+  })
+  .refine((datos) => Object.keys(datos).length > 0, {
+    message: "No hay nada que guardar: manda al menos un dato.",
+  });
 export type EditarExpediente = z.infer<typeof EditarExpedienteSchema>;
 
 // ── DTOs de salida (lo que la api devuelve a web) ───────────────────────────
