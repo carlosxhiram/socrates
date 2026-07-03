@@ -6,6 +6,7 @@
 import { obtenerExpedientes, obtenerEquipo, apiViva } from "@/lib/api-client";
 import { PanelEquipo } from "@/components/oficina/PanelEquipo";
 import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
+import { NuevoExpediente } from "@/components/oficina/NuevoExpediente";
 import { BarraComando } from "@/components/socrates/BarraComando";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +45,8 @@ export default async function OficinaPage() {
               {expedientes.length} {expedientes.length === 1 ? "carpeta" : "carpetas"}
             </span>
           </div>
+
+          <NuevoExpediente />
 
           {expedientes.length === 0 ? (
             <EstadoVacio />
