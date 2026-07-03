@@ -16,6 +16,8 @@ import {
 } from "@socrates/shared";
 import { BarraProgreso } from "@/components/oficina/BarraProgreso";
 import { BarraComando } from "@/components/socrates/BarraComando";
+import { AccionesEtapa } from "@/components/expediente/AccionesEtapa";
+import { DatosProspecto } from "@/components/expediente/DatosProspecto";
 import { fechaCorta } from "@/lib/format-esmx";
 
 export const dynamic = "force-dynamic";
@@ -63,7 +65,28 @@ export default async function ExpedientePage({
           <BarraProgreso progreso={exp.progreso} bloqueado={exp.tieneBloqueo} />
         </div>
         {exp.notas && <p className="mt-3 text-sm text-oficina-texto">{exp.notas}</p>}
+        {exp.motivoCierre && (
+          <p className="mt-2 text-xs text-oficina-tenue">Motivo del cierre: {exp.motivoCierre}</p>
+        )}
+        <div className="mt-4">
+          <AccionesEtapa expedienteId={exp.id} etapa={exp.etapa} />
+        </div>
       </header>
+
+      <div className="mt-6">
+        <DatosProspecto
+          expedienteId={exp.id}
+          datos={{
+            empresa: exp.empresa,
+            ciudad: exp.ciudad,
+            industria: exp.industria,
+            sitioWeb: exp.sitioWeb ?? null,
+            rfc: exp.rfc ?? null,
+            sucursales: exp.sucursales ?? null,
+            notas: exp.notas ?? null,
+          }}
+        />
+      </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         {/* Entregables (bandeja, UX C-4) */}
