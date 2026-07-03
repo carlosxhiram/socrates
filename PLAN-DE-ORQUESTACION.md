@@ -44,6 +44,12 @@ Documentos fuente (no los dupliques, cítalos): PRD
 
 ## 2. Dónde estamos (checkpoint 2026-07-03, verificado corrido)
 
+> **Base canónica: `master`** (commit del checkpoint). Los PRs #1–#8 están
+> fusionados AHÍ. Las ramas `claude/socrates-*` restantes son historia
+> fusionada: no trabajes desde ellas (algunas tienen árboles pre-checkpoint
+> que contradicen este documento). El estado vivo de PRs se consulta en
+> GitHub, no en tablas de documentos.
+
 **Hecho y fusionado a `master`** (PRs #1–#5, #7, #8 — detalles en `STATUS.md`):
 - Monorepo pnpm+Turborepo: `apps/web` (Next 16, `proxy.ts`), `apps/api` (Hono),
   `packages/shared` (glosario, DTOs Zod, ReporteV1, etapas, contrato de
@@ -116,10 +122,13 @@ Objetivo: E2/E4-S8 al 100 % en la UI y deuda confirmada a cero, para que el
 piloto opere la oficina completa aunque los empleados aún no generen.
 
 - **A1. Gate C-3 en la UI** (E4-S8 mitad UI): botón "Aprobar" en el visor con
-  confirmación, enviando `{ version: versionActual }` (el endpoint ya exige
-  versión — `409 VERSION_DESFASADA` se muestra tal cual). Al aprobar, el
-  expediente puede avanzar de etapa. Criterio: flujo Borrador→Aprobado tocado
-  en navegador; imposible aprobar una versión no vista.
+  confirmación, enviando `{ version: versionActual }`. OJO: hoy el servidor
+  acepta `version` OPCIONAL (si se omite, aprueba lo vigente sin comparar) —
+  en este mismo PR hazla **obligatoria en el servidor** (no existen otros
+  clientes; romper compat es gratis hoy) para que la garantía "aprobó lo que
+  VIO" no dependa de la disciplina de la UI. `409 VERSION_DESFASADA` se
+  muestra tal cual. Criterio: flujo Borrador→Aprobado tocado en navegador;
+  imposible aprobar una versión no vista NI aprobar sin declarar versión.
 - **A2. FR-5 completo**: filtros "Esperando mi revisión" / por Etapa (query
   params camelCase a `GET /expedientes`, filtrado en servidor) + **polling**
   ligero 5–10 s con backoff (`router.refresh()` desde un client component;
@@ -149,6 +158,10 @@ interior de `ejecutar()`.
   Tests de integración: carrera de dos workers (SKIP LOCKED), dependencia no
   cumplida no se toma, timeout, reintento retomable. Resiliente a reinicio
   (estado en Postgres, nunca en memoria).
+- **B2 (previo). Lector del Catálogo cableado**: `ctx.catalogo: CatalogoLector`
+  del contrato D-3 implementado sobre las tablas reales (el seed ya existe) —
+  lo consumen los empleados desde B y la compuerta C-1 en D. La UI de
+  curaduría para Carlos queda en E3; no la confundas con este lector.
 - **B2. Encargo directo** (`POST /expedientes/:id/empleados/:rol/encargar`) +
   empleados **modo sin claves**: cada rol implementa `ejecutar()` devolviendo
   su Entregable sembrado (Probemedic/Las Aliadas) o Bloqueo honesto "sin
@@ -186,10 +199,17 @@ técnico central (R-1) y la razón de ser del producto.**
 Objetivo: el flujo punta de lanza (UJ-3) de producción: pipeline por fases,
 compuertas como código probado, editor y PDF.
 
-- **D1. Pipeline por fases con progreso persistido** (D-5): investigar
-  industria → analizar empresa → FODA → matchear catálogo → redactar →
-  verificar. Cada fase persiste su resultado parcial (retomable tras fallo,
-  decisión #1 de casos borde); la UI muestra progreso por fase (FR-8).
+- **D1. Pipeline por fases con progreso persistido** (D-5, SEIS fases):
+  investigar industria → analizar empresa → FODA → matchear catálogo →
+  **marcar Brechas de información** → redactar → verificar. Cada fase persiste
+  su resultado parcial (retomable tras fallo, decisión #1 de casos borde); la
+  UI muestra progreso por fase (FR-8). Invariante de la redacción (FR-9): cada
+  afirmación cuantitativa SALE del redactor con su cita adjunta — no se le
+  añade después; lo que no tenga fuente nace como estimación o Brecha.
+- **D1b. Brechas de información como feature** (FR-11, E4-S5): fase propia y
+  proactiva — identifica el dato clave que NO se pudo verificar y sugiere cómo
+  conseguirlo ("el laboratorio ancla no se divulgó; pregúntalo en la cita").
+  Una Brecha jamás aparece simultáneamente como hecho en el cuerpo.
 - **D2. C-1 como código**: el matcheo SOLO emite Recomendacion con
   `productoId`/`institucionId` existentes (FK + validación aplicativa); match
   sin entrada del catálogo ⇒ Brecha, jamás fila inventada. Tests: intento de
@@ -225,10 +245,13 @@ compuertas como código probado, editor y PDF.
   producto matchea SOLO catálogo (C-1), Negociador depende del Reporte APROBADO
   (dependencia FR-2), Tramitador estima desde condiciones del catálogo con
   marca "estimado" (NFR-9), Gestor propone (no cambia etapas). Gate humano en
-  todo lo que salga al cliente.
-- **E3. Catálogo consultable/editable** (E6): lectura para empleados y UI de
-  curaduría mínima para Carlos (editar condiciones típicas por datos, sin
-  redeploy). La expansión a 55 instituciones es de Carlos (PoC-R2), no del código.
+  todo lo que salga al cliente (E5-S5): el endpoint de aprobar ya es genérico;
+  falta solo el visor sencillo de entregables no-Reporte (guion, cotización,
+  lista de requisitos) — columna única, mismo patrón del visor actual.
+- **E3. Curaduría del Catálogo** (E6): UI mínima para que Carlos edite
+  condiciones típicas por datos, sin redeploy (el LECTOR para empleados se
+  cableó desde B2-previo). La expansión a 55 instituciones es de Carlos
+  (PoC-R2), no del código.
 
 ### ETAPA F — Calidad transversal y deploy (E7 + E8 · ~3-4 PRs + banderazo)
 
@@ -249,7 +272,10 @@ compuertas como código probado, editor y PDF.
 Semana 1: sesión de mapa de Etapas con Carlos (I-1/I-1b), carga de prospectos
 reales, SM-1 sobre lote N≥10, medir SM-4 (tiempo ingreso→borrador). Contra-
 métricas vigiladas desde el día 1. El feedback alimenta addendums a este plan,
-no reescrituras.
+no reescrituras. **Antes de abrir a más asesores que el piloto cerrado:**
+validación LFPDPPP con Carlos + experto legal (NFR-13, PRD Q-7) — el RFC y los
+datos fiscales de prospectos se tratan con seriedad desde hoy, pero la política
+formal es prerequisito de la expansión, no del piloto.
 
 ---
 
@@ -291,7 +317,10 @@ deploy, mapa I-1 completo, ids `soc_*`, techo de costo, profundidad Negociador.
 8. Flotas grandes de agentes tocan el límite de sesión: la auditoría de 160
    agentes se cortó a la mitad. Usa pocos agentes, bien especificados.
 9. Ramas apiladas: trabaja cada rama en su **worktree** (`git worktree add`);
-   el árbol principal cambia de rama y los dev servers viven de él.
+   el árbol principal cambia de rama y los dev servers viven de él. Los
+   worktrees en `/tmp` son EFÍMEROS (mueren al dormir el contenedor); crea los
+   tuyos y remueve los muertos con `git worktree prune`. Poda también las
+   ramas ya fusionadas del checkpoint.
 10. En este repo el catálogo (`catalogo-soc.json` y tablas) NO se toca sin
     Carlos. Los ids `soc_*` del reporte sembrado quedan sin resolver a
     propósito (C-1). No los "arregles".

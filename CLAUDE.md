@@ -5,6 +5,12 @@ código, lee en este orden: **`PLAN-DE-ORQUESTACION.md`** (el mapa completo, la
 doctrina y la etapa en curso), **`STATUS.md`** (dónde vamos de verdad) y
 **`DECISIONES-PARA-CARLOS.md`** (lo que está bloqueado esperando a Carlos).
 
+> **La base canónica es `master`.** Todo el checkpoint 2026-07-03 (PRs #1–#8)
+> vive ahí. Si aterrizas en una rama `claude/socrates-*` vieja verás un árbol
+> que CONTRADICE estos documentos (p. ej. SQLite en vez de Postgres): son
+> ramas ya fusionadas — trabaja siempre partiendo de `origin/master` y poda
+> las ramas fusionadas. El estado vivo de PRs es GitHub, no la tabla de STATUS.
+
 ## Reglas duras (violarlas invalida el PR, sin discusión)
 
 1. **NFR-11**: la app SIEMPRE arranca sin llaves externas. Ningún cambio puede
@@ -22,6 +28,8 @@ doctrina y la etapa en curso), **`STATUS.md`** (dónde vamos de verdad) y
    (a propósito). Solo Carlos cura el catálogo.
 6. **Nada de producción sin banderazo de Carlos**: no deploys, no bases
    remotas. Los tests de integración tienen guardia anti-producción — respétala.
+   (Nota: la restricción original "git local sin GitHub" quedó superada — el
+   flujo real ES por PRs draft en GitHub; lo que sigue por CLI es el deploy.)
 7. **Migraciones hacia adelante**; jamás reescribir historial aplicado. Nada
    de secretos en commits.
 
