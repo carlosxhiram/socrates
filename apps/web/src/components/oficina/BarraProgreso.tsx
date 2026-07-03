@@ -19,7 +19,9 @@ export function BarraProgreso({
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-oficina-borde">
         <div
           className={`h-full rounded-full transition-all ${color}`}
-          style={{ width: `${Math.max(2, progreso)}%` }}
+          // En 0% no pintamos un ~2% falso: sin avance real, la barra se ve
+          // vacía de verdad (honestidad del progreso, UX C-6).
+          style={{ width: progreso <= 0 ? "0%" : `${Math.max(2, progreso)}%` }}
         />
       </div>
       <span className="w-10 text-right text-xs font-medium tabular-nums text-oficina-tenue">

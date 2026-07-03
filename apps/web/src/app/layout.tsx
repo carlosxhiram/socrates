@@ -3,7 +3,10 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sócrates — SOC | TALENT",
+  title: {
+    default: "Sócrates — SOC | TALENT",
+    template: "%s · Sócrates",
+  },
   description: "Tu equipo de asesoría financiera, en una sola oficina.",
 };
 

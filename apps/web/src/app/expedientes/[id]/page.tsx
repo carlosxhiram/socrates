@@ -3,8 +3,9 @@
  * bandeja de entregables. Lista los entregables y enlaza al visor.
  */
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
-import { obtenerExpediente } from "@/lib/api-client";
+import { obtenerExpediente, ErrorApi } from "@/lib/api-client";
 import {
   EMPLEADOS,
   etiquetaEtapaActual,
@@ -22,21 +23,36 @@ import { fechaCorta } from "@/lib/format-esmx";
 
 export const dynamic = "force-dynamic";
 
-export default async function ExpedientePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+type Parametros = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: Parametros): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const exp = await obtenerExpediente(id);
+    return { title: exp.empresa };
+  } catch {
+    return { title: "Expediente" };
+  }
+}
+
+export default async function ExpedientePage({ params }: Parametros) {
   const { id } = await params;
   let exp;
   try {
     exp = await obtenerExpediente(id);
-  } catch {
+  } catch (err) {
+    // No existe / no es tuyo (404/403) es un problema DISTINTO a no haberme
+    // podido conectar (red caída, tiempo agotado): cada uno pide su propio
+    // mensaje honesto, no un "algo salió mal" genérico.
+    const noEsTuyo = err instanceof ErrorApi && (err.status === 404 || err.status === 403);
     return (
       <main className="mx-auto max-w-[1100px] px-6 py-8">
         <Volver />
         <p className="mt-6 text-sm text-oficina-tenue">
-          🐢 No pude abrir ese expediente. Quizá no existe o no es tuyo.
+          🐢{" "}
+          {noEsTuyo
+            ? "No encontré ese expediente, o no es tuyo."
+            : "No me pude conectar con tu oficina para abrir este expediente. Revisa tu conexión y vuelve a intentarlo."}
         </p>
       </main>
     );

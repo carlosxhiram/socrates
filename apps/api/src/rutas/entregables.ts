@@ -53,6 +53,7 @@ entregablesRouter.get("/:id", async (c) => {
     empleadoRol: res.ent.empleadoRol,
     versionActual: res.ent.versionActual,
     empresa: res.ent.expediente.empresa,
+    expedienteId: res.ent.expedienteId,
     contenido,
   });
 });
