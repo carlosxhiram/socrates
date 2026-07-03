@@ -19,6 +19,7 @@ Respuesta a la revisión adversaria (`readiness/`). Carlos pre-aprobó todas est
 ## Decisiones de afinación 🟡
 
 - **I-1 (mapa de etapas del Expediente):** default propuesto por el Director → `Nuevo → Investigado` (Reporte aprobado) `→ Recomendado` (recomendación de producto aprobada) `→ En acercamiento` (guion/contacto listo) `→ En trámite` (expediente armado) `→ En cierre` (enviado a institución) `→ Colocado`. **Marcado para confirmación de Carlos (sesión de 30 min).**
+- **I-1b (máquina de Etapas — addendum del Director, 2026-07-03):** implementada en código (E2-S7) con dos defaults NUEVOS a confirmar con Carlos junto con I-1: (a) **retroceder** a una Etapa anterior es válido (corregir es honesto; la UI no lo ofrece aún); (b) **Ganado/Perdido no se reabren** por API — corregir un cierre equivocado hoy requiere intervención manual. El prerrequisito implementado es solo `→ Investigado` (Reporte aprobado); los demás gates de I-1 se conectan cuando E4/E5 produzcan esos Entregables.
 - **I-2 (worker):** concurrencia máx **2** generaciones simultáneas (piloto); timeout de Tarea **20 min**; al vencer → `BLOQUEADA` motivo "tiempo de espera excedido".
 - **I-3 (esquema ReporteV1):** Zod, derivado de los reportes reales; vive en `packages/shared/src/reporte/`. Lo produce el PoC antes de E4.
 - **I-5 (export):** `/exportar` usa SIEMPRE la versión más reciente con `aprobado=true`, nunca el borrador editado después.
