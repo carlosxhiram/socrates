@@ -62,13 +62,28 @@ export interface ProductoCatalogo {
 }
 
 /**
+ * Resultado de `generarTexto` (NFR-1: nunca strings-centinela indistinguibles de
+ * texto generado). El caller SIEMPRE debe revisar `ok` antes de usar `texto` —
+ * un fallo nunca se disfraza de contenido real que pueda colarse en un reporte.
+ *
+ * Motivos: `sin_claves` (modo sin claves), `clave_invalida` (la llave existe
+ * pero el Gateway la rechaza — permanente: hay que avisarle a Carlos, NO
+ * reintentar), `fallo_temporal` (red/límites/5xx — reintentar puede servir).
+ * `detalle` es SOLO para logs/diagnóstico: jamás para la superficie del
+ * Asesor ni para el contenido de un Entregable.
+ */
+export type ResultadoGenerarTexto =
+  | { ok: true; texto: string }
+  | { ok: false; motivo: "sin_claves" | "clave_invalida" | "fallo_temporal"; detalle?: string };
+
+/**
  * Wrapper de IA (D-6). En Modo sin claves, `disponible` es false y los empleados
  * caen a su ruta de seed. Toda llamada a IA pasa por aquí (regla §5.5 #4).
  */
 export interface ProveedorIA {
   readonly disponible: boolean;
-  /** Genera texto libre. En modo sin claves lanza o el empleado ni lo llama. */
-  generarTexto(opts: { sistema?: string; prompt: string; modelo?: string }): Promise<string>;
+  /** Genera texto libre. Nunca lanza: los fallos vienen como { ok: false, ... }. */
+  generarTexto(opts: { sistema?: string; prompt: string; modelo?: string }): Promise<ResultadoGenerarTexto>;
 }
 
 /** Contexto de ejecución que el worker arma para cada Empleado. */
