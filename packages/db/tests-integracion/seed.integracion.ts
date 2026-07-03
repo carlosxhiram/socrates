@@ -20,6 +20,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parsearReporteV1 } from "@socrates/shared";
+import type { Prisma } from "../src/generated/client/index.js";
 import { sembrar, prisma } from "../src/seed/seed.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -29,6 +30,13 @@ interface CatalogoJSON {
   instituciones: { id: string; productos: { id: string }[] }[];
 }
 
+/** Alcance demo: todo se cuenta DENTRO de los expedientes sembrados, para no
+ *  dar falso rojo cuando la base de dev tenga además datos reales de trabajo. */
+const EXPEDIENTES_DEMO: Prisma.ExpedienteWhereInput = {
+  empresa: { in: ["Las Aliadas", "Probemedic"] },
+  asesor: { clerkUserId: "demo-asesor" },
+};
+
 async function contarTodo() {
   const [empleados, instituciones, productos, asesores, expedientes, tareas, entregables, versiones, recomendaciones] =
     await Promise.all([
@@ -36,16 +44,29 @@ async function contarTodo() {
       prisma.institucion.count(),
       prisma.producto.count(),
       prisma.asesor.count({ where: { clerkUserId: "demo-asesor" } }),
-      prisma.expediente.count({ where: { empresa: { in: ["Las Aliadas", "Probemedic"] } } }),
-      prisma.tarea.count(),
-      prisma.entregable.count(),
-      prisma.entregableVersion.count(),
-      prisma.recomendacion.count(),
+      prisma.expediente.count({ where: EXPEDIENTES_DEMO }),
+      prisma.tarea.count({ where: { expediente: EXPEDIENTES_DEMO } }),
+      prisma.entregable.count({ where: { expediente: EXPEDIENTES_DEMO } }),
+      prisma.entregableVersion.count({ where: { entregable: { expediente: EXPEDIENTES_DEMO } } }),
+      prisma.recomendacion.count({ where: { version: { entregable: { expediente: EXPEDIENTES_DEMO } } } }),
     ]);
   return { empleados, instituciones, productos, asesores, expedientes, tareas, entregables, versiones, recomendaciones };
 }
 
 before(async () => {
+  // Guardia anti-producción: este test BORRA y resiembra los expedientes demo.
+  // Solo corre contra una base local, salvo override explícito y consciente.
+  if (!process.env.DATABASE_URL) {
+    throw new Error("Falta DATABASE_URL (ver packages/db/.env y README paso 0).");
+  }
+  const url = new URL(process.env.DATABASE_URL);
+  const hostsLocales = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+  if (!hostsLocales.has(url.hostname) && process.env.PERMITIR_BASE_NO_LOCAL !== "1") {
+    throw new Error(
+      `test:integracion se niega a correr contra una base no local (${url.hostname}). ` +
+        "Si de verdad lo necesitas, exporta PERMITIR_BASE_NO_LOCAL=1.",
+    );
+  }
   // Falla honesto y temprano si la base no está disponible/migrada.
   await prisma.$queryRaw`SELECT 1`;
 });
@@ -81,7 +102,11 @@ test("el catálogo sembrado es fiel a catalogo-soc.json — ni una institución/
 test("C-1 en el seed: cero Recomendacion con FK inventada", async () => {
   // El reporte sembrado de Probemedic referencia ids soc_* que aún no existen en
   // el catálogo; la regla C-1 manda NO crear filas Recomendacion para ellos.
-  const recomendaciones = await prisma.recomendacion.count();
+  // (Acotado a los expedientes demo: cuando el producto cree Recomendacion
+  //  legítimas en otros expedientes, este test debe seguir en verde.)
+  const recomendaciones = await prisma.recomendacion.count({
+    where: { version: { entregable: { expediente: EXPEDIENTES_DEMO } } },
+  });
   assert.equal(recomendaciones, 0, "el seed no debe fabricar Recomendacion sin FK real al catálogo");
 });
 

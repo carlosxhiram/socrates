@@ -45,6 +45,11 @@ cargarDotenv(join(RAIZ, ".env"));
 const DB_DEV_POSTGRES = "postgresql://socrates:socrates@localhost:5432/socrates?schema=public";
 const actual = process.env.DATABASE_URL;
 if (!actual) {
+  if (process.env.NODE_ENV === "production") {
+    // En producción la base SIEMPRE viene del entorno (Railway); caer en
+    // silencio a localhost sería un deploy "sano" sin base. Mejor claro y ya.
+    throw new Error("Falta DATABASE_URL en producción (Railway la inyecta; revisa las variables del servicio).");
+  }
   process.env.DATABASE_URL = DB_DEV_POSTGRES;
 } else if (actual.startsWith("file:")) {
   console.warn(

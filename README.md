@@ -37,8 +37,12 @@ corriendo (el entorno de desarrollo en la nube ya lo trae; en una laptop:
 
 ```bash
 # 0. (Solo la primera vez) crear el rol y la base de desarrollo
-psql -U postgres -c "CREATE ROLE socrates LOGIN PASSWORD 'socrates' CREATEDB;" \
-     -c "CREATE DATABASE socrates OWNER socrates;"
+#    Linux (Debian/Ubuntu — el superusuario es el usuario de sistema `postgres`):
+sudo -u postgres psql -c "CREATE ROLE socrates LOGIN PASSWORD 'socrates' CREATEDB;" \
+                      -c "CREATE DATABASE socrates OWNER socrates;"
+#    macOS (Homebrew — el superusuario es tu propio usuario):
+#      psql -d postgres -c "CREATE ROLE socrates LOGIN PASSWORD 'socrates' CREATEDB;" \
+#                       -c "CREATE DATABASE socrates OWNER socrates;"
 
 # 1. Instalar todo
 pnpm install
