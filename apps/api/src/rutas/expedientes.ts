@@ -5,8 +5,8 @@
  * NUNCA del payload. Un recurso ajeno responde 403 en lenguaje de oficina.
  */
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@socrates/db";
+import { validarJson } from "../middleware/validacion.js";
 import {
   CrearExpedienteSchema,
   EditarExpedienteSchema,
@@ -97,7 +97,7 @@ expedientesRouter.get("/", async (c) => {
 });
 
 // ── POST /expedientes — crear (FR-4; nace en PROSPECTO, 0%) ───────────────────
-expedientesRouter.post("/", zValidator("json", CrearExpedienteSchema), async (c) => {
+expedientesRouter.post("/", validarJson(CrearExpedienteSchema), async (c) => {
   const asesorId = c.get("asesorId");
   const datos = c.req.valid("json");
   const creado = await prisma.expediente.create({
@@ -169,7 +169,7 @@ expedientesRouter.get("/:id", async (c) => {
 });
 
 // ── PATCH /expedientes/:id — editar / avanzar Etapa / Ganado-Perdido (FR-4, FR-7) ─
-expedientesRouter.patch("/:id", zValidator("json", EditarExpedienteSchema), async (c) => {
+expedientesRouter.patch("/:id", validarJson(EditarExpedienteSchema), async (c) => {
   const asesorId = c.get("asesorId");
   const id = c.req.param("id");
   const datos = c.req.valid("json");
