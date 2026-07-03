@@ -5,7 +5,7 @@ Fecha: 2026-07-03 · Director de ingeniería: Fable · Fase: auditoría de Direc
 > Resumen de una línea: **el monorepo corre sobre Postgres (dev y prod, paridad
 > total), la máquina de Etapas y los candados de seguridad viven en el servidor
 > bajo tests de integración verdes, La Oficina crea/edita/cierra expedientes
-> desde la UI, y todo el trabajo está en 5+ PRs chicos esperando el visto bueno
+> desde la UI, y todo el trabajo está en 8 PRs chicos esperando el visto bueno
 > de Carlos — sin llaves, sin deploy, sin tocar el catálogo.**
 
 ---
@@ -63,10 +63,10 @@ Fecha: 2026-07-03 · Director de ingeniería: Fable · Fase: auditoría de Direc
 | [#3 Máquina de Etapas (FR-7)](https://github.com/carlosxhiram/socrates/pull/3) | transiciones válidas en el servidor, prerrequisito de Investigado (Reporte APROBADO), Ganado/Perdido manual, terminales cerrados, candado optimista anti-carrera, `progreso` persistido honesto | #1 |
 | [#4 E2 UI](https://github.com/carlosxhiram/socrates/pull/4) | "Nuevo expediente", editar datos del prospecto, Ganado/Perdido con confirmación, errores 409 mostrados tal cual (mensaje de oficina); enlaces solo http(s) | #3 |
 | [#5 Endurecimiento api](https://github.com/carlosxhiram/socrates/pull/5) | candado de producción del modo demo (fail-open cerrado), fail-closed con Clerk parcial, `authorizedParties`, `/health` 503 honesto, contrato de error en español, C-3 con fijado de versión | #3 |
-| #6 La Oficina honesta (en curso) | citas visibles junto a cada cifra del Reporte (NFR-1 en superficie), estados de error veraces (api caída ≠ oficina vacía), error.tsx es-MX, accesibilidad (progressbar/aria/foco), fechas es-MX sin desfase | #4 |
-| #7 Capa de IA activable (en curso) | dependencias del Gateway verificadas contra npm (la ruta documentada probablemente no podía funcionar), contrato `generarTexto` tipado sin strings-centinela (anti-veneno NFR-1) | master |
+| [#7 La Oficina honesta](https://github.com/carlosxhiram/socrates/pull/7) | citas visibles junto a cada cifra del Reporte (NFR-1 en superficie), estados de error veraces (api caída ≠ oficina vacía ≠ archivero degradado), error.tsx es-MX, accesibilidad (progressbar/aria/foco), fechas es-MX sin desfase | #4 |
+| [#8 Capa de IA activable](https://github.com/carlosxhiram/socrates/pull/8) | dependencias del Gateway verificadas contra npm (la ruta documentada NO podía funcionar: provider v1 vs v2), contrato `generarTexto` tipado sin strings-centinela, `clave_invalida` distinguida de fallo temporal | master |
 
-**Orden de merge sugerido:** #1 → #3 → #4 y #5 → #6 · #2 y #7 independientes.
+**Orden de merge sugerido:** #1 → #3 → #4 y #5 → #7 · #2, #8 y #6 (documentación) independientes.
 
 ---
 
