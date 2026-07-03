@@ -3,8 +3,9 @@
  * bandeja de entregables. Lista los entregables y enlaza al visor.
  */
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
-import { obtenerExpediente } from "@/lib/api-client";
+import { obtenerExpediente, ErrorApi } from "@/lib/api-client";
 import {
   EMPLEADOS,
   etiquetaEtapaActual,
@@ -16,25 +17,42 @@ import {
 } from "@socrates/shared";
 import { BarraProgreso } from "@/components/oficina/BarraProgreso";
 import { BarraComando } from "@/components/socrates/BarraComando";
+import { AccionesEtapa } from "@/components/expediente/AccionesEtapa";
+import { DatosProspecto } from "@/components/expediente/DatosProspecto";
 import { fechaCorta } from "@/lib/format-esmx";
 
 export const dynamic = "force-dynamic";
 
-export default async function ExpedientePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+type Parametros = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: Parametros): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const exp = await obtenerExpediente(id);
+    return { title: exp.empresa };
+  } catch {
+    return { title: "Expediente" };
+  }
+}
+
+export default async function ExpedientePage({ params }: Parametros) {
   const { id } = await params;
   let exp;
   try {
     exp = await obtenerExpediente(id);
-  } catch {
+  } catch (err) {
+    // No existe / no es tuyo (404/403) es un problema DISTINTO a no haberme
+    // podido conectar (red caída, tiempo agotado): cada uno pide su propio
+    // mensaje honesto, no un "algo salió mal" genérico.
+    const noEsTuyo = err instanceof ErrorApi && (err.status === 404 || err.status === 403);
     return (
       <main className="mx-auto max-w-[1100px] px-6 py-8">
         <Volver />
         <p className="mt-6 text-sm text-oficina-tenue">
-          🐢 No pude abrir ese expediente. Quizá no existe o no es tuyo.
+          🐢{" "}
+          {noEsTuyo
+            ? "No encontré ese expediente, o no es tuyo."
+            : "No me pude conectar con tu oficina para abrir este expediente. Revisa tu conexión y vuelve a intentarlo."}
         </p>
       </main>
     );
@@ -63,7 +81,28 @@ export default async function ExpedientePage({
           <BarraProgreso progreso={exp.progreso} bloqueado={exp.tieneBloqueo} />
         </div>
         {exp.notas && <p className="mt-3 text-sm text-oficina-texto">{exp.notas}</p>}
+        {exp.motivoCierre && (
+          <p className="mt-2 text-xs text-oficina-tenue">Motivo del cierre: {exp.motivoCierre}</p>
+        )}
+        <div className="mt-4">
+          <AccionesEtapa expedienteId={exp.id} etapa={exp.etapa} />
+        </div>
       </header>
+
+      <div className="mt-6">
+        <DatosProspecto
+          expedienteId={exp.id}
+          datos={{
+            empresa: exp.empresa,
+            ciudad: exp.ciudad,
+            industria: exp.industria,
+            sitioWeb: exp.sitioWeb ?? null,
+            rfc: exp.rfc ?? null,
+            sucursales: exp.sucursales ?? null,
+            notas: exp.notas ?? null,
+          }}
+        />
+      </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         {/* Entregables (bandeja, UX C-4) */}

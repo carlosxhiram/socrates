@@ -53,11 +53,15 @@ entregablesRouter.get("/:id", async (c) => {
     empleadoRol: res.ent.empleadoRol,
     versionActual: res.ent.versionActual,
     empresa: res.ent.expediente.empresa,
+    expedienteId: res.ent.expedienteId,
     contenido,
   });
 });
 
-// ── POST /entregables/:id/aprobar — Gate humano (FR-13, NFR-4) ───────────────
+// ── POST /entregables/:id/aprobar — Gate humano (FR-13, NFR-4, C-3) ──────────
+// Acepta opcionalmente { version }: la versión que el Asesor tenía enfrente.
+// Si el entregable cambió de versión entre que lo abrió y lo aprobó, responde
+// 409 — el gate humano aprueba lo que el humano VIO, no lo que haya ahora.
 entregablesRouter.post("/:id/aprobar", async (c) => {
   const asesorId = c.get("asesorId");
   const id = c.req.param("id");
@@ -69,18 +73,63 @@ entregablesRouter.post("/:id/aprobar", async (c) => {
     return c.json({ error: { codigo: "AJENO", mensaje: "Ese entregable no es tuyo." } }, 403);
   }
 
+  const cuerpo = (await c.req.json().catch(() => ({}))) as { version?: unknown };
+  if (cuerpo.version !== undefined) {
+    if (typeof cuerpo.version !== "number" || !Number.isInteger(cuerpo.version)) {
+      return c.json(
+        { error: { codigo: "DATOS_INVALIDOS", mensaje: "No pude guardar: version: revisa este dato" } },
+        400,
+      );
+    }
+    if (cuerpo.version !== res.ent.versionActual) {
+      return c.json(
+        {
+          error: {
+            codigo: "VERSION_DESFASADA",
+            mensaje: "Este entregable cambió desde que lo abriste; revísalo de nuevo antes de aprobarlo.",
+          },
+        },
+        409,
+      );
+    }
+  }
+
   // Idempotente: aprobar dos veces no crea dos versiones.
   if (res.ent.estado === "APROBADO") {
     return c.json({ id: res.ent.id, estado: "APROBADO", yaEstaba: true });
   }
 
-  await prisma.$transaction([
-    prisma.entregable.update({ where: { id }, data: { estado: "APROBADO" } }),
-    prisma.entregableVersion.updateMany({
+  // Candado optimista: solo aprueba si sigue en BORRADOR y en la MISMA versión
+  // que validamos arriba (una versión nueva en la ventana no se aprueba a ciegas).
+  const aprobado = await prisma.$transaction(async (tx) => {
+    const r = await tx.entregable.updateMany({
+      where: { id, estado: "BORRADOR", versionActual: res.ent.versionActual },
+      data: { estado: "APROBADO" },
+    });
+    if (r.count === 0) return false;
+    await tx.entregableVersion.updateMany({
       where: { entregableId: id, version: res.ent.versionActual },
       data: { aprobado: true },
-    }),
-  ]);
+    });
+    return true;
+  });
+
+  if (!aprobado) {
+    // Pudo ser doble clic (ya APROBADO) o una versión nueva en la ventana.
+    const ahora = await prisma.entregable.findUnique({ where: { id }, select: { estado: true } });
+    if (ahora?.estado === "APROBADO") {
+      return c.json({ id, estado: "APROBADO", yaEstaba: true });
+    }
+    return c.json(
+      {
+        error: {
+          codigo: "VERSION_DESFASADA",
+          mensaje: "Este entregable cambió desde que lo abriste; revísalo de nuevo antes de aprobarlo.",
+        },
+      },
+      409,
+    );
+  }
 
   return c.json({ id, estado: "APROBADO", yaEstaba: false });
 });

@@ -5,12 +5,17 @@
  * NUNCA del payload. Un recurso ajeno responde 403 en lenguaje de oficina.
  */
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
 import { prisma } from "@socrates/db";
+import { validarJson } from "../middleware/validacion.js";
 import {
   CrearExpedienteSchema,
   EditarExpedienteSchema,
   derivarProgreso,
+  evaluarTransicionEtapa,
+  esAvanceLineal,
+  PRERREQUISITO_ETAPA,
+  TIPO_ENTREGABLE_ETIQUETA,
+  ETAPA_ETIQUETA,
   type EstadoTarea,
   type RolEmpleado,
   type EtapaExpediente,
@@ -92,7 +97,7 @@ expedientesRouter.get("/", async (c) => {
 });
 
 // ── POST /expedientes — crear (FR-4; nace en PROSPECTO, 0%) ───────────────────
-expedientesRouter.post("/", zValidator("json", CrearExpedienteSchema), async (c) => {
+expedientesRouter.post("/", validarJson(CrearExpedienteSchema), async (c) => {
   const asesorId = c.get("asesorId");
   const datos = c.req.valid("json");
   const creado = await prisma.expediente.create({
@@ -164,12 +169,15 @@ expedientesRouter.get("/:id", async (c) => {
 });
 
 // ── PATCH /expedientes/:id — editar / avanzar Etapa / Ganado-Perdido (FR-4, FR-7) ─
-expedientesRouter.patch("/:id", zValidator("json", EditarExpedienteSchema), async (c) => {
+expedientesRouter.patch("/:id", validarJson(EditarExpedienteSchema), async (c) => {
   const asesorId = c.get("asesorId");
   const id = c.req.param("id");
   const datos = c.req.valid("json");
 
-  const existente = await prisma.expediente.findUnique({ where: { id } });
+  const existente = await prisma.expediente.findUnique({
+    where: { id },
+    include: { tareas: { select: { estado: true } } },
+  });
   if (!existente) {
     return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré ese expediente." } }, 404);
   }
@@ -177,25 +185,89 @@ expedientesRouter.patch("/:id", zValidator("json", EditarExpedienteSchema), asyn
     return c.json({ error: { codigo: "AJENO", mensaje: "Ese expediente no es tuyo." } }, 403);
   }
 
+  // ── Máquina de Etapas (FR-7, E2-S7): transición válida + prerrequisito ─────
+  const etapaActual = existente.etapa as EtapaExpediente;
   const nuevaEtapa = (datos.etapa ?? existente.etapa) as EtapaExpediente;
-  const actualizado = await prisma.expediente.update({
-    where: { id },
-    data: {
-      ...(datos.empresa !== undefined ? { empresa: datos.empresa } : {}),
-      ...(datos.ciudad !== undefined ? { ciudad: datos.ciudad } : {}),
-      ...(datos.industria !== undefined ? { industria: datos.industria } : {}),
-      ...(datos.sitioWeb !== undefined ? { sitioWeb: datos.sitioWeb || null } : {}),
-      ...(datos.rfc !== undefined ? { rfc: datos.rfc || null } : {}),
-      ...(datos.sucursales !== undefined ? { sucursales: datos.sucursales } : {}),
-      ...(datos.notas !== undefined ? { notas: datos.notas || null } : {}),
-      ...(datos.etapa !== undefined ? { etapa: datos.etapa } : {}),
-      ...(datos.motivoCierre !== undefined ? { motivoCierre: datos.motivoCierre } : {}),
-      progreso: derivarProgreso({ etapa: nuevaEtapa }),
-    },
-    include: {
-      tareas: { select: { empleadoRol: true, estado: true } },
-      entregables: { select: { estado: true } },
-    },
+  if (datos.etapa !== undefined && nuevaEtapa !== etapaActual) {
+    const transicion = evaluarTransicionEtapa(etapaActual, nuevaEtapa);
+    if (!transicion.valida) {
+      return c.json({ error: { codigo: "TRANSICION_INVALIDA", mensaje: transicion.motivo } }, 409);
+    }
+    const prerrequisito = PRERREQUISITO_ETAPA[nuevaEtapa];
+    if (prerrequisito && esAvanceLineal(etapaActual, nuevaEtapa)) {
+      const aprobados = await prisma.entregable.count({
+        where: { expedienteId: id, tipo: prerrequisito, estado: "APROBADO" },
+      });
+      if (aprobados === 0) {
+        return c.json(
+          {
+            error: {
+              codigo: "PRERREQUISITO_FALTANTE",
+              mensaje: `Para pasar a ${ETAPA_ETIQUETA[nuevaEtapa]} falta aprobar: ${TIPO_ENTREGABLE_ETIQUETA[prerrequisito]}.`,
+            },
+          },
+          409,
+        );
+      }
+    }
+  }
+
+  // motivoCierre solo tiene sentido en un expediente cerrado (FR-7, "motivo
+  // opcional"): al quedar en etapa abierta se limpia; al cerrar, se toma el
+  // que venga (o se conserva el ya guardado si el PATCH no lo trae).
+  const quedaCerrado = (["GANADO", "PERDIDO"] as EtapaExpediente[]).includes(nuevaEtapa);
+  const motivoCierre = quedaCerrado
+    ? datos.motivoCierre !== undefined
+      ? datos.motivoCierre.trim() || null
+      : existente.motivoCierre
+    : null;
+
+  // Candado optimista por etapa: si otro PATCH cambió la etapa entre nuestra
+  // lectura y esta escritura, no se aplica nada (la máquina no se brinca por
+  // carrera). El progreso se deriva DENTRO de la transacción con las Tareas
+  // frescas — nunca inflado, nunca viejo (E2-S6).
+  const actualizado = await prisma.$transaction(async (tx) => {
+    const guardado = await tx.expediente.updateMany({
+      where: { id, asesorId, etapa: etapaActual },
+      data: {
+        ...(datos.empresa !== undefined ? { empresa: datos.empresa } : {}),
+        ...(datos.ciudad !== undefined ? { ciudad: datos.ciudad } : {}),
+        ...(datos.industria !== undefined ? { industria: datos.industria } : {}),
+        ...(datos.sitioWeb !== undefined ? { sitioWeb: datos.sitioWeb || null } : {}),
+        ...(datos.rfc !== undefined ? { rfc: datos.rfc || null } : {}),
+        ...(datos.sucursales !== undefined ? { sucursales: datos.sucursales } : {}),
+        ...(datos.notas !== undefined ? { notas: datos.notas || null } : {}),
+        ...(datos.etapa !== undefined ? { etapa: datos.etapa } : {}),
+        motivoCierre,
+      },
+    });
+    if (guardado.count === 0) return null;
+
+    const fresco = await tx.expediente.findUniqueOrThrow({
+      where: { id },
+      include: { tareas: { select: { estado: true } } },
+    });
+    return tx.expediente.update({
+      where: { id },
+      data: {
+        progreso: derivarProgreso({
+          etapa: fresco.etapa as EtapaExpediente,
+          tareasTotales: fresco.tareas.length,
+          tareasEntregadas: fresco.tareas.filter((t) => t.estado === "ENTREGADA").length,
+        }),
+      },
+      include: {
+        tareas: { select: { empleadoRol: true, estado: true } },
+        entregables: { select: { estado: true } },
+      },
+    });
   });
+
+  if (!actualizado) {
+    return c.json(
+      { error: { codigo: "CONFLICTO", mensaje: "El expediente cambió mientras guardabas; recárgalo e inténtalo de nuevo." } },
+      409,
+    );
+  }
   return c.json(aResumen(actualizado));
 });
