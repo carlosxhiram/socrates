@@ -1,7 +1,7 @@
 /**
  * index.ts — el servidor Hono de Sócrates (api en Railway, long-running).
  *
- * La app vive en app.ts (probable en proceso); aquí solo se levanta el puerto.
+ * La app vive en app.ts (testeable en proceso); aquí solo se levanta el puerto.
  * Lee process.env.PORT (Railway lo inyecta; en local default 8787).
  * Arranca SIN claves (Modo sin claves / asesor demo) — NFR-11.
  */

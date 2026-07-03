@@ -59,7 +59,7 @@ test("retroceder a una Etapa anterior es válido (corregir es honesto)", () => {
 });
 
 test("el mapa de prerrequisitos solo exige lo que el producto ya sabe producir", () => {
-  // Default afinable con Carlos (PRD §8 Q-2): entrar a INVESTIGADO exige el
+  // Default afinable con Carlos (decisiones-bloqueantes I-1): entrar a INVESTIGADO exige el
   // Reporte de Inteligencia APROBADO. Las demás etapas aún no tienen
   // Entregable prerrequisito (llegan con E4/E5).
   assert.equal(PRERREQUISITO_ETAPA.INVESTIGADO, "reporte_inteligencia");

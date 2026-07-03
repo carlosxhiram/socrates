@@ -18,13 +18,23 @@ import { app } from "../src/app.js";
 import { prisma } from "@socrates/db";
 import { derivarProgreso } from "@socrates/shared";
 
+/** Marcador estable: permite barrer huérfanos de corridas matadas a medias. */
+const EMPRESA_PRUEBA = "Prueba Máquina Etapas";
+
 const creados: string[] = [];
+
+async function limpiarPruebas() {
+  await prisma.entregableVersion.deleteMany({ where: { entregable: { expediente: { empresa: EMPRESA_PRUEBA } } } });
+  await prisma.entregable.deleteMany({ where: { expediente: { empresa: EMPRESA_PRUEBA } } });
+  await prisma.tarea.deleteMany({ where: { expediente: { empresa: EMPRESA_PRUEBA } } });
+  await prisma.expediente.deleteMany({ where: { empresa: EMPRESA_PRUEBA } });
+}
 
 async function crearExpediente(): Promise<string> {
   const res = await app.request("/expedientes", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ empresa: "Prueba Máquina Etapas", ciudad: "Monterrey", industria: "Pruebas" }),
+    body: JSON.stringify({ empresa: EMPRESA_PRUEBA, ciudad: "Monterrey", industria: "Pruebas" }),
   });
   assert.equal(res.status, 201);
   const body = (await res.json()) as { id: string; etapa: string; progreso: number };
@@ -48,13 +58,11 @@ before(async () => {
     throw new Error(`test:integracion se niega a correr contra una base no local (${url.hostname}).`);
   }
   await prisma.$queryRaw`SELECT 1`;
+  await limpiarPruebas(); // barre huérfanos de corridas anteriores matadas a medias
 });
 
 after(async () => {
-  await prisma.entregableVersion.deleteMany({ where: { entregable: { expedienteId: { in: creados } } } });
-  await prisma.entregable.deleteMany({ where: { expedienteId: { in: creados } } });
-  await prisma.tarea.deleteMany({ where: { expedienteId: { in: creados } } });
-  await prisma.expediente.deleteMany({ where: { id: { in: creados } } });
+  await limpiarPruebas();
   await prisma.$disconnect();
 });
 
@@ -108,6 +116,25 @@ test("Ganado manual con motivo funciona desde PROSPECTO; el terminal no se reabr
 
   const reabrir = await patchEtapa(id, { etapa: "PROSPECTO" });
   assert.equal(reabrir.status, 409);
+});
+
+test("Perdido SIN motivo responde 200 y el motivo queda null (FR-7: motivo opcional)", async () => {
+  const id = await crearExpediente();
+  const res = await patchEtapa(id, { etapa: "PERDIDO" });
+  assert.equal(res.status, 200);
+  const enBD = await prisma.expediente.findUniqueOrThrow({ where: { id } });
+  assert.equal(enBD.etapa, "PERDIDO");
+  assert.equal(enBD.progreso, 0);
+  assert.equal(enBD.motivoCierre, null);
+});
+
+test("motivoCierre en un expediente ABIERTO no se persiste como basura", async () => {
+  const id = await crearExpediente();
+  const res = await patchEtapa(id, { motivoCierre: "texto que no corresponde" });
+  assert.equal(res.status, 200);
+  const enBD = await prisma.expediente.findUniqueOrThrow({ where: { id } });
+  assert.equal(enBD.etapa, "PROSPECTO");
+  assert.equal(enBD.motivoCierre, null, "un expediente abierto no debe cargar motivo de cierre");
 });
 
 test("editar datos SIN tocar la etapa no dispara validación de transición", async () => {
