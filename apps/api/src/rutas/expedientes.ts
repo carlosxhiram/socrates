@@ -11,6 +11,11 @@ import {
   CrearExpedienteSchema,
   EditarExpedienteSchema,
   derivarProgreso,
+  evaluarTransicionEtapa,
+  esAvanceLineal,
+  PRERREQUISITO_ETAPA,
+  TIPO_ENTREGABLE_ETIQUETA,
+  ETAPA_ETIQUETA,
   type EstadoTarea,
   type RolEmpleado,
   type EtapaExpediente,
@@ -169,7 +174,10 @@ expedientesRouter.patch("/:id", zValidator("json", EditarExpedienteSchema), asyn
   const id = c.req.param("id");
   const datos = c.req.valid("json");
 
-  const existente = await prisma.expediente.findUnique({ where: { id } });
+  const existente = await prisma.expediente.findUnique({
+    where: { id },
+    include: { tareas: { select: { estado: true } } },
+  });
   if (!existente) {
     return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré ese expediente." } }, 404);
   }
@@ -177,7 +185,37 @@ expedientesRouter.patch("/:id", zValidator("json", EditarExpedienteSchema), asyn
     return c.json({ error: { codigo: "AJENO", mensaje: "Ese expediente no es tuyo." } }, 403);
   }
 
+  // ── Máquina de Etapas (FR-7, E2-S7): transición válida + prerrequisito ─────
+  const etapaActual = existente.etapa as EtapaExpediente;
   const nuevaEtapa = (datos.etapa ?? existente.etapa) as EtapaExpediente;
+  if (datos.etapa !== undefined && nuevaEtapa !== etapaActual) {
+    const transicion = evaluarTransicionEtapa(etapaActual, nuevaEtapa);
+    if (!transicion.valida) {
+      return c.json({ error: { codigo: "TRANSICION_INVALIDA", mensaje: transicion.motivo } }, 409);
+    }
+    const prerrequisito = PRERREQUISITO_ETAPA[nuevaEtapa];
+    if (prerrequisito && esAvanceLineal(etapaActual, nuevaEtapa)) {
+      const aprobados = await prisma.entregable.count({
+        where: { expedienteId: id, tipo: prerrequisito, estado: "APROBADO" },
+      });
+      if (aprobados === 0) {
+        return c.json(
+          {
+            error: {
+              codigo: "PRERREQUISITO_FALTANTE",
+              mensaje: `Para pasar a ${ETAPA_ETIQUETA[nuevaEtapa]} falta aprobar: ${TIPO_ENTREGABLE_ETIQUETA[prerrequisito]}.`,
+            },
+          },
+          409,
+        );
+      }
+    }
+  }
+
+  // Progreso honesto: derivado con las Tareas reales, nunca inflado (E2-S6).
+  const tareasTotales = existente.tareas.length;
+  const tareasEntregadas = existente.tareas.filter((t) => t.estado === "ENTREGADA").length;
+
   const actualizado = await prisma.expediente.update({
     where: { id },
     data: {
@@ -190,7 +228,7 @@ expedientesRouter.patch("/:id", zValidator("json", EditarExpedienteSchema), asyn
       ...(datos.notas !== undefined ? { notas: datos.notas || null } : {}),
       ...(datos.etapa !== undefined ? { etapa: datos.etapa } : {}),
       ...(datos.motivoCierre !== undefined ? { motivoCierre: datos.motivoCierre } : {}),
-      progreso: derivarProgreso({ etapa: nuevaEtapa }),
+      progreso: derivarProgreso({ etapa: nuevaEtapa, tareasTotales, tareasEntregadas }),
     },
     include: {
       tareas: { select: { empleadoRol: true, estado: true } },

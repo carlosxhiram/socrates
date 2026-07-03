@@ -18,7 +18,7 @@
     "db:deploy": "pnpm --filter @socrates/db prisma:deploy",
     "db:seed": "pnpm --filter @socrates/db seed",
     "db:reset": "pnpm --filter @socrates/db prisma:reset",
-    "test:integracion": "pnpm --filter @socrates/db test:integracion"
+    "test:integracion": "pnpm --filter @socrates/db test:integracion && pnpm --filter @socrates/api test:integracion"
   },
   "devDependencies": {
     "turbo": "^2.5.5",

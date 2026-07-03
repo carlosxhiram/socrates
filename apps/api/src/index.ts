@@ -1,67 +1,14 @@
 /**
  * index.ts — el servidor Hono de Sócrates (api en Railway, long-running).
  *
- * Orden de middleware (arquitectura §6.1): CORS → Auth → Validación (por ruta) →
- * Errores. Rutas públicas (GET /health) se montan ANTES del Auth.
- *
+ * La app vive en app.ts (probable en proceso); aquí solo se levanta el puerto.
  * Lee process.env.PORT (Railway lo inyecta; en local default 8787).
  * Arranca SIN claves (Modo sin claves / asesor demo) — NFR-11.
  */
-import "./env.js"; // ⬅ DEBE ir primero: configura DATABASE_URL antes de cargar la BD.
-import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
-import { prisma } from "@socrates/db";
-import { authMiddleware, type AuthedVars } from "./middleware/auth.js";
-import { manejadorErrores } from "./middleware/errors.js";
-import { expedientesRouter } from "./rutas/expedientes.js";
-import { empleadosRouter } from "./rutas/empleados.js";
-import { catalogoRouter } from "./rutas/catalogo.js";
-import { entregablesRouter } from "./rutas/entregables.js";
+import { app } from "./app.js";
 import { esModoSinClaves } from "./ia/proveedor-ia.js";
-import { crearProveedorBusqueda } from "./busqueda/proveedor-busqueda.js";
 import { crearAlmacenR2 } from "./storage/r2-client.js";
-
-const app = new Hono<{ Variables: AuthedVars }>();
-
-app.onError(manejadorErrores);
-
-// ── CORS (origen de web permitido) ───────────────────────────────────────────
-const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:3000";
-app.use(
-  "*",
-  cors({
-    origin: webOrigin,
-    allowHeaders: ["Authorization", "Content-Type"],
-    allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  }),
-);
-
-// ── Salud (pública, DB-aware) ────────────────────────────────────────────────
-app.get("/health", async (c) => {
-  let db = "ok";
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-  } catch {
-    db = "error";
-  }
-  return c.json({
-    estado: "vivo",
-    db,
-    modoSinClavesIA: esModoSinClaves(),
-    busqueda: crearProveedorBusqueda().nombre,
-    almacenamiento: crearAlmacenR2().disponible ? "configurado" : "modo-sin-claves",
-  });
-});
-
-// ── Auth (todo lo demás requiere identidad) ──────────────────────────────────
-app.use("*", authMiddleware);
-
-// ── Rutas ────────────────────────────────────────────────────────────────────
-app.route("/expedientes", expedientesRouter);
-app.route("/empleados", empleadosRouter);
-app.route("/catalogo", catalogoRouter);
-app.route("/entregables", entregablesRouter);
 
 const port = Number(process.env.PORT ?? 8787);
 
