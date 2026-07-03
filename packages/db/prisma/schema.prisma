@@ -1,16 +1,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Sócrates — esquema de datos. La ESPINA es el Expediente.
 //
-// DESARROLLO: SQLite (corre sin Docker). PRODUCCIÓN: Postgres en Railway.
-//   Para migrar a Postgres en prod, cambiar provider a "postgresql" y la
-//   DATABASE_URL a la cadena interna de Railway. Los enums del dominio se
-//   modelan como String (SQLite no tiene enums nativos); los valores válidos
-//   los garantiza la capa de aplicación vía @socrates/shared/glosario.
-//   El contenido del Reporte (JSONB en Postgres) se guarda como String (JSON
-//   serializado) en SQLite — el mismo helper parsea en ambos.
+// POSTGRES en desarrollo Y en producción (arquitectura §7): el entorno de
+//   desarrollo trae Postgres local (rol/base `socrates`; ver README) y
+//   producción es Postgres en Railway — misma base, cero sorpresas de paridad.
+//   Los enums del dominio se modelan como String; los valores válidos los
+//   garantiza la capa de aplicación vía @socrates/shared/glosario (pasar a
+//   enums nativos de Postgres es una migración hacia adelante cuando convenga).
+//   El contenido del Reporte se guarda como String (JSON serializado); pasar a
+//   JSONB es igualmente una migración futura, no un requisito de hoy.
 //
 // Doctrina de migraciones (Director): cartas ya enviadas. Se corrige hacia
-// adelante; jamás se reescribe el historial.
+// adelante; jamás se reescribe el historial. (La migración inicial se re-cortó
+// de SQLite a Postgres el 2026-07-03, ANTES de cualquier base compartida o de
+// producción — ninguna carta se había enviado aún.)
 // ─────────────────────────────────────────────────────────────────────────────
 
 generator client {
@@ -19,7 +22,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

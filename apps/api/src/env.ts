@@ -2,16 +2,17 @@
  * env.ts — bootstrap de entorno (debe importarse ANTES que el cliente de BD).
  *
  * 1) Carga el `.env` de la raíz del monorepo si existe (dev local).
- * 2) Si DATABASE_URL falta o es una ruta SQLite RELATIVA, la resuelve a la ruta
- *    ABSOLUTA del dev.db de packages/db — así `pnpm --filter api dev` corre sin
- *    configurar nada (la api abre el SQLite desde cualquier cwd).
+ * 2) Si DATABASE_URL falta, usa el Postgres local de desarrollo (rol/base
+ *    `socrates`, ver README) — así `pnpm --filter api dev` corre sin configurar
+ *    nada. Si viene una URL `file:` (SQLite de antes del cambio a Postgres),
+ *    avisa y usa el default: el esquema ya no es SQLite.
  *
  * En producción (Railway/Postgres) DATABASE_URL siempre viene del entorno y este
  * archivo no la toca.
  */
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join, resolve, isAbsolute } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // apps/api/src → raíz del monorepo
@@ -40,14 +41,15 @@ function cargarDotenv(ruta: string) {
 // 1) .env de la raíz
 cargarDotenv(join(RAIZ, ".env"));
 
-// 2) DATABASE_URL: default SQLite absoluto si falta o es relativo.
-const DB_DEV_ABS = `file:${join(RAIZ, "packages", "db", "prisma", "dev.db")}`;
+// 2) DATABASE_URL: default al Postgres local de desarrollo si falta.
+const DB_DEV_POSTGRES = "postgresql://socrates:socrates@localhost:5432/socrates?schema=public";
 const actual = process.env.DATABASE_URL;
 if (!actual) {
-  process.env.DATABASE_URL = DB_DEV_ABS;
+  process.env.DATABASE_URL = DB_DEV_POSTGRES;
 } else if (actual.startsWith("file:")) {
-  const ruta = actual.slice("file:".length);
-  if (!isAbsolute(ruta)) {
-    process.env.DATABASE_URL = `file:${resolve(RAIZ, "packages", "db", "prisma", ruta.replace(/^\.\//, ""))}`;
-  }
+  console.warn(
+    "[env] DATABASE_URL apunta a SQLite (file:...), pero el esquema es Postgres desde 2026-07-03. " +
+      "Usando el Postgres local de desarrollo; actualiza tu .env (ver .env.example).",
+  );
+  process.env.DATABASE_URL = DB_DEV_POSTGRES;
 }

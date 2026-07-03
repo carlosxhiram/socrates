@@ -22,24 +22,30 @@ socrates/
 │   └── api/        Hono (servicio long-running) — el cerebro + wrappers
 ├── packages/
 │   ├── shared/     tipos y contratos (glosario, contrato de Empleado, ReporteV1, DTOs)
-│   └── db/         Prisma (SQLite en dev) + seed realista (Las Aliadas, Probemedic)
+│   └── db/         Prisma (Postgres) + seed realista (Las Aliadas, Probemedic)
 ├── turbo.json      pipeline (build / dev / typecheck / test / lint)
 └── .env.example    plantilla de TODAS las llaves que Carlos debe pegar
 ```
 
 ---
 
-## Cómo correr (en tu máquina, sin Docker, sin llaves)
+## Cómo correr (sin Docker, sin llaves)
 
-Todo se corre con `pnpm` desde la raíz. (Amelia corre estos comandos por ti.)
+Todo se corre con `pnpm` desde la raíz. Único requisito local: **Postgres**
+corriendo (el entorno de desarrollo en la nube ya lo trae; en una laptop:
+`brew install postgresql@16` o el instalador oficial — sin Docker).
 
 ```bash
+# 0. (Solo la primera vez) crear el rol y la base de desarrollo
+psql -U postgres -c "CREATE ROLE socrates LOGIN PASSWORD 'socrates' CREATEDB;" \
+     -c "CREATE DATABASE socrates OWNER socrates;"
+
 # 1. Instalar todo
 pnpm install
 
-# 2. Preparar la base de datos local (SQLite) y sembrar los datos demo
+# 2. Preparar la base de datos y sembrar los datos demo
 pnpm db:generate     # genera el cliente de Prisma
-pnpm db:migrate      # crea las tablas (SQLite: packages/db/prisma/dev.db)
+pnpm db:deploy       # aplica las migraciones (Postgres local)
 pnpm db:seed         # siembra: 6 empleados, catálogo SOC, Las Aliadas y Probemedic
 
 # 3. Encender los dos servicios (en dos terminales, o en segundo plano)
@@ -50,8 +56,9 @@ pnpm --filter @socrates/web dev    # La Oficina  → http://localhost:3000
 Abre **http://localhost:3000** → te lleva a **La Oficina** con los dos expedientes
 sembrados, el panel "Tu equipo", las barras de progreso y la barra de Sócrates.
 
-> **Nota:** `pnpm db:migrate` ya ejecuta el seed automáticamente al final. El
-> paso 2 completo solo es necesario la primera vez (o tras `pnpm db:reset`).
+> **Nota:** el paso 2 completo solo es necesario la primera vez (o tras
+> `pnpm db:reset`). `pnpm db:migrate` (migrate dev, para crear migraciones
+> nuevas) también ejecuta el seed automáticamente al final.
 
 ### Verificación rápida (que todo prendió)
 
@@ -68,8 +75,9 @@ curl http://localhost:8787/expedientes   # → los 2 expedientes sembrados
 |---|---|
 | `pnpm build` | Construye los 4 paquetes (build de producción) |
 | `pnpm typecheck` | Verifica tipos en todo el monorepo |
-| `pnpm test` | Corre los tests co-locados |
-| `pnpm db:reset` | Borra y resiembra la base local (SQLite) |
+| `pnpm test` | Corre los tests co-locados (unitarios, sin base) |
+| `pnpm test:integracion` | Corre los tests de integración contra la base real |
+| `pnpm db:reset` | Borra y resiembra la base local (Postgres) |
 | `pnpm --filter @socrates/web dev` | Solo La Oficina |
 | `pnpm --filter @socrates/api dev` | Solo el cerebro |
 
@@ -88,19 +96,20 @@ Cuando pegues las llaves (ver `.env.example`), cada pieza se enciende sola.
 
 ---
 
-## Base de datos: SQLite en dev, Postgres en producción
+## Base de datos: Postgres en desarrollo y en producción
 
-- **Desarrollo:** SQLite local en `packages/db/prisma/dev.db` — corre **sin Docker**.
-- **Producción:** Postgres en Railway. Para migrar, se cambia el `provider` del
-  esquema a `postgresql` y la `DATABASE_URL` a la cadena de Railway (los enums se
-  guardan como texto, validados por la capa de aplicación; el contenido del
-  reporte como JSON — el mismo código sirve para ambos).
+- **Desarrollo:** Postgres local (rol/base `socrates`, ver "Cómo correr") —
+  **sin Docker**; misma base que producción, cero sorpresas de paridad.
+- **Producción:** Postgres en Railway; solo cambia la `DATABASE_URL` a la cadena
+  interna de Railway. Los enums se guardan como texto, validados por la capa de
+  aplicación (`@socrates/shared/glosario`); el contenido del reporte como JSON
+  serializado — pasar a enums nativos/JSONB queda como migración hacia adelante.
 
 ---
 
 ## Stack
 
-Next.js 15 (App Router) · Hono · Prisma · SQLite (dev) / Postgres (prod) ·
+Next.js 15 (App Router) · Hono · Prisma · Postgres ·
 Clerk (auth) · Vercel AI Gateway + AI SDK (IA) · Tavily (búsqueda) ·
 Cloudflare R2 (PDFs) · pnpm + Turborepo · TypeScript end-to-end · español en
 toda la superficie.
