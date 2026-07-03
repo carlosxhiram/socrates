@@ -13,6 +13,7 @@ import { ArrowLeft } from "lucide-react";
 import { obtenerEntregable, ErrorApi } from "@/lib/api-client";
 import {
   TIPO_ENTREGABLE_ETIQUETA,
+  ReporteV1Schema,
   type TipoEntregable,
   type ReporteV1,
   type Respaldo,
@@ -66,7 +67,26 @@ export default async function EntregablePage({ params }: Parametros) {
     );
   }
 
-  const reporte = ent.contenido as ReporteV1 | null;
+  // El visor de E1 solo sabe leer el subtipo "Reporte de Inteligencia" (P-3).
+  // Nunca se castea el JSONB a ciegas: se valida contra el esquema Zod real
+  // antes de tocarlo, así un entregable de otro tipo/forma nunca revienta el
+  // recorrido de citas — se avisa con honestidad, no con un 500 (NFR-1/NFR-11).
+  let reporte: ReporteV1 | null = null;
+  let avisoContenido: string | null = null;
+
+  if (ent.tipo !== "reporte_inteligencia") {
+    avisoContenido =
+      "Este tipo de entregable todavía no se puede mostrar aquí; pídemelo de nuevo más tarde.";
+  } else if (ent.contenido != null) {
+    const parseado = ReporteV1Schema.safeParse(ent.contenido);
+    if (parseado.success) {
+      reporte = parseado.data;
+    } else {
+      avisoContenido =
+        "El contenido de este entregable no se pudo leer completo; el equipo lo va a revisar.";
+    }
+  }
+
   const registro = reporte ? construirRegistroFuentes(reporte) : null;
 
   return (
@@ -106,6 +126,8 @@ export default async function EntregablePage({ params }: Parametros) {
             </p>
           </header>
 
+          {reporte.indice.length > 0 && <IndiceSeccion indice={reporte.indice} />}
+
           {reporte.cartaEjecutiva && <CartaEjecutivaSeccion carta={reporte.cartaEjecutiva} />}
 
           <ResumenEjecutivoSeccion resumen={reporte.resumenEjecutivo} registro={registro} />
@@ -136,7 +158,7 @@ export default async function EntregablePage({ params }: Parametros) {
         </article>
       ) : (
         <p className="mt-4 rounded-xl border border-oficina-borde bg-oficina-panel p-6 text-sm text-oficina-tenue">
-          Este entregable todavía no tiene contenido para mostrar.
+          {avisoContenido ?? "Este entregable todavía no tiene contenido para mostrar."}
         </p>
       )}
     </main>
@@ -175,6 +197,12 @@ function SubTitulo({ children }: { children: React.ReactNode }) {
 // REGISTRO DE FUENTES — recorre TODO el reporte una vez y numera cada fuente
 // citada (C-2). Cada afirmación con cifras enlaza aquí; nada se muestra sin
 // poder abrir su respaldo.
+//
+// El registro NUMERADO solo contiene fuentes que el cuerpo realmente enlaza
+// (citas inline, incluidas las `fuentesBase` de una estimación). La
+// bibliografía consolidada del reporte (§XI, `reporte.fuentes`) puede traer
+// entradas generales que nunca se citaron puntualmente — esas se listan aparte
+// como "Bibliografía adicional", sin robarle números a lo que sí está citado.
 // ════════════════════════════════════════════════════════════════════════════
 
 interface FuenteRegistrada {
@@ -183,16 +211,22 @@ interface FuenteRegistrada {
 }
 
 interface RegistroFuentes {
-  /** Registra (o reutiliza) una fuente y devuelve su número estable. */
+  /** Registra (o reutiliza) una fuente citada en el cuerpo y devuelve su número estable. */
   obtener(fuente: Fuente): FuenteRegistrada;
-  /** La bibliografía completa, en orden de aparición. */
-  lista(): FuenteRegistrada[];
+  /** Las fuentes citadas desde el cuerpo, numeradas, en orden de aparición. */
+  citadas(): FuenteRegistrada[];
+  /** Entradas de `reporte.fuentes` que ninguna cita del cuerpo enlazó. */
+  bibliografiaAdicional(): Fuente[];
 }
 
+/** Clave de deduplicación: la URL si existe (una fuente web es la misma fuente
+ * sin importar cómo se describió cada vez que se citó); si no, el título
+ * normalizado (minúsculas, espacios de sobra colapsados). Periodo/documento/
+ * editor pueden variar entre citas de la MISMA fuente y ya no fragmentan el
+ * registro en entradas duplicadas. */
 function claveFuente(f: Fuente): string {
-  return [f.titulo.trim().toLowerCase(), f.url ?? "", f.periodo ?? "", f.documento ?? "", f.editor ?? ""].join(
-    "|",
-  );
+  if (f.url) return f.url.trim().toLowerCase();
+  return f.titulo.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function construirRegistroFuentes(reporte: ReporteV1): RegistroFuentes {
@@ -247,13 +281,25 @@ function construirRegistroFuentes(reporte: ReporteV1): RegistroFuentes {
 
   reporte.secciones.forEach(visitarSeccion);
 
-  // Bibliografía consolidada declarada en el reporte: puede traer fuentes
-  // generales no ancladas a una afirmación puntual del cuerpo.
-  reporte.fuentes.forEach(registrar);
+  // A esta altura `mapa` ya tiene TODO lo que el cuerpo citó (y solo eso). La
+  // bibliografía consolidada del reporte (§XI) se compara contra ese registro
+  // sin tocarlo: lo ya citado no se vuelve a numerar (evita duplicados como
+  // "CONDUSEF" apareciendo dos veces con periodos ligeramente distintos); lo
+  // que nunca se citó puntualmente se separa aparte, también deduplicado por
+  // la misma clave.
+  const bibliografiaAdicional: Fuente[] = [];
+  const vistasEnBibliografia = new Set<string>();
+  for (const f of reporte.fuentes) {
+    const clave = claveFuente(f);
+    if (mapa.has(clave) || vistasEnBibliografia.has(clave)) continue;
+    vistasEnBibliografia.add(clave);
+    bibliografiaAdicional.push(f);
+  }
 
   return {
     obtener: registrar,
-    lista: () => Array.from(mapa.values()).sort((a, b) => a.n - b.n),
+    citadas: () => Array.from(mapa.values()).sort((a, b) => a.n - b.n),
+    bibliografiaAdicional: () => bibliografiaAdicional,
   };
 }
 
@@ -270,36 +316,46 @@ function esUrlSegura(url: string | undefined): url is string {
 // Fuentes, o etiqueta de estimación/brecha cuando no hay fuente que abrir).
 // ════════════════════════════════════════════════════════════════════════════
 
+/** El enlace numerado "[n]" hacia Fuentes — lo único que hace que una fuente
+ * cuente como "citada desde el cuerpo" (ver RegistroFuentes). */
+function EnlaceFuente({ fuente, registro }: { fuente: Fuente; registro: RegistroFuentes }) {
+  const { n } = registro.obtener(fuente);
+  return (
+    <a
+      href={`#fuente-${n}`}
+      title={tituloFuente(fuente)}
+      aria-label={`Ver fuente ${n}: ${tituloFuente(fuente)}`}
+      className="rounded-sm px-px text-marca hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-marca"
+    >
+      [{n}]
+    </a>
+  );
+}
+
 function CitaRespaldo({ respaldo, registro }: { respaldo: Respaldo; registro: RegistroFuentes }) {
   if (respaldo.tipo === "fuente") {
     return (
-      <sup className="ml-0.5 whitespace-nowrap text-[0.7em] font-semibold leading-none text-marca">
-        {respaldo.fuentes.map((f, i) => {
-          const { n } = registro.obtener(f);
-          return (
-            <a
-              key={i}
-              href={`#fuente-${n}`}
-              title={tituloFuente(f)}
-              aria-label={`Ver fuente ${n}: ${tituloFuente(f)}`}
-              className="rounded-sm px-px hover:underline focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-marca"
-            >
-              [{n}]
-            </a>
-          );
-        })}
+      <sup className="ml-0.5 whitespace-nowrap text-[0.7em] font-semibold leading-none">
+        {respaldo.fuentes.map((f, i) => (
+          <EnlaceFuente key={i} fuente={f} registro={registro} />
+        ))}
       </sup>
     );
   }
   if (respaldo.tipo === "estimacion") {
     return (
-      <sup
-        tabIndex={0}
-        title={`Estimación: ${respaldo.metodo}`}
-        aria-label={`Cifra estimada por el asesor: ${respaldo.metodo}`}
-        className="ml-0.5 cursor-help whitespace-nowrap rounded-sm text-[0.7em] font-semibold leading-none text-oficina-tenue focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-marca"
-      >
-        [estimado]
+      <sup className="ml-0.5 whitespace-nowrap text-[0.7em] font-semibold leading-none">
+        <span
+          tabIndex={0}
+          title={`Estimación: ${respaldo.metodo}`}
+          aria-label={`Cifra estimada por el asesor: ${respaldo.metodo}`}
+          className="cursor-help rounded-sm text-oficina-tenue focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-marca"
+        >
+          [estimado]
+        </span>
+        {respaldo.fuentesBase.map((f, i) => (
+          <EnlaceFuente key={i} fuente={f} registro={registro} />
+        ))}
       </sup>
     );
   }
@@ -475,6 +531,22 @@ function SeccionCuerpoView({ seccion, registro }: { seccion: SeccionCuerpo; regi
 // ════════════════════════════════════════════════════════════════════════════
 // CARTA EJECUTIVA · RESUMEN EJECUTIVO · PERFIL DEL CLIENTE (FODA)
 // ════════════════════════════════════════════════════════════════════════════
+
+/** Navegación del reporte ("Contenido del Reporte", I–XI de Probemedic). El
+ * índice no siempre corresponde 1:1 con las secciones del cuerpo (el Resumen
+ * Ejecutivo, las Brechas y las Fuentes son campos propios, no `secciones`),
+ * así que se muestra como lista simple — sin inventar anclas que no existen. */
+function IndiceSeccion({ indice }: { indice: string[] }) {
+  return (
+    <Seccion titulo="Contenido del Reporte">
+      <ul className="ml-4 list-disc space-y-1 text-sm text-oficina-texto">
+        {indice.map((item, i) => (
+          <li key={i}>{item}</li>
+        ))}
+      </ul>
+    </Seccion>
+  );
+}
 
 function CartaEjecutivaSeccion({ carta }: { carta: CartaEjecutiva }) {
   return (
@@ -680,32 +752,62 @@ function IndiceCoberturaSeccion({ indice }: { indice: IndiceCobertura }) {
   );
 }
 
+/** El texto de una fuente (link si trae URL segura, editor/documento/periodo
+ * detrás) — se usa tanto para las citadas numeradas como la bibliografía
+ * adicional, así ambas listas se ven consistentes. */
+function FuenteLinea({ fuente }: { fuente: Fuente }) {
+  return (
+    <>
+      {esUrlSegura(fuente.url) ? (
+        <a
+          href={fuente.url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="font-medium text-marca hover:underline"
+        >
+          {fuente.titulo}
+        </a>
+      ) : (
+        <span className="font-medium text-oficina-texto">{fuente.titulo}</span>
+      )}
+      {fuente.editor ? ` — ${fuente.editor}` : ""}
+      {fuente.documento ? ` — ${fuente.documento}` : ""}
+      {fuente.periodo ? ` (${fuente.periodo})` : ""}
+    </>
+  );
+}
+
 function FuentesSeccion({ registro }: { registro: RegistroFuentes }) {
-  const lista = registro.lista();
-  if (lista.length === 0) return null;
+  const citadas = registro.citadas();
+  const adicionales = registro.bibliografiaAdicional();
+  if (citadas.length === 0 && adicionales.length === 0) return null;
   return (
     <Seccion titulo="Fuentes">
-      <ol className="ml-4 list-decimal space-y-1.5 text-xs text-oficina-tenue">
-        {lista.map(({ n, fuente }) => (
-          <li key={n} id={`fuente-${n}`} className="scroll-mt-6">
-            {esUrlSegura(fuente.url) ? (
-              <a
-                href={fuente.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="font-medium text-marca hover:underline"
-              >
-                {fuente.titulo}
-              </a>
-            ) : (
-              <span className="font-medium text-oficina-texto">{fuente.titulo}</span>
-            )}
-            {fuente.editor ? ` — ${fuente.editor}` : ""}
-            {fuente.documento ? ` — ${fuente.documento}` : ""}
-            {fuente.periodo ? ` (${fuente.periodo})` : ""}
-          </li>
-        ))}
-      </ol>
+      {citadas.length > 0 && (
+        <ol className="ml-4 list-decimal space-y-1.5 text-xs text-oficina-tenue">
+          {citadas.map(({ n, fuente }) => (
+            <li key={n} id={`fuente-${n}`} className="scroll-mt-6">
+              <FuenteLinea fuente={fuente} />
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {adicionales.length > 0 && (
+        <>
+          <SubTitulo>Bibliografía adicional</SubTitulo>
+          <p className="text-[11px] text-oficina-tenue">
+            Consultadas para el reporte pero no ancladas a una afirmación puntual del cuerpo.
+          </p>
+          <ul className="ml-4 list-disc space-y-1.5 text-xs text-oficina-tenue">
+            {adicionales.map((fuente, i) => (
+              <li key={i}>
+                <FuenteLinea fuente={fuente} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </Seccion>
   );
 }

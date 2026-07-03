@@ -134,7 +134,10 @@ export async function apiViva(): Promise<EstadoApi> {
     if (cuerpo?.estado === "vivo") {
       return cuerpo.db === "ok" && resp.ok ? "viva" : "degradada";
     }
-    return resp.ok ? "viva" : "caida";
+    // 200 pero el cuerpo no es el JSON esperado (o no trae estado="vivo"):
+    // algo contestó, pero no es la oficina hablando su idioma — degradada, no
+    // viva. "caida" queda reservado a cuando la oficina ni siquiera contestó.
+    return resp.ok ? "degradada" : "caida";
   } catch {
     return "caida";
   }
