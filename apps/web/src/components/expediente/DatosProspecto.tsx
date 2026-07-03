@@ -117,12 +117,14 @@ export function DatosProspecto({ expedienteId, datos }: { expedienteId: string; 
 }
 
 function Dato({ titulo, valor, enlace }: { titulo: string; valor: string | null; enlace?: boolean }) {
+  // Solo se enlaza lo que de verdad es una dirección web (nada de esquemas raros).
+  const esEnlaceSeguro = enlace && valor !== null && /^https?:\/\//i.test(valor);
   return (
     <div className="flex gap-2">
       <dt className="shrink-0 text-oficina-tenue">{titulo}:</dt>
       <dd className="min-w-0 truncate text-oficina-texto">
         {valor ? (
-          enlace ? (
+          esEnlaceSeguro ? (
             <a href={valor} target="_blank" rel="noopener noreferrer" className="text-marca hover:underline">
               {valor}
             </a>
