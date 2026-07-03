@@ -1,11 +1,11 @@
 /**
- * middleware.ts — protección de rutas con Clerk.
+ * proxy.ts — protección de rutas con Clerk (Next 16; antes `middleware.ts`).
  *
- * NOTA DE STACK: en Next.js 16 este archivo se RENOMBRA a `proxy.ts` y se exporta
- * como `export const proxy = clerkMiddleware(...)`. Aquí (Next 15) usamos el nombre
- * `middleware`. El cuerpo es idéntico; el cambio para Stage 3 es solo el nombre.
+ * En Next 16 el archivo se llama `proxy.ts`, corre en runtime Node (edge ya no
+ * aplica aquí) y acepta el default export tal cual — patrón oficial de Clerk
+ * (@clerk/nextjs ≥ 6.34 detecta proxy.ts).
  *
- * MODO ASESOR DEMO (E1-S6): sin claves de Clerk, el middleware NO corre (deja
+ * MODO ASESOR DEMO (E1-S6): sin claves de Clerk, el proxy NO corre (deja
  * pasar todo) para que La Oficina cargue en desarrollo sin login.
  */
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
