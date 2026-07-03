@@ -9,7 +9,7 @@ out/
 .turbo/
 *.tsbuildinfo
 
-# Prisma — cliente generado y base de datos local de desarrollo (SQLite)
+# Prisma — cliente generado (y bases SQLite residuales de checkouts previos)
 packages/db/src/generated/
 packages/db/prisma/*.db
 packages/db/prisma/*.db-journal
@@ -20,6 +20,8 @@ packages/db/prisma/*.db-journal
 .env
 .env.local
 .env.*.local
+# excepción: el default local NO-secreto que la CLI de Prisma necesita (cwd packages/db)
+!packages/db/.env
 
 # logs / sistema
 *.log

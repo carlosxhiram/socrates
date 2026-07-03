@@ -37,5 +37,6 @@ Respuesta a la revisión adversaria (`readiness/`). Carlos pre-aprobó todas est
 ## Estrategia de build (orden, honrando la revisión)
 1. **Datos:** extraer reportes reales → `ReporteV1` + seed Probemedic; construir `catalogo-soc.json`.
 2. **Cimientos (E1):** monorepo compilando (Next.js/Hono/Prisma/Clerk/R2/IA+fallback). Dev corre con **SQLite local** (sin Docker) + seed; Postgres en producción. git local (sin GitHub).
+   > **Addendum (Director, 2026-07-03):** superada hacia adelante — dev también corre **Postgres local** (sin Docker), igual que producción, para paridad total con la arquitectura §7 y con el entorno de desarrollo en la nube (que trae Postgres). La migración inicial se re-cortó a Postgres antes de que existiera cualquier base compartida. El espíritu de la decisión (correr sin Docker y sin llaves) se conserva.
 3. **PoC del Investigador (gate):** validar paridad de calidad + costo contra el reporte real de Probemedic ANTES de construir el pipeline caro de E4.
 4. Solo con PoC verde → build completo (E2 Oficina/Expedientes, E3 Sócrates, E4 Investigador, E5/E6 resto + catálogo, E7 calidad/seed, E8 deploy-ready).

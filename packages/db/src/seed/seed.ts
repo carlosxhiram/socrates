@@ -3,7 +3,7 @@
  *
  * Crea:
  *   1. Los 6 empleados + Sócrates (catálogo de roles, lenguaje de oficina).
- *   2. El Catálogo SOC desde catalogo-soc.json (17 instituciones, 37 productos).
+ *   2. El Catálogo SOC desde catalogo-soc.json (17 instituciones, 22 productos).
  *   3. Un Asesor demo (clerkUserId = "demo-asesor") para el Modo sin claves.
  *   4. Dos Expedientes: Las Aliadas (RECOMENDADO) y Probemedic (INVESTIGADO),
  *      con etapas/progreso y tareas.
@@ -13,7 +13,7 @@
  * Idempotente: usa upsert por ids estables. Correr de nuevo no duplica.
  */
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 import { PrismaClient } from "../generated/client/index.js";
 import {
@@ -24,7 +24,8 @@ import {
 } from "@socrates/shared";
 import { reporteProbemedicSeed } from "./reporte-probemedic-seed.js";
 
-const prisma = new PrismaClient();
+/** Cliente propio del seed (exportado para que los tests puedan desconectarlo). */
+export const prisma = new PrismaClient();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 interface ProductoJSON {
@@ -234,7 +235,8 @@ async function sembrarExpedientes(asesorId: string) {
   );
 }
 
-async function main() {
+/** Siembra completa. Exportada para poder probarla (idempotencia) sin efectos al importar. */
+export async function sembrar() {
   console.log("🌱 Sembrando Sócrates...");
   await sembrarEmpleados();
   await sembrarCatalogo();
@@ -243,11 +245,19 @@ async function main() {
   console.log("✅ Seed completo.");
 }
 
-main()
-  .catch((e) => {
-    console.error("❌ Seed falló:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// Solo corre automáticamente cuando se ejecuta como script (pnpm db:seed),
+// no cuando un test lo importa.
+const ejecutadoDirecto =
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (ejecutadoDirecto) {
+  sembrar()
+    .catch((e) => {
+      console.error("❌ Seed falló:", e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
