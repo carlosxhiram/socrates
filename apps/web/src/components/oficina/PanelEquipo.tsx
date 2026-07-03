@@ -44,7 +44,7 @@ export function PanelEquipo({ equipo }: { equipo: EmpleadoEstadoDTO[] }) {
               className="rounded-lg border border-oficina-borde bg-oficina-panel p-3"
             >
               <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-marca/8 text-marca">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-marca/10 text-marca">
                   <Icono size={18} aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1">

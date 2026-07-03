@@ -35,9 +35,9 @@ export function TarjetaExpediente({ expediente }: { expediente: ExpedienteResume
           {expediente.empleadosActivos.map((rol) => (
             <span
               key={rol}
-              className="rounded-md bg-marca/8 px-2 py-0.5 text-[11px] font-medium text-marca"
+              className="rounded-md bg-marca/10 px-2 py-0.5 text-[11px] font-medium text-marca"
             >
-              {EMPLEADOS[rol].nombre}
+              {EMPLEADOS[rol]?.nombre ?? rol}
             </span>
           ))}
         </div>

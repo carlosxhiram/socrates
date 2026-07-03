@@ -14,7 +14,7 @@ export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | 
 
   const placeholder =
     contexto === "oficina"
-      ? "¿Qué necesitas? Escríbeme en lenguaje natural…"
+      ? "Cuéntame qué necesitas y lo armamos"
       : "¿Qué hacemos con este expediente?";
 
   function enviar(e: React.FormEvent) {
@@ -29,17 +29,18 @@ export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | 
 
   return (
     <div className="space-y-2">
-      {acuse && (
-        <div
-          aria-live="polite"
-          className="rounded-xl border border-marca/20 bg-marca/5 px-4 py-3 text-sm text-oficina-texto"
-        >
-          <span className="mr-1.5" aria-hidden>
-            🐢
-          </span>
-          {acuse}
-        </div>
-      )}
+      {/* Región de acuse SIEMPRE montada: así el lector de pantalla la detecta
+          desde el primer mensaje, no solo a partir del segundo (E1). */}
+      <div aria-live="polite">
+        {acuse && (
+          <div className="rounded-xl border border-marca/20 bg-marca/5 px-4 py-3 text-sm text-oficina-texto">
+            <span className="mr-1.5" aria-hidden>
+              🐢
+            </span>
+            {acuse}
+          </div>
+        )}
+      </div>
       <form
         onSubmit={enviar}
         className="flex items-center gap-2 rounded-xl border border-oficina-borde bg-oficina-panel px-3 py-2 shadow-sm"
@@ -53,7 +54,7 @@ export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | 
           onChange={(e) => setTexto(e.target.value)}
           placeholder={placeholder}
           aria-label="Escríbele a Sócrates"
-          className="flex-1 bg-transparent text-sm text-oficina-texto outline-none placeholder:text-oficina-tenue"
+          className="flex-1 rounded-md bg-transparent text-sm text-oficina-texto outline-none placeholder:text-oficina-tenue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca focus-visible:ring-offset-1"
         />
         <button
           type="submit"

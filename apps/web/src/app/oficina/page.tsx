@@ -3,6 +3,8 @@
  * Panel "Tu equipo" + lista de Expedientes con progreso + barra de Sócrates.
  * Renderiza el seed (Las Aliadas, Probemedic) vía la api.
  */
+import type { Metadata } from "next";
+import type { ExpedienteResumenDTO, EmpleadoEstadoDTO } from "@socrates/shared";
 import { obtenerExpedientes, obtenerEquipo, apiViva } from "@/lib/api-client";
 import { PanelEquipo } from "@/components/oficina/PanelEquipo";
 import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
@@ -11,21 +13,48 @@ import { BarraComando } from "@/components/socrates/BarraComando";
 
 export const dynamic = "force-dynamic";
 
-export default async function OficinaPage() {
-  const viva = await apiViva();
+export const metadata: Metadata = {
+  title: "Tu oficina",
+};
 
-  if (!viva) {
+const MENSAJE_CAIDA =
+  "Ahora mismo no puedo conectarme con tu oficina. Confirma que esté encendida y vuelve a cargar.";
+const MENSAJE_DEGRADADA =
+  "Tu oficina está encendida, pero su archivero no responde; inténtalo en unos minutos.";
+
+export default async function OficinaPage() {
+  const estadoApi = await apiViva();
+
+  if (estadoApi === "caida") {
     return (
       <Marco>
-        <AvisoApiCaida />
+        <AvisoApiCaida mensaje={MENSAJE_CAIDA} />
+      </Marco>
+    );
+  }
+  if (estadoApi === "degradada") {
+    return (
+      <Marco>
+        <AvisoApiCaida mensaje={MENSAJE_DEGRADADA} />
       </Marco>
     );
   }
 
-  const [expedientes, equipo] = await Promise.all([
-    obtenerExpedientes().catch(() => []),
-    obtenerEquipo().catch(() => []),
-  ]);
+  // La api respondió viva, pero eso no garantiza que estas dos llamadas
+  // también lo hagan (red intermitente, tiempo agotado a media petición…). Un
+  // fallo aquí NO es "aún no hay expedientes": es que no pudimos ver los
+  // tuyos, y eso hay que decirlo tal cual (nunca disfrazarlo de vacío).
+  let expedientes: ExpedienteResumenDTO[];
+  let equipo: EmpleadoEstadoDTO[];
+  try {
+    [expedientes, equipo] = await Promise.all([obtenerExpedientes(), obtenerEquipo()]);
+  } catch {
+    return (
+      <Marco>
+        <AvisoApiCaida mensaje={MENSAJE_CAIDA} />
+      </Marco>
+    );
+  }
 
   return (
     <Marco>
@@ -101,15 +130,17 @@ function EstadoVacio() {
   );
 }
 
-function AvisoApiCaida() {
+function AvisoApiCaida({ mensaje }: { mensaje: string }) {
   return (
-    <div className="rounded-xl border border-estado-alerta/30 bg-estado-alerta/5 p-8 text-center">
+    <div
+      role="status"
+      className="rounded-xl border border-estado-alerta/30 bg-estado-alerta/5 p-8 text-center"
+    >
       <p className="text-sm text-oficina-texto">
         <span className="mr-1" aria-hidden>
           🐢
         </span>
-        Ahora mismo no puedo conectarme con tu equipo. Confirma que el servicio de la
-        oficina esté encendido (apps/api) y vuelve a cargar.
+        {mensaje}
       </p>
     </div>
   );
