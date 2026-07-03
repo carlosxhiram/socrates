@@ -1,12 +1,17 @@
 # STATUS — Sócrates
 
-Fecha: 2026-07-03 · Director de ingeniería: Fable · Fase: auditoría de Director + endurecimiento post-E1
+Fecha: 2026-07-03 · Director de ingeniería: Fable · Fase: CHECKPOINT fusionado (auditoría + endurecimiento post-E1) · El mapa de lo que sigue: `PLAN-DE-ORQUESTACION.md`
 
-> Resumen de una línea: **el monorepo corre sobre Postgres (dev y prod, paridad
-> total), la máquina de Etapas y los candados de seguridad viven en el servidor
-> bajo tests de integración verdes, La Oficina crea/edita/cierra expedientes
-> desde la UI, y todo el trabajo está en 8 PRs chicos esperando el visto bueno
-> de Carlos — sin llaves, sin deploy, sin tocar el catálogo.**
+> Resumen de una línea: **checkpoint FUSIONADO a master (PRs #1–#5, #7, #8, con
+> autorización de Carlos): Postgres en dev y prod, Next 16, máquina de Etapas y
+> candados de seguridad en el servidor bajo 20 tests de integración verdes, La
+> Oficina crea/edita/cierra expedientes con citas visibles en el Reporte — sin
+> llaves, sin deploy, sin tocar el catálogo. Batería completa corrida sobre el
+> master integrado: 11/11 tareas verdes y la app tocada en vivo.**
+>
+> Para quien siga este trabajo (Opus/Sonnet): el mapa completo de etapas,
+> doctrina y trampas del terreno vive en **`PLAN-DE-ORQUESTACION.md`**; las
+> reglas duras operativas, en **`CLAUDE.md`**.
 
 ---
 
@@ -54,7 +59,7 @@ Fecha: 2026-07-03 · Director de ingeniería: Fable · Fase: auditoría de Direc
 
 ---
 
-## Qué quedó hecho (esta sesión) — en PRs chicos, uno por propósito
+## Qué quedó hecho (esta sesión) — en PRs chicos, uno por propósito (TODOS fusionados)
 
 | PR | Qué entrega | Base |
 |---|---|---|
@@ -66,7 +71,7 @@ Fecha: 2026-07-03 · Director de ingeniería: Fable · Fase: auditoría de Direc
 | [#7 La Oficina honesta](https://github.com/carlosxhiram/socrates/pull/7) | citas visibles junto a cada cifra del Reporte (NFR-1 en superficie), estados de error veraces (api caída ≠ oficina vacía ≠ archivero degradado), error.tsx es-MX, accesibilidad (progressbar/aria/foco), fechas es-MX sin desfase | #4 |
 | [#8 Capa de IA activable](https://github.com/carlosxhiram/socrates/pull/8) | dependencias del Gateway verificadas contra npm (la ruta documentada NO podía funcionar: provider v1 vs v2), contrato `generarTexto` tipado sin strings-centinela, `clave_invalida` distinguida de fallo temporal | master |
 
-**Orden de merge sugerido:** #1 → #3 → #4 y #5 → #7 · #2, #8 y #6 (documentación) independientes.
+**Fusionados a master el 2026-07-03** en el orden #1 → #3 → #4 → #5 → #7 → #2 → #8 (el lockfile de #8 se reconcilió con #2 antes del merge); #6 es esta documentación.
 
 ---
 
