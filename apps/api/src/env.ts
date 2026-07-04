@@ -58,3 +58,13 @@ if (!actual) {
   );
   process.env.DATABASE_URL = DB_DEV_POSTGRES;
 }
+
+// 3) Cobro (Stripe) — TODAS opcionales (NFR-11: la app arranca sin ellas).
+//    Ya quedaron cargadas en process.env por cargarDotenv de arriba; el wrapper
+//    proveedor-stripe.ts las lee de ahí. Sin STRIPE_SECRET_KEY el onboarding
+//    corre en MODO DEMO (no cobra); el webhook sin STRIPE_WEBHOOK_SECRET responde
+//    503 honesto. NO se validan aquí como requeridas a propósito:
+//      STRIPE_SECRET_KEY      — sk_test_... / sk_live_... (activa el cobro real)
+//      STRIPE_WEBHOOK_SECRET  — whsec_... (verifica la firma del webhook)
+//      STRIPE_PRICE_ID        — price_... del plan mensual (la fuente del precio)
+//      STRIPE_TRIAL_DIAS      — días de prueba (default 14 si se omite)
