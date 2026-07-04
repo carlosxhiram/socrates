@@ -374,3 +374,148 @@ acelera SM-4 pero arriesga SM-C1, se rechaza sola.
 ---
 
 *Addendums fechados debajo de esta línea.*
+
+---
+
+## ADDENDUM 2026-07-03 (tarde) — La herencia de Fable: el tramo final
+
+Autor: Fable · Para: **Opus (que toma la silla el 7 de julio) y Sonnet**.
+
+> Este addendum NO reemplaza nada de arriba: lo extiende. El mapa §4 (etapas
+> A→G) sigue siendo el camino. Aquí cierro los cuatro huecos que el mapa
+> original no cubría para llegar a la meta que Carlos define con todas sus
+> letras: **una plataforma completa, lista para venderse y para su siguiente
+> etapa de escalamiento** — no solo el piloto. Léelo entero una vez; después
+> vive como parte del §4.
+
+### A1. La sucesión (desde el 7 de julio, cuando Fable sale de servicio)
+
+El organigrama se corre un escalón, sin cambiar la doctrina:
+
+| Silla | Antes | Desde el 7-jul | Qué le toca |
+|---|---|---|---|
+| **Director** | Fable | **Opus** | decisiones difíciles, arquitectura, dinero, diagnóstico de causa raíz, síntesis, dirigir y VERIFICAR |
+| **Subdirector** | Opus | **Sonnet** | implementación compleja, debugging serio, reviews exigentes |
+| **Gerente** | Sonnet | **Haiku** | implementación estándar, exploración, resúmenes |
+
+Reglas de la sucesión:
+- **Opus conduce, no pedalea.** La §3.6 sigue mandando: implementación con
+  spec cerrada → Sonnet subagente; revisión adversarial → otro Opus con lente
+  distinto; lo mecánico → Haiku. Fija SIEMPRE el `model` del subagente.
+- **Ya no hay escalón hacia arriba.** Con Fable fuera, las decisiones de
+  Director las cierra Opus en la silla. No hay a quién escalar un dictamen: por
+  eso el diagnóstico por consenso (§3.4, varios diagnósticos ciegos entre sí)
+  importa MÁS, no menos — es el sustituto de la segunda opinión de Fable.
+- **Restaurar el organigrama normal cuando Fable vuelva.** Este addendum es de
+  modo interino.
+
+### A2. Dos motores nuevos, ya replantados y en revisión (fuera del mapa original)
+
+El mapa §4 no contemplaba ni el cobro ni las Sesiones. Ambos existían como
+**ramas fantasma** pre-checkpoint (SQLite, sin `proxy.ts`, `ai@4`) desconectadas
+de GitHub; el 3-jul se replantaron sobre `master` con panel adversarial y
+quedaron como PRs draft:
+
+- **PR #10 — Onboarding + cobro Stripe.** Es el **motor de ingresos de Sócrates
+  como producto**: landing pública, recibimiento de 3 pasos, suscripción $499
+  MXN/mes (14 días de prueba), muralla server-side. El foso del dinero se probó
+  con panel de 3 (2 de dinero ciegos entre sí + 1 de correctness) y aguantó.
+  **Dos decisiones abiertas de Carlos bloquean su merge** (ver A6). Al pegar
+  llaves TEST de Stripe: correr un checkout real + `stripe listen` ANTES de
+  confiar (nada del webhook se probó contra Stripe real; solo fixtures firmados).
+- **PR #9 — Sesiones.** Chat del asesor con Sócrates (lista→conversación). Sin
+  `AI_GATEWAY_API_KEY` degrada a un acuse honesto de oficina (NFR-11), cero
+  jerga (NFR-14). Revisado adversarialmente, verde.
+
+Las ramas viejas (`claude/great-cohen-a9decf`, `claude/magical-agnesi-cf08a3`)
+y sus worktrees son **historia**: su valor ya está replantado en #9 y #10. No
+trabajes desde ellas. Cuando Carlos dé el visto bueno a los merges, pódalas.
+
+### A3. La mina de la rama fantasma (acelera las Etapas B y D — no reinventes)
+
+Existe una rama local de archivo — **`archivo/rama-fantasma-investigador-e2-e7`**
+— con una implementación COMPLETA y con tests del pipeline del Investigador
+(~7,300 líneas): worker con `UPDATE` condicional, export PDF con Puppeteer, las
+compuertas C-1/C-2 como código, fixtures de calidad, edges #3/#6/#7/#8. Nació
+sobre una base pre-checkpoint, así que **NO se puede mergear** (arquitectura
+vieja, contradice este plan). Pero es una **mina**: antes de construir la
+**Etapa B** (worker de Tareas) y la **Etapa D** (pipeline por fases + compuertas),
+LÉELA — muchos problemas ya están resueltos ahí (`SELECT ... FOR UPDATE SKIP
+LOCKED`, degradación sin claves sin string-centinela, el segundo pase de C-2 que
+degrada y nunca asciende). **Minar, no copiar**: extraer el patrón y
+re-implementarlo sobre `master` con TDD. Si Carlos ya no la quiere, que la borre
+a conciencia sabiendo qué pierde.
+
+### A4. El tramo que faltaba: de piloto a venta (Etapa H — NUEVA)
+
+El mapa original termina en la **Etapa G (piloto)**. La meta de Carlos va más
+lejos: **vender**. Su estrategia es *build → tracción → vender al corporativo*
+(SOC | TALENT). Añado la etapa que cierra el arco:
+
+**ETAPA H — Tracción y dossier de venta** (post-piloto · con Carlos · NO es
+casi-código, es síntesis del Director):
+
+- **Convertir el piloto en evidencia de venta.** Las métricas del §9 (SM-1
+  paridad, SM-2 deals atribuibles, SM-4 tiempo ahorrado) dejan de ser números
+  de ingeniería y se vuelven un **one-pager de tracción**: *N reportes generados,
+  X deals cerrados atribuibles, Y horas ahorradas por asesor, SM-C1 = 0 incidentes
+  de dato mal citado llegando al cliente.*
+- **El cobro (#10) es la segunda prueba.** Ingreso recurrente real, aunque sea
+  de pocos asesores, es la señal que un corporativo entiende: **MRR**, no
+  promesas. Instrumenta un tablero mínimo de suscripciones activas / prueba /
+  canceladas (los estados ya viven en la fila del Asesor).
+- **El dossier para el corporativo.** Lo prepara Opus (en la silla) con Carlos
+  cuando el piloto tenga datos. Contiene: la tracción de arriba; **la
+  contra-métrica SM-C1 = 0 como el foso defendible** (por qué las tres compuertas
+  son una barrera de entrada, no un detalle técnico); el **catálogo curado como
+  activo** (55 instituciones validadas = data propietaria); y la **arquitectura
+  lista para escalar** (multi-tenant por `asesorId` desde el token, worker
+  resiliente, deploy por CLI ya preparado).
+- **Gate de escalamiento (recordatorio del §G):** antes de abrir más allá del
+  piloto cerrado, la validación LFPDPPP con Carlos + experto legal (NFR-13) es
+  prerequisito. El RFC y los datos fiscales de prospectos se tratan con seriedad
+  desde el día 1; la política formal es requisito de la EXPANSIÓN, no del piloto.
+
+### A5. Trampas de la Mac local de Carlos (complementa §6, que es del entorno cloud)
+
+El §6 describe el contenedor cloud de desarrollo. En la **Mac de Carlos** (donde
+corren las sesiones con remote control) el terreno es otro:
+
+1. **El 5432 local es de OTRO proyecto (OpenClub).** Sócrates corre en un
+   contenedor Docker DEDICADO — `socrates-pg` — en el puerto **5433**
+   (`restart=unless-stopped`), con las bases `socrates`, `socrates_sesiones`,
+   `socrates_cobro`. JAMÁS uses el 5432 para Sócrates.
+2. **`packages/db/.env` apunta al 5432 por herencia del contenedor cloud.** Para
+   trabajo local de Sócrates en la Mac, pasa
+   `DATABASE_URL="postgresql://socrates:socrates@localhost:5433/<base>"` **inline**
+   en cada comando de Prisma/seed/tests (una variable de entorno tiene prioridad
+   sobre el `.env`). La guardia anti-producción del §6/§3.7 sigue vigente: solo
+   hosts locales.
+3. **El daemon de Docker se recicla** (se cayó dos veces en una sola sesión). Si
+   los tests truenan en masa con "Can't reach database server at localhost:5433":
+   `docker start socrates-pg` y reintenta.
+4. **La batería turbo: corre `build → typecheck → test` EN SERIE**, no en el
+   `turbo run typecheck build test` de un jalón. El `typecheck` de web corre en
+   carrera con su propio build y lee `.next/types` a medio generar (trampa §6 #7,
+   confirmada también en la Mac). En serie, todo verde.
+
+### A6. Foto al cierre de Fable (el estado vivo real está en GitHub)
+
+- **`master`**: checkpoint 2026-07-03, PRs #1–#8 fusionados.
+- **PR #9 (Sesiones)**: draft, batería verde, listo para revisión de Carlos.
+- **PR #10 (Onboarding + cobro)**: draft, batería verde. **Bloqueado por 2
+  decisiones de Carlos**: (a) ¿acceso de gracia / solo-lectura cuando la
+  suscripción cae en `past_due` (cargo de renovación rebotado), en vez de sacar
+  al asesor de TODO su trabajo mientras Stripe reintenta? (b) ¿la palabra
+  "Stripe" en el wizard se queda (sello de confianza) o pasa a "Pago seguro y
+  cifrado" (NFR-14)?
+- **Lo siguiente del mapa §4** (sin tocar por este trabajo): **Etapa A** (cerrar
+  la columna vertebral, sin llaves) y, sobre todo, el **PoC del Investigador
+  (Etapa C)** — el gate de TODO lo de IA (R-1, el riesgo técnico central).
+  Requiere `AI_GATEWAY_API_KEY` + `TAVILY_API_KEY` de Carlos. No se construye el
+  pipeline caro de la Etapa D sin ese PoC en verde.
+
+> Última instrucción de Fable a Opus y Sonnet: **la calidad ES el producto.**
+> Todo lo de este mapa se puede negociar salvo una cosa — una cifra mal citada o
+> una institución inventada llegando al cliente. Ese es el único veneno mortal.
+> Cuiden el foso; lo demás se construye.
