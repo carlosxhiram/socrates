@@ -313,6 +313,33 @@ test("muralla: cubre TAMBIÉN las sub-rutas (GET /expedientes/:id → 402 sin ac
   );
 });
 
+test("muralla / gracia: acceso de LECTURA — GET pasa (200), escritura se bloquea (402 PAGO_PENDIENTE)", async () => {
+  await conEnv(
+    { NODE_ENV: "test", CLERK_SECRET_KEY: undefined, CLERK_JWT_KEY: undefined, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: undefined },
+    async () => {
+      // Renovación rebotada: el asesor demo cae a "gracia" (Stripe aún reintenta).
+      await prisma.asesor.update({
+        where: { clerkUserId: "demo-asesor" },
+        data: { estadoSuscripcion: "gracia" },
+      });
+      // Lectura: SÍ puede consultar su trabajo ya creado.
+      const lectura = await app.request("/expedientes");
+      assert.equal(lectura.status, 200, "en gracia, un GET de negocio SÍ pasa (solo lectura)");
+      // Escritura: bloqueada, con un código DISTINTO (regularizar pago, no suscribirse).
+      const escritura = await app.request("/expedientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      assert.equal(escritura.status, 402, "en gracia, una escritura de negocio se bloquea");
+      const body = (await escritura.json()) as { error: { codigo: string; mensaje: string } };
+      assert.equal(body.error.codigo, "PAGO_PENDIENTE", "código distinto de SIN_SUSCRIPCION");
+      assert.doesNotMatch(body.error.mensaje, /stripe|webhook|token|api/i, "mensaje de oficina");
+    },
+  );
+  // beforeEach/after restauran el demo a su estado canónico.
+});
+
 // ── 5. Tenencia: el webhook NUNCA toca al asesor equivocado ──────────────────
 test("tenencia: el webhook resuelve por metadata.asesorId (nuestra fila), no toca a otro asesor", async () => {
   await conEnv({ STRIPE_SECRET_KEY: "sk_test_x", STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET }, async () => {
@@ -352,6 +379,23 @@ test("tenencia: un customer del payload que no mapea a ninguna fila NO crea ni c
     assert.equal(res.status, 200);
     const trasA = await prisma.asesor.findUnique({ where: { id: a.id } });
     assert.equal(trasA?.estadoSuscripcion, "ninguna", "ningún asesor ajeno se ve afectado");
+  });
+});
+
+test("webhook: past_due → estado 'gracia' (acceso de lectura), no 'vencida'", async () => {
+  await conEnv({ STRIPE_SECRET_KEY: "sk_test_x", STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET }, async () => {
+    const a = await crearAsesor(CLERK_A, { estadoSuscripcion: "activa", stripeCustomerId: "cus_itest_A" });
+    const payload = eventoSuscripcion({
+      eventId: "evt_itest_pastdue",
+      status: "past_due",
+      customer: "cus_itest_A",
+      asesorId: a.id,
+    });
+    const firma = await firmarPayload(payload);
+    const res = await postWebhook(payload, firma);
+    assert.equal(res.status, 200);
+    const trasA = await prisma.asesor.findUnique({ where: { id: a.id } });
+    assert.equal(trasA?.estadoSuscripcion, "gracia", "past_due deja al asesor en gracia (no lo corta de todo)");
   });
 });
 

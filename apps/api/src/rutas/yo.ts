@@ -14,7 +14,7 @@ import { prisma } from "@socrates/db";
 import {
   GuardarPerfilSchema,
   derivarSiguientePaso,
-  SUSCRIPCION_CON_ACCESO,
+  SUSCRIPCION_CON_ACCESO_LECTURA,
   type YoDTO,
   type EstadoSuscripcion,
   type EtapaOnboarding,
@@ -41,7 +41,10 @@ function perfilCompleto(a: AsesorRow): boolean {
 }
 
 function tieneAcceso(a: AsesorRow): boolean {
-  return SUSCRIPCION_CON_ACCESO.includes(a.estadoSuscripcion as EstadoSuscripcion);
+  // Acceso a la app (al menos lectura): cerrar el recibimiento solo registra que
+  // vio la bienvenida, no es una escritura de negocio. La demo y la gracia
+  // cuentan; el acceso lo concede el webhook, jamás el cliente.
+  return SUSCRIPCION_CON_ACCESO_LECTURA.includes(a.estadoSuscripcion as EstadoSuscripcion);
 }
 
 /** Construye el YoDTO (con el siguientePaso derivado por el servidor). */

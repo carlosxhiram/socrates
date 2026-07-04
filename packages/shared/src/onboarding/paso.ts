@@ -11,7 +11,7 @@
 import {
   type EtapaOnboarding,
   type EstadoSuscripcion,
-  SUSCRIPCION_CON_ACCESO,
+  SUSCRIPCION_CON_ACCESO_LECTURA,
 } from "../glosario";
 
 /**
@@ -25,7 +25,11 @@ export function derivarSiguientePaso(f: {
   bienvenidaVista: boolean;
 }): EtapaOnboarding {
   if (!f.perfilCompleto) return "perfil";
-  if (!SUSCRIPCION_CON_ACCESO.includes(f.estadoSuscripcion)) return "pago";
+  // Basta acceso de LECTURA para entrar al recibimiento/oficina: un asesor en
+  // "gracia" (renovación rebotada) NO se manda de vuelta al paso de pago —
+  // conserva acceso a su trabajo; la restricción de escritura la aplica la
+  // muralla del servidor, no el portero.
+  if (!SUSCRIPCION_CON_ACCESO_LECTURA.includes(f.estadoSuscripcion)) return "pago";
   if (!f.bienvenidaVista) return "bienvenida";
   return "completo";
 }
@@ -43,8 +47,12 @@ export function mapearEstadoStripe(status: string): EstadoSuscripcion {
     case "active":
       return "activa";
     case "past_due":
+      // Renovación rebotada, Stripe aún reintenta: gracia (solo lectura), no
+      // corte total — la mayoría de las tarjetas se recuperan en el dunning.
+      return "gracia";
     case "unpaid":
     case "incomplete":
+      // Stripe se rindió (dunning agotado) o el primer pago nunca cuajó: sin acceso.
       return "vencida";
     case "canceled":
     case "incomplete_expired":

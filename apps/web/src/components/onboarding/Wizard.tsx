@@ -295,7 +295,7 @@ function PasoPago() {
         Iniciar prueba gratis
       </button>
       <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-oficina-tenue">
-        <ShieldCheck size={13} aria-hidden /> Pago seguro con Stripe
+        <ShieldCheck size={13} aria-hidden /> Pago seguro y cifrado
       </p>
     </section>
   );

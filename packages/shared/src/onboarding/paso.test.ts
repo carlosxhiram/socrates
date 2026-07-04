@@ -48,6 +48,15 @@ test("siguientePaso: la demo explícita da acceso igual que un pago (no bloquea 
   );
 });
 
+test("siguientePaso: en gracia (renovación rebotada) NO se rebota a 'pago' — entra a su oficina", () => {
+  // gracia = acceso de lectura: el asesor devuelto entra a la oficina (completo),
+  // no lo mandamos a re-onboardear. La restricción de escritura la aplica la muralla.
+  assert.equal(
+    derivarSiguientePaso({ perfilCompleto: true, estadoSuscripcion: "gracia", bienvenidaVista: true }),
+    "completo",
+  );
+});
+
 test("siguientePaso: el pago tiene prioridad sobre la bienvenida (orden correcto)", () => {
   // perfil ok, sin acceso, bienvenida ya vista → aún así debe cobrar primero.
   assert.equal(
@@ -62,8 +71,12 @@ test("mapearEstadoStripe: trialing → prueba, active → activa", () => {
   assert.equal(mapearEstadoStripe("active"), "activa");
 });
 
-test("mapearEstadoStripe: estados de impago → vencida", () => {
-  for (const s of ["past_due", "unpaid", "incomplete"]) {
+test("mapearEstadoStripe: past_due → gracia (Stripe aún reintenta; acceso de lectura)", () => {
+  assert.equal(mapearEstadoStripe("past_due"), "gracia");
+});
+
+test("mapearEstadoStripe: impago sin gracia (unpaid/incomplete) → vencida", () => {
+  for (const s of ["unpaid", "incomplete"]) {
     assert.equal(mapearEstadoStripe(s), "vencida");
   }
 });

@@ -179,18 +179,36 @@ export const ETAPA_ONBOARDING_ETIQUETA: Record<EtapaOnboarding, string> = {
 // "activa" a propósito, para que nadie confunda una demo con una suscripción
 // pagada (doctrina del dinero: sin evento verificado, nada se hace pasar por
 // cobrado). El resto de estados NO dan acceso.
+// "gracia": la renovación rebotó (tarjeta vencida/sin fondos) y Stripe todavía
+// reintenta cobrar (dunning, ~2 semanas). El asesor conserva acceso de SOLO
+// LECTURA a su trabajo ya creado —no se le tira todo por un hipo de tarjeta—,
+// pero no puede crear ni cambiar nada hasta regularizar el pago. Si Stripe se
+// rinde, el estado pasa a "vencida"/"cancelada" (sin acceso).
 export const ESTADOS_SUSCRIPCION = [
   "ninguna",
   "demo",
   "prueba",
   "activa",
+  "gracia",
   "vencida",
   "cancelada",
 ] as const;
 export type EstadoSuscripcion = (typeof ESTADOS_SUSCRIPCION)[number];
 
-/** Los estados que dan acceso a La Oficina (incluye la demo explícita). */
+/** Estados con acceso PLENO a La Oficina —leer y escribir— (incluye la demo). */
 export const SUSCRIPCION_CON_ACCESO: EstadoSuscripcion[] = ["demo", "prueba", "activa"];
+
+/**
+ * Estados con acceso de LECTURA a La Oficina: los plenos + "gracia". El asesor
+ * en gracia entra a su oficina y consulta su trabajo, pero la muralla del
+ * servidor le bloquea toda escritura (crear/editar/borrar) hasta que su pago se
+ * regularice. Separar leer de escribir es lo que hace posible el periodo de
+ * gracia sin regalar servicio no pagado.
+ */
+export const SUSCRIPCION_CON_ACCESO_LECTURA: EstadoSuscripcion[] = [
+  ...SUSCRIPCION_CON_ACCESO,
+  "gracia",
+];
 
 // ── Tipos de Entregable ─────────────────────────────────────────────────────
 export const TIPOS_ENTREGABLE = [
