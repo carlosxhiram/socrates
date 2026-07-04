@@ -82,6 +82,25 @@ function eventoSuscripcion(opts: {
   });
 }
 
+function eventoCheckout(opts: {
+  eventId: string;
+  asesorId: string | null;
+  customer: string | null;
+}): string {
+  return JSON.stringify({
+    id: opts.eventId,
+    type: "checkout.session.completed",
+    data: {
+      object: {
+        id: `cs_${opts.eventId}`,
+        object: "checkout.session",
+        client_reference_id: opts.asesorId,
+        customer: opts.customer,
+      },
+    },
+  });
+}
+
 // ── Asesores de prueba (marcados para limpieza) ─────────────────────────────
 const CLERK_A = "itest-cobro-asesor-A";
 const CLERK_B = "itest-cobro-asesor-B";
@@ -94,6 +113,21 @@ async function limpiar() {
 async function crearAsesor(clerkUserId: string, datos: Record<string, unknown>) {
   return prisma.asesor.create({
     data: { clerkUserId, ...datos },
+  });
+}
+
+/**
+ * Deja la fila del asesor demo en su estado canónico (acceso "demo", onboarding
+ * "completo"), como la deja el seed. Las pruebas de la muralla mutan esa fila
+ * COMPARTIDA (en modo demo el auth resuelve a ella, no a una propia). Resetearla
+ * antes de cada test y al cerrar el archivo hace la suite auto-sanable: un test
+ * que muera a media mutación ya no deja a los siguientes —ni a otras suites que
+ * corren después— sin acceso (402). updateMany no truena si la fila no existe.
+ */
+async function restaurarDemoCanonico() {
+  await prisma.asesor.updateMany({
+    where: { clerkUserId: "demo-asesor" },
+    data: { estadoSuscripcion: "demo", onboardingEtapa: "completo" },
   });
 }
 
@@ -111,10 +145,12 @@ before(async () => {
 
 beforeEach(async () => {
   await limpiar();
+  await restaurarDemoCanonico();
 });
 
 after(async () => {
   await limpiar();
+  await restaurarDemoCanonico();
   await prisma.$disconnect();
 });
 
@@ -316,6 +352,56 @@ test("tenencia: un customer del payload que no mapea a ninguna fila NO crea ni c
     assert.equal(res.status, 200);
     const trasA = await prisma.asesor.findUnique({ where: { id: a.id } });
     assert.equal(trasA?.estadoSuscripcion, "ninguna", "ningún asesor ajeno se ve afectado");
+  });
+});
+
+// ── 5b. Robustez del webhook: la colisión de customer no pierde dinero ───────
+test("robustez: un customer ya usado por otra fila NO tumba la activación del que pagó (Hallazgo 1)", async () => {
+  await conEnv({ STRIPE_SECRET_KEY: "sk_test_x", STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET }, async () => {
+    // A ya tiene amarrado cus_itest_X. Llega un evento LEGÍTIMO para B (por
+    // metadata) cuyo customer resultó ser el MISMO cus_itest_X (customer
+    // reasignado en Stripe / re-alta del asesor). El estado de B DEBE activarse
+    // igual: la colisión del índice único de stripeCustomerId no puede tumbar
+    // con 500 la activación de quien pagó ni dejar el webhook en bucle.
+    const a = await crearAsesor(CLERK_A, { estadoSuscripcion: "activa", stripeCustomerId: "cus_itest_X" });
+    const b = await crearAsesor(CLERK_B, { estadoSuscripcion: "ninguna", stripeCustomerId: null });
+
+    const payload = eventoSuscripcion({
+      eventId: "evt_itest_colision",
+      status: "active",
+      customer: "cus_itest_X", // ya es de A
+      asesorId: b.id, // pero el evento es de B (resuelto por metadata)
+    });
+    const firma = await firmarPayload(payload);
+    const res = await postWebhook(payload, firma);
+
+    assert.equal(res.status, 200, "la colisión de customer NO debe dar 500");
+    const trasB = await prisma.asesor.findUnique({ where: { id: b.id } });
+    assert.equal(trasB?.estadoSuscripcion, "activa", "B, que pagó, SÍ obtiene su acceso pese a la colisión");
+    const registrado = await prisma.eventoStripe.findUnique({ where: { id: "evt_itest_colision" } });
+    assert.ok(registrado, "el evento se registra (no queda en bucle de reintentos 500)");
+    const trasA = await prisma.asesor.findUnique({ where: { id: a.id } });
+    assert.equal(trasA?.stripeCustomerId, "cus_itest_X", "A conserva su customer (la colisión no se lo robó)");
+    assert.equal(trasB?.stripeCustomerId, null, "el acceso de B no depende del amarre; el índice único lo protege");
+  });
+});
+
+test("robustez: checkout.session.completed NO pisa un customer distinto ya amarrado (Hallazgo 2)", async () => {
+  await conEnv({ STRIPE_SECRET_KEY: "sk_test_x", STRIPE_WEBHOOK_SECRET: WEBHOOK_SECRET }, async () => {
+    // B ya tiene su customer real. Llega un checkout que intentaría amarrarle
+    // OTRO customer: no debe pisar el vínculo ya existente (eso corrompería la
+    // resolución por customer y sembraría la colisión del Hallazgo 1).
+    const b = await crearAsesor(CLERK_B, { estadoSuscripcion: "ninguna", stripeCustomerId: "cus_itest_B_real" });
+    const payload = eventoCheckout({
+      eventId: "evt_itest_nopisar",
+      asesorId: b.id,
+      customer: "cus_itest_B_otro",
+    });
+    const firma = await firmarPayload(payload);
+    const res = await postWebhook(payload, firma);
+    assert.equal(res.status, 200);
+    const trasB = await prisma.asesor.findUnique({ where: { id: b.id } });
+    assert.equal(trasB?.stripeCustomerId, "cus_itest_B_real", "no se pisa el customer ya amarrado");
   });
 });
 

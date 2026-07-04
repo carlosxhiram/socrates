@@ -96,22 +96,44 @@ async function actualizarDesdeSuscripcion(sub: Stripe.Subscription): Promise<voi
     return;
   }
 
+  // EFECTO CRÍTICO del dinero: el estado del acceso. Idempotente y JAMÁS debe
+  // fallar. Se escribe SOLO estado y fin-de-prueba, sin tocar el vínculo del
+  // Customer — así una colisión de stripeCustomerId (customer reasignado en
+  // Stripe, re-alta del asesor con otra cuenta) NO puede tumbar con P2002 la
+  // activación de quien ya pagó y dejar el webhook en un 500 en bucle.
   await prisma.asesor.update({
     where: { id: asesor.id },
-    data: { estadoSuscripcion: estado, pruebaTermina, stripeCustomerId: customerId },
+    data: { estadoSuscripcion: estado, pruebaTermina },
   });
+
+  // Amarre del Customer, aparte y a prueba de colisión (ver vincularCustomerSeguro).
+  await vincularCustomerSeguro(asesor.id, customerId);
 }
 
-/** Amarra el Customer de Stripe a nuestra fila (por client_reference_id = asesorId). */
+/** Amarra el Customer al recibir checkout.session.completed (client_reference_id = asesorId). */
 async function vincularCustomer(session: Stripe.Checkout.Session): Promise<void> {
   const asesorId = session.client_reference_id;
   const customerId =
     typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
   if (!asesorId || !customerId) return;
-  // Vínculo redundante (la suscripción ya trae metadata.asesorId y /pago/checkout
-  // ya fijó el customerId). Si falla, lo registramos pero no tumbamos el webhook:
-  // la activación real llega por el evento de suscripción.
+  await vincularCustomerSeguro(asesorId, customerId);
+}
+
+/**
+ * Amarra un Customer de Stripe a una fila de Asesor SIN arriesgar el resto del
+ * webhook:
+ *  - solo pega el vínculo si esa fila aún no tiene OTRO customer distinto (el
+ *    filtro compuesto no pisa un vínculo ya asignado — evita corromper la
+ *    resolución por customer de otra fila);
+ *  - si el customerId ya pertenece a OTRA fila, el índice único lo rechaza y el
+ *    .catch lo traga (no revienta el webhook).
+ * El estado del acceso NUNCA depende de este amarre.
+ */
+async function vincularCustomerSeguro(asesorId: string, customerId: string): Promise<void> {
   await prisma.asesor
-    .update({ where: { id: asesorId }, data: { stripeCustomerId: customerId } })
+    .updateMany({
+      where: { id: asesorId, OR: [{ stripeCustomerId: null }, { stripeCustomerId: customerId }] },
+      data: { stripeCustomerId: customerId },
+    })
     .catch((e) => console.warn("[webhook] no pude vincular customer→asesor:", e));
 }
