@@ -35,9 +35,9 @@ export function SeccionHero() {
 
             {/* Titular */}
             <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-oficina-texto md:text-5xl xl:text-6xl">
-              Tu equipo de asesoría financiera,{" "}
+              Contrata un equipo completo para tu oficina.{" "}
               <span className="relative inline-block">
-                <span className="relative z-10 text-marca">en una sola oficina.</span>
+                <span className="relative z-10 text-marca">Por $499 al mes.</span>
                 {/* Subrayado editorial */}
                 <span
                   aria-hidden
@@ -48,9 +48,9 @@ export function SeccionHero() {
 
             {/* Subtítulo */}
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-oficina-tenue">
-              Le dices a Sócrates lo que necesitas — en lenguaje normal, sin formularios —
-              y él dirige a tu equipo de especialistas para que preparen el trabajo.
-              Tú revisas y firmas.
+              Un investigador, un negociador, un gestor y tres especialistas más:
+              seis empleados que se integran a tu oficina y hacen el trabajo pesado
+              que hoy haces tú —o le pagas a alguien—. Tú solo revisas y firmas.
             </p>
 
             {/* CTAs */}
@@ -62,7 +62,7 @@ export function SeccionHero() {
                 Empieza tu prueba gratis
               </Link>
               <span className="text-sm text-oficina-tenue">
-                14 días sin costo · $499 MXN/mes después
+                14 días gratis · Cancela cuando quieras
               </span>
             </div>
           </div>

@@ -60,13 +60,13 @@ const EMPLEADOS: Empleado[] = [
 
 export function SeccionEquipo() {
   return (
-    <section className="border-t border-oficina-borde bg-oficina-panel py-20 md:py-28">
+    <section id="equipo" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-panel py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         {/* Encabezado */}
         <div className="mb-14 grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
-              Tu equipo
+              Tu plantilla
             </p>
             {/* El "6" como pieza tipográfica editorial */}
             <div className="flex items-baseline gap-4">
@@ -85,9 +85,10 @@ export function SeccionEquipo() {
           </div>
           <div className="flex items-end lg:col-span-7">
             <p className="max-w-lg text-base leading-relaxed text-oficina-tenue">
-              No necesitas coordinar a nadie. Sócrates recibe tu instrucción y
-              asigna el trabajo al especialista correcto. Cada entregable llega
-              ya revisado, listo para que lo uses con tu prospecto.
+              Seis empleados que se integran a tu oficina. No coordinas a nadie:
+              le dices a Sócrates qué necesitas y él le asigna el trabajo al
+              especialista correcto. Cada entregable llega listo para que tú lo
+              revises y lo uses con tu prospecto.
             </p>
           </div>
         </div>

@@ -24,7 +24,7 @@ const PASOS = [
 
 export function SeccionComoFunciona() {
   return (
-    <section className="border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
+    <section id="como-funciona" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         {/* Encabezado */}
         <div className="mb-14">
