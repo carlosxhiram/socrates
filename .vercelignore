@@ -1,0 +1,20 @@
+# Dependencias y artefactos de build (Vercel instala/compila del lado del servidor)
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+.turbo
+.git
+.vercel
+# Planeación y docs pesadas (no se sirven)
+_bmad
+_bmad-output
+docs/reportes-referencia
+# Locales / temporales
+.claude
+.playwright-mcp
+**/*.db
+**/.env*
+*.png
+*.jpeg

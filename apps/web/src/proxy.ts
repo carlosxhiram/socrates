@@ -13,10 +13,11 @@ import { NextResponse } from "next/server";
 
 const clerkConfigurado = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
-// Rutas públicas: la landing (/) y el sign-in. Todo lo demás requiere sesión
-// (cuando hay Clerk). /bienvenida queda protegida: exige sesión, pero el pago y
-// la bienvenida los gestiona el propio recibimiento (portero server-side).
-const esRutaPublica = createRouteMatcher(["/", "/sign-in(.*)"]);
+// Rutas públicas: la landing (/), la página institucional (/nosotros) y el
+// sign-in. Todo lo demás requiere sesión (cuando hay Clerk). /bienvenida queda
+// protegida: exige sesión, pero el pago y la bienvenida los gestiona el propio
+// recibimiento (portero server-side).
+const esRutaPublica = createRouteMatcher(["/", "/nosotros", "/sign-in(.*)"]);
 
 export default clerkConfigurado
   ? clerkMiddleware(async (auth, req) => {
