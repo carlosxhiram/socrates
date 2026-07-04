@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { obtenerExpediente, ErrorApi } from "@/lib/api-client";
+import { requerirAcceso } from "@/lib/portero";
 import {
   EMPLEADOS,
   etiquetaEtapaActual,
@@ -37,6 +38,7 @@ export async function generateMetadata({ params }: Parametros): Promise<Metadata
 
 export default async function ExpedientePage({ params }: Parametros) {
   const { id } = await params;
+  await requerirAcceso();
   let exp;
   try {
     exp = await obtenerExpediente(id);

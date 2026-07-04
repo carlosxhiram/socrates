@@ -7,6 +7,7 @@
 export * from "./glosario";
 export * from "./etapas";
 export * from "./progreso";
+export * from "./onboarding/paso";
 export * from "./empleados/contract";
 export * from "./reporte/index";
 export * from "./dto/index";

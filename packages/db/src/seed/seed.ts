@@ -118,14 +118,24 @@ async function sembrarCatalogo() {
 }
 
 async function sembrarAsesorDemo() {
+  // El asesor demo entra directo a La Oficina: perfil lleno, onboarding completo
+  // y suscripción en estado "demo" (acceso del modo demostración, SIN fingir un
+  // pago real — se distingue de "activa" a propósito). Así Carlos sigue cayendo
+  // en la oficina sin pasar por el recibimiento. Se fija también en `update`
+  // para que resembrar lo repare.
+  const datosDemo = {
+    nombre: "Carlos Hiram Chávez",
+    email: "carloshiramchavez@icloud.com",
+    nombreOficina: "SOC | TALENT",
+    zona: "Zona Norte (Monterrey)",
+    especialidad: "Crédito empresarial PYME",
+    onboardingEtapa: "completo",
+    estadoSuscripcion: "demo",
+  };
   const asesor = await prisma.asesor.upsert({
     where: { clerkUserId: DEMO_ASESOR_CLERK_ID },
-    update: {},
-    create: {
-      clerkUserId: DEMO_ASESOR_CLERK_ID,
-      nombre: "Carlos Hiram Chávez",
-      email: "carloshiramchavez@icloud.com",
-    },
+    update: datosDemo,
+    create: { clerkUserId: DEMO_ASESOR_CLERK_ID, ...datosDemo },
   });
   console.log(`  ✓ Asesor demo: ${asesor.nombre} (${asesor.id})`);
   return asesor.id;

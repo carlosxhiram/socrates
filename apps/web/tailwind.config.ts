@@ -1,9 +1,9 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Paleta de Sócrates: neutral dominante (blancos crema, grises fríos) con un
- * acento de marca VERDE bosque (identidad estilo Tavily — decisión de producto:
- * la marca es verde, nunca azul). Estética premium sin ostentación (UX P-6).
+ * Paleta de Sócrates — inspirada en Tavily: crema cálida dominante con acento
+ * VERDE salvia (la marca es verde, nunca azul). Estética premium sin
+ * ostentación (UX P-6).
  */
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
@@ -11,27 +11,27 @@ const config: Config = {
     extend: {
       colors: {
         marca: {
-          DEFAULT: "#1f6f43", // verde bosque (acento de marca)
-          fuerte: "#165432", // hover: más oscuro
-          suave: "#2f8c5c",
+          DEFAULT: "#3E7D5A", // verde salvia profundo — acento/botones (texto blanco, contraste AA)
+          fuerte: "#2F6147", // hover / activo
+          suave: "#81B09A", // salvia — tintes, badges, acentos suaves
         },
         oficina: {
-          fondo: "#f7f8fa", // gris muy frío de fondo
-          panel: "#ffffff",
-          borde: "#e3e7ed",
-          texto: "#1a2230",
-          tenue: "#6b7585",
+          fondo: "#FEFCF5", // crema cálido de fondo
+          panel: "#FFFFFF", // tarjetas
+          borde: "#E9E4D6", // borde cálido
+          texto: "#1E2A23", // verde-gris muy oscuro (texto)
+          tenue: "#6E7771", // texto secundario
         },
         estado: {
-          libre: "#9aa3b2",
-          trabajando: "#2f8c5c", // en marcha, en el verde de la marca
-          entrego: "#1f8a5b",
-          alerta: "#c8861a",
-          bloqueo: "#c0392b",
+          libre: "#9AA39B",
+          trabajando: "#3E7D5A",
+          entrego: "#1F8A5B",
+          alerta: "#C8861A",
+          bloqueo: "#C0392B",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        sans: ["var(--font-geist-sans)", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
     },
   },

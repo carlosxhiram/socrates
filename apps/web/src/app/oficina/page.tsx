@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import type { ExpedienteResumenDTO, EmpleadoEstadoDTO } from "@socrates/shared";
 import { obtenerExpedientes, obtenerEquipo, apiViva } from "@/lib/api-client";
+import { requerirAcceso } from "@/lib/portero";
 import { PanelEquipo } from "@/components/oficina/PanelEquipo";
 import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
 import { NuevoExpediente } from "@/components/oficina/NuevoExpediente";
@@ -39,6 +40,9 @@ export default async function OficinaPage() {
       </Marco>
     );
   }
+
+  // Portero: si al asesor le falta un paso del recibimiento, a /bienvenida.
+  await requerirAcceso();
 
   // La api respondió viva, pero eso no garantiza que estas dos llamadas
   // también lo hagan (red intermitente, tiempo agotado a media petición…). Un

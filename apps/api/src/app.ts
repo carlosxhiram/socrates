@@ -10,11 +10,16 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { prisma } from "@socrates/db";
 import { authMiddleware, type AuthedVars } from "./middleware/auth.js";
+import { requiereSuscripcion } from "./middleware/suscripcion.js";
 import { manejadorErrores } from "./middleware/errors.js";
 import { expedientesRouter } from "./rutas/expedientes.js";
 import { empleadosRouter } from "./rutas/empleados.js";
 import { catalogoRouter } from "./rutas/catalogo.js";
 import { entregablesRouter } from "./rutas/entregables.js";
+import { yoRouter } from "./rutas/yo.js";
+import { pagoRouter } from "./rutas/pago.js";
+import { manejarWebhookStripe } from "./pago/webhook.js";
+import { stripeHabilitado } from "./pago/proveedor-stripe.js";
 import { sesionesRouter } from "./rutas/sesiones.js";
 import { esModoSinClaves } from "./ia/proveedor-ia.js";
 import { crearProveedorBusqueda } from "./busqueda/proveedor-busqueda.js";
@@ -53,10 +58,17 @@ app.get("/health", async (c) => {
       modoSinClavesIA: esModoSinClaves(),
       busqueda: crearProveedorBusqueda().nombre,
       almacenamiento: crearAlmacenR2().disponible ? "configurado" : "modo-sin-claves",
+      cobro: stripeHabilitado() ? "stripe" : "modo-demo",
     },
     db === "ok" ? 200 : 503,
   );
 });
+
+// ── Webhook de Stripe (PÚBLICO: Stripe no manda token; va ANTES del auth) ─────
+// Verifica firma + idempotente. Necesita el cuerpo CRUDO (c.req.text()), por eso
+// se monta antes de cualquier middleware que pudiera consumir el body. Sin
+// STRIPE_WEBHOOK_SECRET responde 503 honesto y cero efectos.
+app.post("/pago/webhook", manejarWebhookStripe);
 
 // ── 404 dentro del contrato de error (nada de texto plano) ──────────────────
 app.notFound((c) =>
@@ -66,7 +78,24 @@ app.notFound((c) =>
 // ── Auth (todo lo demás requiere identidad) ──────────────────────────────────
 app.use("*", authMiddleware);
 
-// ── Rutas ────────────────────────────────────────────────────────────────────
+// ── Recibimiento (identidad SÍ, suscripción NO): se usan DURANTE el onboarding,
+// antes de tener acceso. Por eso se montan ANTES de la muralla del dinero. ─────
+app.route("/yo", yoRouter);
+app.route("/pago", pagoRouter);
+
+// ── Muralla del dinero: las rutas de NEGOCIO exigen suscripción con acceso ────
+// (demo/prueba/activa), no solo identidad. Un JWT válido sin suscripción NO lee
+// datos de negocio. Se aplica ANTES de montar sus routers.
+app.use("/expedientes/*", requiereSuscripcion);
+app.use("/expedientes", requiereSuscripcion);
+app.use("/empleados/*", requiereSuscripcion);
+app.use("/empleados", requiereSuscripcion);
+app.use("/catalogo/*", requiereSuscripcion);
+app.use("/catalogo", requiereSuscripcion);
+app.use("/entregables/*", requiereSuscripcion);
+app.use("/entregables", requiereSuscripcion);
+
+// ── Rutas de negocio ─────────────────────────────────────────────────────────
 app.route("/expedientes", expedientesRouter);
 app.route("/empleados", empleadosRouter);
 app.route("/catalogo", catalogoRouter);

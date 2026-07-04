@@ -11,6 +11,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { obtenerEntregable, ErrorApi } from "@/lib/api-client";
+import { requerirAcceso } from "@/lib/portero";
 import {
   TIPO_ENTREGABLE_ETIQUETA,
   ReporteV1Schema,
@@ -49,6 +50,7 @@ export async function generateMetadata({ params }: Parametros): Promise<Metadata
 
 export default async function EntregablePage({ params }: Parametros) {
   const { id } = await params;
+  await requerirAcceso();
   let ent;
   try {
     ent = await obtenerEntregable(id);

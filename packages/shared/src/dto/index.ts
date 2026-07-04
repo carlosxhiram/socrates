@@ -11,6 +11,8 @@ import {
   ESTADOS_TAREA,
   ESTADOS_ENTREGABLE,
   ROLES_EMPLEADO,
+  ETAPAS_ONBOARDING,
+  ESTADOS_SUSCRIPCION,
 } from "../glosario";
 
 export const EtapaSchema = z.enum(ETAPAS_EXPEDIENTE);
@@ -117,6 +119,42 @@ export const EmpleadoEstadoDTOSchema = z.object({
     .optional(),
 });
 export type EmpleadoEstadoDTO = z.infer<typeof EmpleadoEstadoDTOSchema>;
+
+// ── Onboarding ──────────────────────────────────────────────────────────────
+export const EtapaOnboardingSchema = z.enum(ETAPAS_ONBOARDING);
+export const EstadoSuscripcionSchema = z.enum(ESTADOS_SUSCRIPCION);
+
+/** Paso 1 del recibimiento: los datos mínimos de la oficina del asesor. */
+export const GuardarPerfilSchema = z.object({
+  nombreOficina: z.string().min(1, "¿Cómo se llama tu oficina?"),
+  zona: z.string().min(1, "¿En qué zona operas?"),
+  especialidad: z.string().min(1, "¿Cuál es tu especialidad?"),
+});
+export type GuardarPerfil = z.infer<typeof GuardarPerfilSchema>;
+
+/**
+ * `GET /yo` — el estado del asesor que alimenta al "portero" del frontend.
+ * `siguientePaso` lo calcula el servidor (derivarSiguientePaso); el cliente solo
+ * obedece a dónde mandarlo. `suscripcion.estado` es la verdad del acceso.
+ */
+export const YoDTOSchema = z.object({
+  asesorId: z.string(),
+  esDemo: z.boolean(),
+  perfil: z.object({
+    nombre: z.string().nullable(),
+    email: z.string().nullable(),
+    nombreOficina: z.string().nullable(),
+    zona: z.string().nullable(),
+    especialidad: z.string().nullable(),
+  }),
+  onboardingEtapa: EtapaOnboardingSchema,
+  suscripcion: z.object({
+    estado: EstadoSuscripcionSchema,
+    pruebaTermina: z.string().nullable(),
+  }),
+  siguientePaso: EtapaOnboardingSchema,
+});
+export type YoDTO = z.infer<typeof YoDTOSchema>;
 
 // ── Sesiones de chat con Sócrates ────────────────────────────────────────────
 
