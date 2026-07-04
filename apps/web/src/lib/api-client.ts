@@ -16,6 +16,8 @@ import type {
   ExpedienteResumenDTO,
   ExpedienteDetalleDTO,
   EmpleadoEstadoDTO,
+  YoDTO,
+  GuardarPerfil,
 } from "@socrates/shared";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
@@ -141,4 +143,63 @@ export async function apiViva(): Promise<EstadoApi> {
   } catch {
     return "caida";
   }
+}
+
+// ── Mutaciones del recibimiento (POST/PATCH con token) ───────────────────────
+// Mismo contrato que `pedir`: límite de espera y propagación del mensaje de
+// oficina vía ErrorApi (con status cuando la oficina alcanzó a responder).
+async function enviar<T>(
+  ruta: string,
+  metodo: "POST" | "PATCH",
+  cuerpo?: unknown,
+): Promise<T> {
+  const token = await tokenDeSesion();
+
+  let resp: Response;
+  try {
+    resp = await fetch(`${API_URL}${ruta}`, {
+      method: metodo,
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(cuerpo !== undefined ? { "Content-Type": "application/json" } : {}),
+      },
+      body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIEMPO_LIMITE_MS),
+    });
+  } catch {
+    throw new ErrorApi(MENSAJE_SIN_CONEXION);
+  }
+
+  if (!resp.ok) {
+    const cuerpoErr = (await resp.json().catch(() => null)) as
+      | { error?: { mensaje?: string } }
+      | null;
+    const mensaje =
+      cuerpoErr?.error?.mensaje ?? `La oficina respondió con un problema (${resp.status}).`;
+    throw new ErrorApi(mensaje, resp.status);
+  }
+
+  return (await resp.json()) as T;
+}
+
+// ── Onboarding ────────────────────────────────────────────────────────────────
+/** Estado del asesor actual (perfil + onboarding + suscripción + siguientePaso). */
+export async function obtenerYo(): Promise<YoDTO> {
+  return pedir<YoDTO>("/yo");
+}
+
+/** Paso 1: guarda los datos de la oficina. */
+export async function guardarPerfil(datos: GuardarPerfil): Promise<YoDTO> {
+  return enviar<YoDTO>("/yo/perfil", "PATCH", datos);
+}
+
+/** Paso 3: marca la bienvenida como vista (solo si ya hay acceso). */
+export async function completarBienvenida(): Promise<YoDTO> {
+  return enviar<YoDTO>("/yo/completar", "POST");
+}
+
+/** Paso 2: inicia el Checkout. Devuelve la URL a donde mandar al asesor. */
+export async function iniciarCheckout(): Promise<{ url: string; modo: "stripe" | "demo" }> {
+  return enviar<{ url: string; modo: "stripe" | "demo" }>("/pago/checkout", "POST");
 }
