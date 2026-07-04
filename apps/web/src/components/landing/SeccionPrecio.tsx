@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 
 const INCLUYE = [
-  "Acceso a los 6 especialistas del equipo",
+  "Tu equipo completo: los 6 especialistas",
   "Reportes de Inteligencia Financiera ilimitados",
   "Recomendaciones del catálogo SOC vigente",
   "Pitches y manejo de objeciones a medida",
@@ -12,7 +12,7 @@ const INCLUYE = [
 
 export function SeccionPrecio() {
   return (
-    <section className="border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
+    <section id="precio" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
           {/* Texto izquierdo */}
@@ -27,7 +27,12 @@ export function SeccionPrecio() {
             </h2>
             <p className="text-base leading-relaxed text-oficina-tenue">
               Sin niveles, sin módulos opcionales, sin sorpresas. Todo el equipo
-              de Sócrates disponible desde el primer día.
+              disponible desde el primer día.
+            </p>
+            {/* Ancla de valor: el precio contra la alternativa real */}
+            <p className="mt-5 border-l-2 border-marca pl-4 text-base leading-relaxed text-oficina-texto">
+              Un solo analista de verdad te costaría un sueldo. Aquí tienes al
+              equipo completo por <span className="font-semibold text-marca">$499 al mes</span>.
             </p>
           </div>
 
