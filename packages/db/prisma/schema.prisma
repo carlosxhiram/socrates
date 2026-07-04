@@ -33,8 +33,33 @@ model Asesor {
   nombre        String?
   email         String?
   expedientes   Expediente[]
+  sesiones      Sesion[]
   creadoEn      DateTime     @default(now())
   actualizadoEn DateTime     @updatedAt
+}
+
+// ── Sesiones de chat con Sócrates (línea directa al gerente) ─────────────────
+model Sesion {
+  id            String    @id @default(cuid())
+  asesor        Asesor    @relation(fields: [asesorId], references: [id])
+  asesorId      String // tenencia (NFR-8): SIEMPRE del token, nunca del payload
+  titulo        String    @default("Nueva conversación")
+  mensajes      Mensaje[]
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  @@index([asesorId])
+}
+
+model Mensaje {
+  id        String   @id @default(cuid())
+  sesion    Sesion   @relation(fields: [sesionId], references: [id], onDelete: Cascade)
+  sesionId  String
+  rol       String // "USUARIO" | "ASISTENTE" — validado en la capa de aplicación
+  contenido String
+  creadoEn  DateTime @default(now())
+
+  @@index([sesionId])
 }
 
 // ── ESPINA: el Expediente ────────────────────────────────────────────────────

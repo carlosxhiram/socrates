@@ -18,7 +18,11 @@
  * NFR-1: los fallos regresan { ok: false, motivo, detalle? } — nunca strings
  * "-centinela" indistinguibles de texto generado (ver ResultadoGenerarTexto).
  */
-import type { ProveedorIA, ResultadoGenerarTexto } from "@socrates/shared";
+import type {
+  ProveedorIA,
+  ResultadoGenerarTexto,
+  MensajeChatIA,
+} from "@socrates/shared";
 
 /** Modelos por defecto, por nivel de riesgo (configurable por env). */
 export const MODELOS = {
@@ -27,11 +31,33 @@ export const MODELOS = {
   mecanico: process.env.MODELO_MECANICO ?? "anthropic/claude-haiku-4.5",
 } as const;
 
+/**
+ * Instrucción de sistema para Sócrates en el chat con el Asesor (Sesiones).
+ * Voz de oficina, cero jerga técnica (NFR-14), es-MX (NFR-12). Sócrates escucha,
+ * prioriza y delega — no ejecuta solo (§4.1 del PRD).
+ */
+const SISTEMA_SOCRATES = `Eres Sócrates, el gerente de un equipo de agentes de inteligencia financiera al servicio de un asesor de SOC | TALENT.
+Tu voz es cálida, clara y de oficina: hablas en español de México, sin jerga técnica. Eres el punto de contacto del asesor; escuchas, priorizas y delegas.
+Tu equipo es:
+  • El Prospector — identifica y califica oportunidades de venta.
+  • El Investigador — analiza empresas y arma su reporte de inteligencia financiera, con fuentes.
+  • El Asesor de producto — recomienda el mejor financiamiento del catálogo SOC para cada necesidad.
+  • El Negociador — prepara guiones, argumentos y manejo de objeciones.
+  • El Tramitador — reúne requisitos y arma la cotización estimada.
+  • El Gestor — da seguimiento, cierra y acompaña en la postventa.
+Cuando el asesor te pide algo, confirmas que lo entendiste, le dices a quién del equipo se lo encargarías y cuál es el siguiente paso concreto. Si algo es ambiguo, haces UNA sola pregunta para aclararlo, sin inventar. Sé breve: dos o tres oraciones como máximo.`;
+
 class ProveedorIAFallback implements ProveedorIA {
   readonly disponible = false;
   async generarTexto(): Promise<ResultadoGenerarTexto> {
     // En modo sin claves los empleados NO deberían llamar esto; si lo hacen,
     // el caller debe revisar `ok` y caer a su ruta de seed (NFR-11).
+    return { ok: false, motivo: "sin_claves" };
+  }
+
+  async chatear(): Promise<ResultadoGenerarTexto> {
+    // Sin claves no hay conversación en vivo: la RUTA revisa `ok` y persiste un
+    // acuse honesto en voz de Sócrates (nunca un string-centinela — NFR-1).
     return { ok: false, motivo: "sin_claves" };
   }
 }
@@ -72,6 +98,39 @@ class ProveedorIAGateway implements ProveedorIA {
       console.warn("[ProveedorIA] llamada falló, devolviendo señal de fallback:", err);
       // Una llave rechazada es permanente (avisar a Carlos), no "temporal":
       // distinguirla evita que un caller reintente contra un 401 eterno.
+      const { GatewayAuthenticationError } = await import("@ai-sdk/gateway");
+      const esClaveInvalida = GatewayAuthenticationError.isInstance(err);
+      return {
+        ok: false,
+        motivo: esClaveInvalida ? "clave_invalida" : "fallo_temporal",
+        detalle: err instanceof Error ? err.message : String(err), // solo logs
+      };
+    }
+  }
+
+  async chatear(
+    historial: MensajeChatIA[],
+    modelo?: string,
+  ): Promise<ResultadoGenerarTexto> {
+    try {
+      const { generateText } = await import("ai");
+      const { createGateway } = await import("@ai-sdk/gateway");
+      const gateway = createGateway({ apiKey: this.apiKey });
+      const messages = historial.map((m) => ({
+        role: (m.rol === "USUARIO" ? "user" : "assistant") as
+          | "user"
+          | "assistant",
+        content: m.contenido,
+      }));
+      const { text } = await generateText({
+        model: gateway(modelo ?? MODELOS.estandar),
+        system: SISTEMA_SOCRATES,
+        messages,
+      });
+      return { ok: true, texto: text };
+    } catch (err) {
+      // Mismo contrato que generarTexto: fallo estructurado, jamás string-centinela.
+      console.warn("[ProveedorIA] chat falló, devolviendo señal de fallback:", err);
       const { GatewayAuthenticationError } = await import("@ai-sdk/gateway");
       const esClaveInvalida = GatewayAuthenticationError.isInstance(err);
       return {
