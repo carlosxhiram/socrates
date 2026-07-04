@@ -503,12 +503,14 @@ corren las sesiones con remote control) el terreno es otro:
 
 - **`master`**: checkpoint 2026-07-03, PRs #1–#8 fusionados.
 - **PR #9 (Sesiones)**: draft, batería verde, listo para revisión de Carlos.
-- **PR #10 (Onboarding + cobro)**: draft, batería verde. **Bloqueado por 2
-  decisiones de Carlos**: (a) ¿acceso de gracia / solo-lectura cuando la
-  suscripción cae en `past_due` (cargo de renovación rebotado), en vez de sacar
-  al asesor de TODO su trabajo mientras Stripe reintenta? (b) ¿la palabra
-  "Stripe" en el wizard se queda (sello de confianza) o pasa a "Pago seguro y
-  cifrado" (NFR-14)?
+- **PR #10 (Onboarding + cobro)**: draft, batería verde. Las 2 decisiones que
+  lo bloqueaban ya las resolvió Carlos (commit `7c53ec6`): (a) `past_due` →
+  estado **`gracia`** con acceso de SOLO LECTURA (entra a su oficina y consulta
+  su trabajo; la muralla le bloquea la escritura con `402 PAGO_PENDIENTE` hasta
+  regularizar el pago) — NO se le tira todo por un cargo rebotado mientras Stripe
+  reintenta; (b) el wizard dice **"Pago seguro y cifrado"** (NFR-14, sin nombrar
+  al procesador). Follow-up de UI pendiente: el aviso "tu pago necesita atención"
+  para el asesor en gracia (la API ya distingue `PAGO_PENDIENTE`).
 - **Lo siguiente del mapa §4** (sin tocar por este trabajo): **Etapa A** (cerrar
   la columna vertebral, sin llaves) y, sobre todo, el **PoC del Investigador
   (Etapa C)** — el gate de TODO lo de IA (R-1, el riesgo técnico central).
