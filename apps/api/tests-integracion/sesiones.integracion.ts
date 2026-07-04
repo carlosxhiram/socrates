@@ -9,7 +9,7 @@
  *     técnica — NFR-14) en lugar de tronar (NFR-11);
  *   - la conversación se bautiza con el primer mensaje si tenía título default;
  *   - TENENCIA (NFR-8): un asesor NO ve, ni toca, ni borra la sesión de otro
- *     (403), y la sesión ajena jamás aparece en su lista;
+ *     (404, indistinguible de inexistente), y la sesión ajena jamás aparece en su lista;
  *   - borrar una conversación arrastra sus mensajes (ON DELETE CASCADE).
  *
  * Requiere DATABASE_URL local migrada y sembrada. Corre con:
@@ -134,28 +134,29 @@ test("TENENCIA (NFR-8): el asesor demo no ve, ni toca, ni borra la sesión de ot
     "la sesión de otro asesor jamás debe aparecer en mi lista",
   );
 
-  // 2) No la puedo abrir (403, con mensaje de oficina, sin jerga).
+  // 2) No la puedo abrir: 404 (inexistente y ajena son indistinguibles — no se
+  //    filtra que la sesión exista), con mensaje de oficina y sin jerga.
   const verAjena = await app.request(`/sesiones/${sesionAjena.id}`);
-  assert.equal(verAjena.status, 403);
+  assert.equal(verAjena.status, 404);
   const errVer = (await verAjena.json()) as { error: { codigo: string; mensaje: string } };
-  assert.equal(errVer.error.codigo, "AJENA");
+  assert.equal(errVer.error.codigo, "NO_EXISTE");
   assert.doesNotMatch(errVer.error.mensaje, /tenant|asesorId|forbidden|token/i);
 
-  // 3) No le puedo escribir (403) y NO se crea ningún mensaje en ella.
+  // 3) No le puedo escribir (404) y NO se crea ningún mensaje en ella.
   const escribirAjena = await app.request(`/sesiones/${sesionAjena.id}/mensajes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ texto: "intruso" }),
   });
-  assert.equal(escribirAjena.status, 403);
+  assert.equal(escribirAjena.status, 404);
   const nMensajes = await prisma.mensaje.count({ where: { sesionId: sesionAjena.id } });
-  assert.equal(nMensajes, 0, "un 403 no debe haber dejado escribir en la sesión ajena");
+  assert.equal(nMensajes, 0, "no debe haber dejado escribir en la sesión ajena");
 
-  // 4) No la puedo borrar (403) y sigue existiendo.
+  // 4) No la puedo borrar (404) y sigue existiendo.
   const borrarAjena = await app.request(`/sesiones/${sesionAjena.id}`, { method: "DELETE" });
-  assert.equal(borrarAjena.status, 403);
+  assert.equal(borrarAjena.status, 404);
   const sigue = await prisma.sesion.findUnique({ where: { id: sesionAjena.id } });
-  assert.ok(sigue, "un 403 no debe borrar la sesión ajena");
+  assert.ok(sigue, "no debe borrar la sesión ajena");
 });
 
 test("borrar una conversación arrastra sus mensajes (ON DELETE CASCADE)", async () => {

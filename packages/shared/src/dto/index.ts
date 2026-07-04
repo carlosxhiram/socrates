@@ -151,7 +151,7 @@ export type SesionDetalleDTO = z.infer<typeof SesionDetalleDTOSchema>;
 
 // ── Schemas de entrada para la ruta de sesiones ──────────────────────────────
 export const CrearSesionSchema = z.object({
-  titulo: z.string().trim().max(100).optional(),
+  titulo: z.string().trim().max(100, "El título es demasiado largo.").optional(),
 });
 export type CrearSesion = z.infer<typeof CrearSesionSchema>;
 

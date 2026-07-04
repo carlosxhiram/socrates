@@ -24,6 +24,14 @@ export const sesionesRouter = new Hono<{ Variables: AuthedVars }>();
 const TITULO_DEFAULT = "Nueva conversación";
 
 /**
+ * Cuántos turnos previos se le mandan a Sócrates como contexto. Techo de
+ * contexto y de costo: una conversación larga no reenvía su historia completa
+ * en cada llamada cuando entre la llave real (NFR-5). No afecta lo que se guarda
+ * ni lo que ve el Asesor: solo lo que viaja al equipo en vivo.
+ */
+const MAX_TURNOS_CONTEXTO = 20;
+
+/**
  * Acuse honesto de Sócrates cuando no hay conexión con el equipo en vivo.
  * Es contenido de oficina DELIBERADO (no un string-centinela): se persiste como
  * un turno normal de Sócrates. Cero jerga técnica (NFR-14).
@@ -86,20 +94,17 @@ sesionesRouter.post("/", validarJson(CrearSesionSchema), async (c) => {
 sesionesRouter.get("/:id", async (c) => {
   const asesorId = c.get("asesorId");
   const id = c.req.param("id");
-  const sesion = await prisma.sesion.findUnique({
-    where: { id },
+  // Tenencia dentro de la consulta (asesorId en el WHERE): una sesión inexistente
+  // y una ajena son indistinguibles (404) — no se filtra su existencia y la
+  // tenencia no depende de un chequeo posterior que un refactor pudiera soltar.
+  const sesion = await prisma.sesion.findFirst({
+    where: { id, asesorId },
     include: { mensajes: { orderBy: { creadoEn: "asc" } } },
   });
   if (!sesion) {
     return c.json(
       { error: { codigo: "NO_EXISTE", mensaje: "No encontré esa conversación." } },
       404,
-    );
-  }
-  if (sesion.asesorId !== asesorId) {
-    return c.json(
-      { error: { codigo: "AJENA", mensaje: "Esa conversación no es tuya." } },
-      403,
     );
   }
   return c.json({
@@ -126,9 +131,11 @@ sesionesRouter.post(
     // El esquema ya viene con trim() aplicado (no cuela espacios en blanco).
     const { texto: textoLimpio } = c.req.valid("json");
 
-    // Verificar tenencia (y cargar el historial para la conversación)
-    const sesion = await prisma.sesion.findUnique({
-      where: { id },
+    // Verificar tenencia dentro de la consulta (asesorId en el WHERE) y cargar el
+    // historial. Inexistente y ajena son indistinguibles (404): no se filtra la
+    // existencia de sesiones de otros asesores.
+    const sesion = await prisma.sesion.findFirst({
+      where: { id, asesorId },
       include: { mensajes: { orderBy: { creadoEn: "asc" } } },
     });
     if (!sesion) {
@@ -137,21 +144,11 @@ sesionesRouter.post(
         404,
       );
     }
-    if (sesion.asesorId !== asesorId) {
-      return c.json(
-        { error: { codigo: "AJENA", mensaje: "Esa conversación no es tuya." } },
-        403,
-      );
-    }
 
-    // Guardar el mensaje del usuario.
-    const msgUsuario = await prisma.mensaje.create({
-      data: { sesionId: id, rol: "USUARIO", contenido: textoLimpio },
-    });
-
-    // Construir el historial para Sócrates (incluye el mensaje recién enviado).
+    // Construir el historial para Sócrates: solo los últimos turnos (techo de
+    // contexto/costo) + el mensaje recién enviado.
     const historial: MensajeChatIA[] = [
-      ...sesion.mensajes.map((m) => ({
+      ...sesion.mensajes.slice(-MAX_TURNOS_CONTEXTO).map((m) => ({
         rol: m.rol as "USUARIO" | "ASISTENTE",
         contenido: m.contenido,
       })),
@@ -167,19 +164,29 @@ sesionesRouter.post(
       ? resultado.texto
       : ACUSE_SIN_SERVICIO_VIVO;
 
-    // Guardar la respuesta de Sócrates + tocar la sesión (y bautizarla con el
-    // primer mensaje si aún tiene el título por defecto).
+    // Bautizar la sesión con el primer mensaje si aún tiene el título por defecto.
     const nuevoTitulo =
       sesion.titulo === TITULO_DEFAULT
         ? textoLimpio.slice(0, 40) || TITULO_DEFAULT
         : sesion.titulo;
-    const [msgAsistente] = await prisma.$transaction([
+
+    // Persistir el turno del usuario y la respuesta de Sócrates en UNA sola
+    // transacción: si la escritura falla, no queda un mensaje del usuario
+    // huérfano sin respuesta. Timestamps explícitos con 1 ms de diferencia para
+    // fijar el orden usuario→asistente: dentro de una transacción de Postgres,
+    // now() es idéntico para ambos INSERT y el orden quedaría indefinido.
+    const ahora = new Date();
+    const despues = new Date(ahora.getTime() + 1);
+    const [msgUsuario, msgAsistente] = await prisma.$transaction([
       prisma.mensaje.create({
-        data: { sesionId: id, rol: "ASISTENTE", contenido: respuestaTexto },
+        data: { sesionId: id, rol: "USUARIO", contenido: textoLimpio, creadoEn: ahora },
+      }),
+      prisma.mensaje.create({
+        data: { sesionId: id, rol: "ASISTENTE", contenido: respuestaTexto, creadoEn: despues },
       }),
       prisma.sesion.update({
         where: { id },
-        data: { titulo: nuevoTitulo, actualizadoEn: new Date() },
+        data: { titulo: nuevoTitulo, actualizadoEn: despues },
       }),
     ]);
 
@@ -204,17 +211,12 @@ sesionesRouter.post(
 sesionesRouter.delete("/:id", async (c) => {
   const asesorId = c.get("asesorId");
   const id = c.req.param("id");
-  const sesion = await prisma.sesion.findUnique({ where: { id } });
+  // Tenencia en la consulta: inexistente y ajena son indistinguibles (404).
+  const sesion = await prisma.sesion.findFirst({ where: { id, asesorId } });
   if (!sesion) {
     return c.json(
       { error: { codigo: "NO_EXISTE", mensaje: "No encontré esa conversación." } },
       404,
-    );
-  }
-  if (sesion.asesorId !== asesorId) {
-    return c.json(
-      { error: { codigo: "AJENA", mensaje: "Esa conversación no es tuya." } },
-      403,
     );
   }
   // Los mensajes caen por ON DELETE CASCADE (definido en el esquema, Postgres).
