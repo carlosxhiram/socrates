@@ -1,8 +1,9 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Paleta de Sócrates: neutral dominante (blancos, grises fríos) con un acento
- * corporativo (azul oscuro). Estética premium sin ostentación (UX P-6).
+ * Paleta de Sócrates: neutral dominante (blancos crema, grises fríos) con un
+ * acento de marca VERDE bosque (identidad estilo Tavily — decisión de producto:
+ * la marca es verde, nunca azul). Estética premium sin ostentación (UX P-6).
  */
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
@@ -10,9 +11,9 @@ const config: Config = {
     extend: {
       colors: {
         marca: {
-          DEFAULT: "#1e3a5f", // azul oscuro corporativo
-          fuerte: "#16293f",
-          suave: "#2d5280",
+          DEFAULT: "#1f6f43", // verde bosque (acento de marca)
+          fuerte: "#165432", // hover: más oscuro
+          suave: "#2f8c5c",
         },
         oficina: {
           fondo: "#f7f8fa", // gris muy frío de fondo
@@ -23,7 +24,7 @@ const config: Config = {
         },
         estado: {
           libre: "#9aa3b2",
-          trabajando: "#2d5280",
+          trabajando: "#2f8c5c", // en marcha, en el verde de la marca
           entrego: "#1f8a5b",
           alerta: "#c8861a",
           bloqueo: "#c0392b",
