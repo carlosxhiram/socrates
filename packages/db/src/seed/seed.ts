@@ -245,6 +245,42 @@ async function sembrarExpedientes(asesorId: string) {
   );
 }
 
+/** Título estable de la conversación demo (para resembrar sin duplicar). */
+const TITULO_SESION_DEMO = "Arranque con Probemedic";
+
+/**
+ * Siembra una conversación demo del Asesor con Sócrates, en voz de oficina
+ * (cero jerga técnica — NFR-14). Idempotente: borra la demo previa y la recrea.
+ * Los mensajes caen por ON DELETE CASCADE al borrar la sesión.
+ */
+async function sembrarSesiones(asesorId: string) {
+  await prisma.sesion.deleteMany({
+    where: { asesorId, titulo: TITULO_SESION_DEMO },
+  });
+
+  const sesion = await prisma.sesion.create({
+    data: { asesorId, titulo: TITULO_SESION_DEMO },
+  });
+  await prisma.mensaje.createMany({
+    data: [
+      {
+        sesionId: sesion.id,
+        rol: "USUARIO",
+        contenido:
+          "Sócrates, quiero avanzar con Probemedic. ¿En qué vamos y cuál es el siguiente paso?",
+      },
+      {
+        sesionId: sesion.id,
+        rol: "ASISTENTE",
+        contenido:
+          "Ya tenemos listo y aprobado el reporte de inteligencia de Probemedic, así que el expediente está en Investigado. El siguiente paso natural es que el Asesor de producto identifique el mejor financiamiento del catálogo para su caso. ¿Le doy luz verde para que lo prepare?",
+      },
+    ],
+  });
+
+  console.log(`  ✓ Conversación demo con Sócrates (${sesion.id})`);
+}
+
 /** Siembra completa. Exportada para poder probarla (idempotencia) sin efectos al importar. */
 export async function sembrar() {
   console.log("🌱 Sembrando Sócrates...");
@@ -252,6 +288,7 @@ export async function sembrar() {
   await sembrarCatalogo();
   const asesorId = await sembrarAsesorDemo();
   await sembrarExpedientes(asesorId);
+  await sembrarSesiones(asesorId);
   console.log("✅ Seed completo.");
 }
 

@@ -155,3 +155,52 @@ export const YoDTOSchema = z.object({
   siguientePaso: EtapaOnboardingSchema,
 });
 export type YoDTO = z.infer<typeof YoDTOSchema>;
+
+// ── Sesiones de chat con Sócrates ────────────────────────────────────────────
+
+export const RolMensajeSchema = z.enum(["USUARIO", "ASISTENTE"]);
+export type RolMensaje = z.infer<typeof RolMensajeSchema>;
+
+export const MensajeDTOSchema = z.object({
+  id: z.string(),
+  rol: RolMensajeSchema,
+  contenido: z.string(),
+  creadoEn: z.string(), // ISO
+});
+export type MensajeDTO = z.infer<typeof MensajeDTOSchema>;
+
+export const SesionResumenDTOSchema = z.object({
+  id: z.string(),
+  titulo: z.string(),
+  actualizadoEn: z.string(), // ISO
+  cantidadMensajes: z.number().int(),
+  resumen: z.string().optional(), // vista previa del último mensaje
+});
+export type SesionResumenDTO = z.infer<typeof SesionResumenDTOSchema>;
+
+export const SesionDetalleDTOSchema = z.object({
+  id: z.string(),
+  titulo: z.string(),
+  creadoEn: z.string(), // ISO
+  actualizadoEn: z.string(), // ISO
+  mensajes: z.array(MensajeDTOSchema),
+});
+export type SesionDetalleDTO = z.infer<typeof SesionDetalleDTOSchema>;
+
+// ── Schemas de entrada para la ruta de sesiones ──────────────────────────────
+export const CrearSesionSchema = z.object({
+  titulo: z.string().trim().max(100, "El título es demasiado largo.").optional(),
+});
+export type CrearSesion = z.infer<typeof CrearSesionSchema>;
+
+export const EnviarMensajeSchema = z.object({
+  // `trim()` ANTES de medir: un texto de puros espacios no cuenta como mensaje
+  // (si no, colaría un contenido vacío). Tope alto para no aceptar entradas sin
+  // límite, pero holgado para un mensaje de oficina normal.
+  texto: z
+    .string()
+    .trim()
+    .min(1, "El mensaje no puede estar vacío.")
+    .max(4000, "El mensaje es demasiado largo."),
+});
+export type EnviarMensaje = z.infer<typeof EnviarMensajeSchema>;

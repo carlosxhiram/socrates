@@ -2,7 +2,8 @@ import type { Config } from "tailwindcss";
 
 /**
  * Paleta de Sócrates — inspirada en Tavily: crema cálida dominante con acento
- * VERDE salvia. Estética premium sin ostentación (UX P-6).
+ * VERDE salvia (la marca es verde, nunca azul). Estética premium sin
+ * ostentación (UX P-6).
  */
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],

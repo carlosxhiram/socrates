@@ -77,6 +77,15 @@ export type ResultadoGenerarTexto =
   | { ok: false; motivo: "sin_claves" | "clave_invalida" | "fallo_temporal"; detalle?: string };
 
 /**
+ * Un turno del hilo de conversación del Asesor con Sócrates (Sesiones).
+ * `rol` sigue la convención de la BD: "USUARIO" (el Asesor) / "ASISTENTE" (Sócrates).
+ */
+export interface MensajeChatIA {
+  rol: "USUARIO" | "ASISTENTE";
+  contenido: string;
+}
+
+/**
  * Wrapper de IA (D-6). En Modo sin claves, `disponible` es false y los empleados
  * caen a su ruta de seed. Toda llamada a IA pasa por aquí (regla §5.5 #4).
  */
@@ -84,6 +93,13 @@ export interface ProveedorIA {
   readonly disponible: boolean;
   /** Genera texto libre. Nunca lanza: los fallos vienen como { ok: false, ... }. */
   generarTexto(opts: { sistema?: string; prompt: string; modelo?: string }): Promise<ResultadoGenerarTexto>;
+  /**
+   * Conversa con Sócrates sobre un historial (Sesiones). Igual que `generarTexto`,
+   * NUNCA lanza ni devuelve un string-centinela: los fallos vienen como
+   * { ok: false, motivo }, y es la RUTA quien traduce ese fallo a un mensaje
+   * honesto en voz de oficina antes de persistirlo (NFR-1/NFR-11/NFR-14).
+   */
+  chatear(historial: MensajeChatIA[], modelo?: string): Promise<ResultadoGenerarTexto>;
 }
 
 /** Contexto de ejecución que el worker arma para cada Empleado. */

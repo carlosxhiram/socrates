@@ -2,15 +2,32 @@
 
 /**
  * BarraComando — la línea directa al gerente Sócrates (UX C-3).
- * Placeholder FUNCIONAL: el campo recibe texto y muestra un acuse en voz de
- * Sócrates. La interpretación/plan plenos llegan en E3. No es un chat.
+ * El campo recibe texto y muestra un acuse en voz de Sócrates; para platicar a
+ * fondo con seguimiento, el acuse invita a abrir una conversación en
+ * Conversaciones (Sesiones), donde el hilo se guarda. La interpretación/plan
+ * plenos llegan en E3. Opcionalmente muestra "chips" de acciones rápidas que
+ * rellenan el campo y lo enfocan.
  */
-import { useState } from "react";
-import { Send } from "lucide-react";
+import { useRef, useState } from "react";
+import Link from "next/link";
+import { Send, MessagesSquare } from "lucide-react";
 
-export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | "expediente" }) {
+/** Un atajo que precarga el campo con una plantilla de encargo. */
+export interface AccionRapida {
+  etiqueta: string;
+  plantilla: string;
+}
+
+export function BarraComando({
+  contexto = "oficina",
+  acciones,
+}: {
+  contexto?: "oficina" | "expediente";
+  acciones?: AccionRapida[];
+}) {
   const [texto, setTexto] = useState("");
   const [acuse, setAcuse] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const placeholder =
     contexto === "oficina"
@@ -20,15 +37,21 @@ export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | 
   function enviar(e: React.FormEvent) {
     e.preventDefault();
     if (!texto.trim()) return;
-    // E1: acuse honesto. La planeación real (delegar a empleados) llega en E3.
+    // Acuse honesto: la planeación real (delegar a empleados) llega en E3; para
+    // conversar con seguimiento, Conversaciones (Sesiones) ya guarda el hilo.
     setAcuse(
-      "Te leo. Todavía estoy aprendiendo a repartir el trabajo entre el equipo; muy pronto podré encargar esto por ti.",
+      "Te leo. Para platicar a fondo y darle seguimiento, abre una conversación en Conversaciones; ahí te respondo y guardamos el hilo.",
     );
     setTexto("");
   }
 
+  function usarAccion(plantilla: string) {
+    setTexto(plantilla);
+    inputRef.current?.focus();
+  }
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Región de acuse SIEMPRE montada: así el lector de pantalla la detecta
           desde el primer mensaje, no solo a partir del segundo (E1). */}
       <div aria-live="polite">
@@ -37,7 +60,13 @@ export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | 
             <span className="mr-1.5" aria-hidden>
               🐢
             </span>
-            {acuse}
+            {acuse}{" "}
+            <Link
+              href="/sesiones"
+              className="font-medium text-marca underline underline-offset-2 hover:text-marca-fuerte"
+            >
+              Abrir Conversaciones
+            </Link>
           </div>
         )}
       </div>
@@ -49,6 +78,8 @@ export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | 
           🐢
         </span>
         <input
+          ref={inputRef}
+          id="comando-socrates"
           type="text"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
@@ -64,6 +95,32 @@ export function BarraComando({ contexto = "oficina" }: { contexto?: "oficina" | 
           <Send size={15} aria-hidden /> Enviar
         </button>
       </form>
+
+      {/* Chips de acciones rápidas: mismo ancho que la barra (grid de hasta 6). */}
+      {acciones && acciones.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          {acciones.map((a) => (
+            <button
+              key={a.etiqueta}
+              type="button"
+              onClick={() => usarAccion(a.plantilla)}
+              className="rounded-full border border-oficina-borde bg-oficina-panel px-3 py-1.5 text-center text-sm text-oficina-tenue transition-colors hover:border-marca/40 hover:text-oficina-texto"
+            >
+              {a.etiqueta}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Enlace persistente a Conversaciones (visible siempre en la Oficina). */}
+      {contexto === "oficina" && (
+        <Link
+          href="/sesiones"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-oficina-tenue transition-colors hover:text-marca"
+        >
+          <MessagesSquare size={13} aria-hidden /> Ver mis conversaciones con Sócrates
+        </Link>
+      )}
     </div>
   );
 }

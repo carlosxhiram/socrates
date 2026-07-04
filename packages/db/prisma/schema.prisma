@@ -41,7 +41,7 @@ model Asesor {
   // ── Estado de onboarding y suscripción (la VERDAD del acceso vive aquí) ─────
   // onboardingEtapa: perfil | pago | bienvenida | completo (glosario ETAPAS_ONBOARDING)
   onboardingEtapa   String    @default("perfil")
-  // estadoSuscripcion: ninguna | demo | prueba | activa | vencida | cancelada
+  // estadoSuscripcion: ninguna | demo | prueba | activa | gracia | vencida | cancelada
   // (glosario ESTADOS_SUSCRIPCION). Lo escribe SOLO el webhook firmado de Stripe
   // (nunca el navegador). "demo" es el estado del modo demostración sin llaves,
   // explícito para no confundirlo con un pago real. Doctrina del dinero.
@@ -50,6 +50,7 @@ model Asesor {
   pruebaTermina     DateTime?
 
   expedientes   Expediente[]
+  sesiones      Sesion[]
   creadoEn      DateTime     @default(now())
   actualizadoEn DateTime     @updatedAt
 }
@@ -61,6 +62,30 @@ model EventoStripe {
   id          String   @id // event.id de Stripe ("evt_...")
   tipo        String
   procesadoEn DateTime @default(now())
+}
+
+// ── Sesiones de chat con Sócrates (línea directa al gerente) ─────────────────
+model Sesion {
+  id            String    @id @default(cuid())
+  asesor        Asesor    @relation(fields: [asesorId], references: [id])
+  asesorId      String // tenencia (NFR-8): SIEMPRE del token, nunca del payload
+  titulo        String    @default("Nueva conversación")
+  mensajes      Mensaje[]
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  @@index([asesorId])
+}
+
+model Mensaje {
+  id        String   @id @default(cuid())
+  sesion    Sesion   @relation(fields: [sesionId], references: [id], onDelete: Cascade)
+  sesionId  String
+  rol       String // "USUARIO" | "ASISTENTE" — validado en la capa de aplicación
+  contenido String
+  creadoEn  DateTime @default(now())
+
+  @@index([sesionId])
 }
 
 // ── ESPINA: el Expediente ────────────────────────────────────────────────────
