@@ -62,7 +62,9 @@ export async function crearCheckoutSession(opts: {
   if (!priceId) throw new Error("Falta STRIPE_PRICE_ID.");
   const trialDias = Number(process.env.STRIPE_TRIAL_DIAS ?? 14);
 
-  // Reusar el Customer si ya existe; si no, crearlo amarrado a nuestro asesor.
+  // Reusar el Customer si ya existe; si no, crearlo amarrado a nuestro asesor
+  // (el email se fija AQUÍ, al crear el Customer — Stripe no permite mandar
+  // customer_email en la Checkout Session cuando ya se pasa un customer).
   let customerId = opts.stripeCustomerIdExistente;
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -75,6 +77,9 @@ export async function crearCheckoutSession(opts: {
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
+    // Nuestro cliente es 100% mexicano: forzamos español, sin depender del
+    // navegador del asesor (que puede traer el sistema en inglés).
+    locale: "es-419",
     client_reference_id: opts.asesorId,
     line_items: [{ price: priceId, quantity: 1 }],
     subscription_data: {
