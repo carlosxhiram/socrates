@@ -56,7 +56,7 @@ export function SeccionHero() {
             {/* CTAs */}
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
-                href="/oficina"
+                href="/crear-cuenta"
                 className="inline-flex items-center justify-center rounded-md bg-marca px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-fuerte"
               >
                 Empieza tu prueba gratis

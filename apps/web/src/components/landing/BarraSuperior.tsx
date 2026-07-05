@@ -13,9 +13,9 @@ export function BarraSuperior() {
           </span>
         </Link>
 
-        {/* Acción */}
+        {/* Acción — quien ya tiene cuenta inicia sesión */}
         <Link
-          href="/oficina"
+          href="/entrar"
           className="rounded-md bg-marca px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-marca-fuerte"
         >
           Entrar

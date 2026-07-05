@@ -9,8 +9,11 @@ import { FooterLanding } from "@/components/landing/FooterLanding";
 /**
  * Landing pública de Sócrates.
  * Server Component estático — sin hooks de cliente, sin "use client".
- * Todos los CTA apuntan a /oficina (embudo de sesión/onboarding): con Clerk el
- * proxy exige sesión y el portero manda al recibimiento; en modo demo entra directo.
+ * "Empieza tu prueba gratis" lleva a /crear-cuenta (registro) y "Entrar" a
+ * /entrar (inicio de sesión): ambas pantallas viven dentro de la app y en
+ * español. Tras registrarse, el asesor va a /bienvenida; tras iniciar sesión, a
+ * /oficina (donde el portero decide si aún le falta el recibimiento). En modo
+ * demo (sin Clerk) esas pantallas invitan a entrar directo a La Oficina.
  */
 export default function LandingPage() {
   return (
