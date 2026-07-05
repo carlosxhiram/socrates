@@ -72,7 +72,7 @@ export function SeccionPrecio() {
 
               {/* CTA */}
               <Link
-                href="/oficina"
+                href="/crear-cuenta"
                 className="block w-full rounded-md bg-marca px-6 py-3.5 text-center text-sm font-semibold text-white transition-colors hover:bg-marca-fuerte"
               >
                 Empieza tu prueba gratis

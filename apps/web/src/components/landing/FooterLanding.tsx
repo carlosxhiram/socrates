@@ -12,8 +12,8 @@ const PRODUCTO: Enlace[] = [
 ];
 
 const EMPEZAR: Enlace[] = [
-  { texto: "Prueba gratis", href: "/oficina" },
-  { texto: "Entrar", href: "/oficina" },
+  { texto: "Prueba gratis", href: "/crear-cuenta" },
+  { texto: "Entrar", href: "/entrar" },
 ];
 
 const EMPRESA: Enlace[] = [{ texto: "Acerca de nosotros", href: "/nosotros" }];

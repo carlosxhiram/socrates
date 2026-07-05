@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { esMX } from "@clerk/localizations";
 import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
@@ -28,5 +29,16 @@ export default function RootLayout({
   // app cargue sin claves (E1-S6).
   if (!clerkConfigurado) return cuerpo;
 
-  return <ClerkProvider>{cuerpo}</ClerkProvider>;
+  // Localización en español de México (esMX): las pantallas de crear cuenta e
+  // iniciar sesión salen en español, no en inglés (NFR-12).
+  // Corregimos un error de dedo que trae el paquete (@clerk/localizations
+  // 4.12.0 dice "Inicar sesión" en signUp.start.actionLink).
+  const esMXCorregido = {
+    ...esMX,
+    signUp: {
+      ...esMX.signUp,
+      start: { ...esMX.signUp?.start, actionLink: "Iniciar sesión" },
+    },
+  };
+  return <ClerkProvider localization={esMXCorregido}>{cuerpo}</ClerkProvider>;
 }
