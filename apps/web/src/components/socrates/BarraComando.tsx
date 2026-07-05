@@ -2,15 +2,18 @@
 
 /**
  * BarraComando — la línea directa al gerente Sócrates (UX C-3).
- * El campo recibe texto y muestra un acuse en voz de Sócrates; para platicar a
- * fondo con seguimiento, el acuse invita a abrir una conversación en
- * Conversaciones (Sesiones), donde el hilo se guarda. La interpretación/plan
- * plenos llegan en E3. Opcionalmente muestra "chips" de acciones rápidas que
- * rellenan el campo y lo enfocan.
+ * El campo recibe texto; al Enviar, abre una conversación nueva en
+ * Conversaciones (Sesiones) con ese texto como primer mensaje y navega ahí —
+ * el asesor aterriza viendo su mensaje y la respuesta de Sócrates (hoy, sin
+ * llaves de IA, el acuse honesto del equipo). La interpretación/plan plenos
+ * (delegar a empleados) llegan en E3. Opcionalmente muestra "chips" de
+ * acciones rápidas que rellenan el campo y lo enfocan.
  */
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Send, MessagesSquare } from "lucide-react";
+import { Send, Loader2, MessagesSquare } from "lucide-react";
+import { crearSesion, enviarMensaje } from "@/lib/sesiones-actions";
 
 /** Un atajo que precarga el campo con una plantilla de encargo. */
 export interface AccionRapida {
@@ -25,8 +28,10 @@ export function BarraComando({
   contexto?: "oficina" | "expediente";
   acciones?: AccionRapida[];
 }) {
+  const router = useRouter();
   const [texto, setTexto] = useState("");
-  const [acuse, setAcuse] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const placeholder =
@@ -34,15 +39,25 @@ export function BarraComando({
       ? "Cuéntame qué necesitas y lo armamos"
       : "¿Qué hacemos con este expediente?";
 
-  function enviar(e: React.FormEvent) {
+  async function enviar(e: React.FormEvent) {
     e.preventDefault();
-    if (!texto.trim()) return;
-    // Acuse honesto: la planeación real (delegar a empleados) llega en E3; para
-    // conversar con seguimiento, Conversaciones (Sesiones) ya guarda el hilo.
-    setAcuse(
-      "Te leo. Para platicar a fondo y darle seguimiento, abre una conversación en Conversaciones; ahí te respondo y guardamos el hilo.",
-    );
-    setTexto("");
+    const limpio = texto.trim();
+    if (!limpio || enviando) return;
+
+    setError(null);
+    setEnviando(true);
+    try {
+      // Reusa el flujo existente de Sesiones: crea la conversación y manda el
+      // texto del asesor como primer mensaje, luego navega ahí — el asesor
+      // aterriza viendo su mensaje ya enviado y la respuesta de Sócrates.
+      const nueva = await crearSesion();
+      await enviarMensaje(nueva.id, limpio);
+      setTexto("");
+      router.push(`/sesiones/${nueva.id}`);
+    } catch {
+      setError("No pude abrir tu conversación. Intenta de nuevo.");
+      setEnviando(false);
+    }
   }
 
   function usarAccion(plantilla: string) {
@@ -52,21 +67,15 @@ export function BarraComando({
 
   return (
     <div className="space-y-3">
-      {/* Región de acuse SIEMPRE montada: así el lector de pantalla la detecta
+      {/* Región de aviso SIEMPRE montada: así el lector de pantalla la detecta
           desde el primer mensaje, no solo a partir del segundo (E1). */}
       <div aria-live="polite">
-        {acuse && (
-          <div className="rounded-xl border border-marca/20 bg-marca/5 px-4 py-3 text-sm text-oficina-texto">
+        {error && (
+          <div className="rounded-xl border border-estado-alerta/30 bg-estado-alerta/5 px-4 py-3 text-sm text-oficina-texto">
             <span className="mr-1.5" aria-hidden>
-              🐢
+              ⚠️
             </span>
-            {acuse}{" "}
-            <Link
-              href="/sesiones"
-              className="font-medium text-marca underline underline-offset-2 hover:text-marca-fuerte"
-            >
-              Abrir Conversaciones
-            </Link>
+            {error}
           </div>
         )}
       </div>
@@ -85,14 +94,25 @@ export function BarraComando({
           onChange={(e) => setTexto(e.target.value)}
           placeholder={placeholder}
           aria-label="Escríbele a Sócrates"
-          className="flex-1 rounded-md bg-transparent text-sm text-oficina-texto outline-none placeholder:text-oficina-tenue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca focus-visible:ring-offset-1"
+          disabled={enviando}
+          className="flex-1 rounded-md bg-transparent text-sm text-oficina-texto outline-none placeholder:text-oficina-tenue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca focus-visible:ring-offset-1 disabled:opacity-50"
         />
         <button
           type="submit"
+          disabled={enviando || !texto.trim()}
           aria-label="Enviar"
-          className="flex items-center gap-1.5 rounded-lg bg-marca px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-marca-fuerte"
+          className="flex items-center gap-1.5 rounded-lg bg-marca px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-marca-fuerte disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Send size={15} aria-hidden /> Enviar
+          {enviando ? (
+            <>
+              <Loader2 size={15} className="animate-spin" aria-hidden /> Abriendo tu
+              conversación…
+            </>
+          ) : (
+            <>
+              <Send size={15} aria-hidden /> Enviar
+            </>
+          )}
         </button>
       </form>
 
