@@ -31,5 +31,14 @@ export default function RootLayout({
 
   // Localización en español de México (esMX): las pantallas de crear cuenta e
   // iniciar sesión salen en español, no en inglés (NFR-12).
-  return <ClerkProvider localization={esMX}>{cuerpo}</ClerkProvider>;
+  // Corregimos un error de dedo que trae el paquete (@clerk/localizations
+  // 4.12.0 dice "Inicar sesión" en signUp.start.actionLink).
+  const esMXCorregido = {
+    ...esMX,
+    signUp: {
+      ...esMX.signUp,
+      start: { ...esMX.signUp?.start, actionLink: "Iniciar sesión" },
+    },
+  };
+  return <ClerkProvider localization={esMXCorregido}>{cuerpo}</ClerkProvider>;
 }
