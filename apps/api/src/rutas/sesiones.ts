@@ -4,7 +4,7 @@
  * Tenencia SIEMPRE por asesorId derivado del token (regla §5.5 #1), NUNCA del
  * payload. Respuestas cuerpo-directo; errores { error: { codigo, mensaje } }.
  *
- * NFR-11: sin AI_GATEWAY_API_KEY la conversación NO truena — Sócrates responde
+ * NFR-11: sin ANTHROPIC_API_KEY la conversación NO truena — Sócrates responde
  * con un acuse honesto en voz de oficina y el hilo se guarda igual. NFR-14: cero
  * jerga técnica en esa respuesta (nada de "IA/modelo/servicio no disponible").
  */

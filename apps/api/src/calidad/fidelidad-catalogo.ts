@@ -24,6 +24,14 @@ export interface ResultadoFidelidad {
  * descarta si:
  *  - el `productoId` no existe, o
  *  - el `institucionId` que trae NO coincide con `producto.institucionId`.
+ *
+ * Las que sobreviven NO se persisten con el `productoNombre`/`institucionNombre`
+ * que haya escrito la IA: el id es la fuente de verdad (C-1), así que el
+ * NOMBRE que ve el asesor se sobrescribe con el del catálogo real. Sin esto,
+ * un id correcto podría llevar pegada una etiqueta inventada (otro nombre,
+ * otra tasa) y el foso validaría el id mientras la mentira pasa por la
+ * etiqueta — el catálogo es sagrado también en lo que el asesor LEE, no
+ * solo en lo que el sistema referencia internamente.
  */
 export async function verificarRecomendaciones(
   recomendaciones: RecomendacionFinanciamiento[],
@@ -48,7 +56,11 @@ export async function verificarRecomendaciones(
       });
       continue;
     }
-    validas.push(rec);
+    validas.push({
+      ...rec,
+      productoNombre: producto.nombre,
+      institucionNombre: producto.institucionNombre,
+    });
   }
 
   return { validas, brechas };

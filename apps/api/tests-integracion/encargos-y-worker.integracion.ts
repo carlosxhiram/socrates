@@ -176,8 +176,11 @@ test("el worker entrega un Entregable BORRADOR y aplica fidelidad C-1", async ()
                   necesidad: "Capital de trabajo",
                   productoId: "banorte-credito-revolvente",
                   institucionId: "banorte", // real: coincide con el producto real
-                  productoNombre: "Línea de Crédito Revolvente Empresarial",
-                  institucionNombre: "Banorte",
+                  // Nombre/institución DELIBERADAMENTE inventados (la IA podría
+                  // alucinar la etiqueta aunque el id sea real) — deben quedar
+                  // sobrescritos con los valores reales del catálogo (C-1).
+                  productoNombre: "Crédito PyME Preferente 8.9% (nombre inventado)",
+                  institucionNombre: "Banco Inventado S.A.",
                   usoEspecifico: "Cubrir nómina en picos de demanda",
                 },
                 {
@@ -216,11 +219,24 @@ test("el worker entrega un Entregable BORRADOR y aplica fidelidad C-1", async ()
   assert.ok(version, "debe existir la versión 1 del entregable");
 
   const contenido = JSON.parse(version.contenido) as {
-    recomendacionesFinanciamiento: { institucionId: string }[];
+    recomendacionesFinanciamiento: { institucionId: string; productoNombre: string; institucionNombre: string }[];
     brechas: unknown[];
   };
   assert.equal(contenido.recomendacionesFinanciamiento.length, 1, "solo debe sobrevivir la recomendación real");
   assert.equal(contenido.recomendacionesFinanciamiento[0]?.institucionId, "banorte");
+  // C-1 no solo valida el id: el NOMBRE que ve el asesor se sobrescribe con el
+  // real del catálogo — la IA no puede colar una etiqueta inventada aunque el
+  // id sea válido (hallazgo de la revisión adversarial, corregido en el acto).
+  assert.equal(
+    contenido.recomendacionesFinanciamiento[0]?.productoNombre,
+    "Línea de Crédito Revolvente Empresarial",
+    "el nombre inventado por la IA debe quedar reemplazado por el nombre real del catálogo",
+  );
+  assert.equal(
+    contenido.recomendacionesFinanciamiento[0]?.institucionNombre,
+    "Banorte",
+    "la institución inventada debe quedar reemplazada por la real",
+  );
   assert.equal(contenido.brechas.length, 1, "la descartada debe registrarse como brecha honesta");
 
   const recomendaciones = await prisma.recomendacion.findMany({ where: { versionId: version.id } });
