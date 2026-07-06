@@ -11,14 +11,23 @@ import {
   ESTADOS_TAREA,
   ESTADOS_ENTREGABLE,
   ROLES_EMPLEADO,
+  ROLES_PANEL,
   ETAPAS_ONBOARDING,
   ESTADOS_SUSCRIPCION,
+  type RolEmpleado,
 } from "../glosario";
 
 export const EtapaSchema = z.enum(ETAPAS_EXPEDIENTE);
 export const EstadoTareaSchema = z.enum(ESTADOS_TAREA);
 export const EstadoEntregableSchema = z.enum(ESTADOS_ENTREGABLE);
 export const RolEmpleadoSchema = z.enum(ROLES_EMPLEADO);
+/**
+ * Solo los 6 del panel: a Sócrates (el gerente) no se le "encarga" directo.
+ * El cast preserva los literales de RolEmpleado (ROLES_PANEL está tipado como
+ * RolEmpleado[] mutable, no `as const`, así que sin el cast z.enum infiere
+ * `string` genérico y se pierde el chequeo de las claves de EMPLEADOS).
+ */
+export const RolPanelSchema = z.enum(ROLES_PANEL as unknown as readonly [RolEmpleado, ...RolEmpleado[]]);
 
 // ── Error estándar de la API ────────────────────────────────────────────────
 export const ErrorApiSchema = z.object({
@@ -59,6 +68,13 @@ export const EditarExpedienteSchema = z
     message: "No hay nada que guardar: manda al menos un dato.",
   });
 export type EditarExpediente = z.infer<typeof EditarExpedienteSchema>;
+
+// ── Encargar trabajo a un Empleado (spec de la misión §2.1) ─────────────────
+export const CrearTareaSchema = z.object({
+  empleadoRol: RolPanelSchema,
+  descripcion: z.string().min(3, "Cuéntale al equipo qué necesitas (mínimo 3 letras).").max(500).optional(),
+});
+export type CrearTarea = z.infer<typeof CrearTareaSchema>;
 
 // ── DTOs de salida (lo que la api devuelve a web) ───────────────────────────
 export const TareaDTOSchema = z.object({

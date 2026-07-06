@@ -10,12 +10,15 @@ import { validarJson } from "../middleware/validacion.js";
 import {
   CrearExpedienteSchema,
   EditarExpedienteSchema,
+  CrearTareaSchema,
   derivarProgreso,
   evaluarTransicionEtapa,
   esAvanceLineal,
   PRERREQUISITO_ETAPA,
   TIPO_ENTREGABLE_ETIQUETA,
   ETAPA_ETIQUETA,
+  EMPLEADOS,
+  ETAPAS_TERMINALES,
   type EstadoTarea,
   type RolEmpleado,
   type EtapaExpediente,
@@ -272,4 +275,74 @@ expedientesRouter.patch("/:id", validarJson(EditarExpedienteSchema), async (c) =
     );
   }
   return c.json(aResumen(actualizado));
+});
+
+// ── POST /expedientes/:id/tareas — encargar trabajo a un Empleado (misión de
+// lanzamiento §2.1). El worker (worker/index.ts) la toma después, en su ciclo. ─
+expedientesRouter.post("/:id/tareas", validarJson(CrearTareaSchema), async (c) => {
+  const asesorId = c.get("asesorId");
+  const id = c.req.param("id");
+  const datos = c.req.valid("json");
+
+  const expediente = await prisma.expediente.findUnique({ where: { id } });
+  if (!expediente) {
+    return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré ese expediente." } }, 404);
+  }
+  if (expediente.asesorId !== asesorId) {
+    return c.json({ error: { codigo: "AJENO", mensaje: "Ese expediente no es tuyo." } }, 403);
+  }
+  if (ETAPAS_TERMINALES.includes(expediente.etapa as EtapaExpediente)) {
+    return c.json(
+      {
+        error: {
+          codigo: "TRANSICION_INVALIDA",
+          mensaje: "Este expediente ya está cerrado; no se le pueden encargar más trabajos.",
+        },
+      },
+      409,
+    );
+  }
+
+  const yaEnCurso = await prisma.tarea.findFirst({
+    where: {
+      expedienteId: id,
+      empleadoRol: datos.empleadoRol,
+      estado: { in: ["ENCARGADA", "EN_CURSO"] },
+    },
+  });
+  if (yaEnCurso) {
+    return c.json(
+      {
+        error: {
+          codigo: "CONFLICTO",
+          mensaje: `${EMPLEADOS[datos.empleadoRol].nombre} ya tiene un encargo en curso en este expediente.`,
+        },
+      },
+      409,
+    );
+  }
+
+  const descripcion = datos.descripcion?.trim() || EMPLEADOS[datos.empleadoRol].descripcion;
+  const tarea = await prisma.tarea.create({
+    data: {
+      expedienteId: id,
+      empleadoRol: datos.empleadoRol,
+      descripcion,
+      estado: "ENCARGADA",
+    },
+  });
+
+  return c.json(
+    {
+      id: tarea.id,
+      empleadoRol: tarea.empleadoRol as RolEmpleado,
+      descripcion: tarea.descripcion,
+      estado: tarea.estado as EstadoTarea,
+      motivo: tarea.motivo,
+      progresoPct: tarea.progresoPct,
+      progresoNota: tarea.progresoNota,
+      creadoEn: tarea.creadoEn.toISOString(),
+    },
+    201,
+  );
 });
