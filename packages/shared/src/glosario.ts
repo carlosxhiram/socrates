@@ -213,6 +213,7 @@ export const SUSCRIPCION_CON_ACCESO_LECTURA: EstadoSuscripcion[] = [
 // ── Tipos de Entregable ─────────────────────────────────────────────────────
 export const TIPOS_ENTREGABLE = [
   "reporte_inteligencia",
+  "perfil_prospecto",
   "recomendaciones_producto",
   "guion_acercamiento",
   "lista_requisitos",
@@ -222,8 +223,19 @@ export type TipoEntregable = (typeof TIPOS_ENTREGABLE)[number];
 
 export const TIPO_ENTREGABLE_ETIQUETA: Record<TipoEntregable, string> = {
   reporte_inteligencia: "Reporte de Inteligencia",
+  perfil_prospecto: "Perfil del prospecto",
   recomendaciones_producto: "Recomendaciones de producto",
   guion_acercamiento: "Guion de acercamiento",
   lista_requisitos: "Lista de requisitos",
   seguimiento: "Seguimiento",
+};
+
+/** El `RolEmpleado` del panel que produce cada tipo de Entregable (1:1). */
+export const ROL_POR_TIPO_ENTREGABLE: Record<TipoEntregable, RolEmpleado> = {
+  reporte_inteligencia: "INVESTIGADOR",
+  perfil_prospecto: "PROSPECTOR",
+  recomendaciones_producto: "ASESOR_PRODUCTO",
+  guion_acercamiento: "NEGOCIADOR",
+  lista_requisitos: "TRAMITADOR",
+  seguimiento: "GESTOR",
 };

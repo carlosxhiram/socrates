@@ -10,4 +10,5 @@ export * from "./progreso";
 export * from "./onboarding/paso";
 export * from "./empleados/contract";
 export * from "./reporte/index";
+export * from "./entregables/EntregableGenericoV1";
 export * from "./dto/index";
