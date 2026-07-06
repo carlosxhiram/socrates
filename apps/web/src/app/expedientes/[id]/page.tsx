@@ -10,16 +10,15 @@ import { requerirAcceso } from "@/lib/portero";
 import {
   EMPLEADOS,
   etiquetaEtapaActual,
-  ESTADO_TAREA_ETIQUETA,
   TIPO_ENTREGABLE_ETIQUETA,
   type RolEmpleado,
   type TipoEntregable,
-  type EstadoTarea,
 } from "@socrates/shared";
 import { BarraProgreso } from "@/components/oficina/BarraProgreso";
 import { BarraComando } from "@/components/socrates/BarraComando";
 import { AccionesEtapa } from "@/components/expediente/AccionesEtapa";
 import { DatosProspecto } from "@/components/expediente/DatosProspecto";
+import { EquipoExpediente } from "@/components/expediente/EquipoExpediente";
 import { fechaCorta } from "@/lib/format-esmx";
 
 export const dynamic = "force-dynamic";
@@ -151,32 +150,7 @@ export default async function ExpedientePage({ params }: Parametros) {
 
         {/* Equipo en este expediente */}
         <aside>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-oficina-tenue">
-            Equipo en este expediente
-          </h2>
-          {exp.tareas.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-oficina-borde bg-oficina-panel p-5 text-sm text-oficina-tenue">
-              Aún no le has encargado nada al equipo aquí.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {exp.tareas.map((t) => (
-                <li
-                  key={t.id}
-                  className="rounded-lg border border-oficina-borde bg-oficina-panel p-3"
-                >
-                  <p className="text-sm font-medium text-oficina-texto">
-                    {EMPLEADOS[t.empleadoRol as RolEmpleado]?.nombre ?? t.empleadoRol}
-                  </p>
-                  <p className="mt-0.5 text-xs text-oficina-tenue">{t.descripcion}</p>
-                  <p className="mt-1 text-[11px] font-medium text-oficina-tenue">
-                    {ESTADO_TAREA_ETIQUETA[t.estado as EstadoTarea] ?? t.estado}
-                    {t.motivo ? ` — ${t.motivo}` : ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
+          <EquipoExpediente expedienteId={exp.id} tareas={exp.tareas} />
         </aside>
       </div>
 
