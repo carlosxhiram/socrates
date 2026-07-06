@@ -17,13 +17,12 @@ import {
   PRERREQUISITO_ETAPA,
   TIPO_ENTREGABLE_ETIQUETA,
   ETAPA_ETIQUETA,
-  EMPLEADOS,
-  ETAPAS_TERMINALES,
   type EstadoTarea,
   type RolEmpleado,
   type EtapaExpediente,
 } from "@socrates/shared";
 import type { AuthedVars } from "../middleware/auth.js";
+import { crearTareaEncargo } from "../servicios/encargos.js";
 
 export const expedientesRouter = new Hono<{ Variables: AuthedVars }>();
 
@@ -284,65 +283,31 @@ expedientesRouter.post("/:id/tareas", validarJson(CrearTareaSchema), async (c) =
   const id = c.req.param("id");
   const datos = c.req.valid("json");
 
-  const expediente = await prisma.expediente.findUnique({ where: { id } });
-  if (!expediente) {
-    return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré ese expediente." } }, 404);
-  }
-  if (expediente.asesorId !== asesorId) {
-    return c.json({ error: { codigo: "AJENO", mensaje: "Ese expediente no es tuyo." } }, 403);
-  }
-  if (ETAPAS_TERMINALES.includes(expediente.etapa as EtapaExpediente)) {
-    return c.json(
-      {
-        error: {
-          codigo: "TRANSICION_INVALIDA",
-          mensaje: "Este expediente ya está cerrado; no se le pueden encargar más trabajos.",
-        },
-      },
-      409,
-    );
-  }
-
-  const yaEnCurso = await prisma.tarea.findFirst({
-    where: {
-      expedienteId: id,
-      empleadoRol: datos.empleadoRol,
-      estado: { in: ["ENCARGADA", "EN_CURSO"] },
-    },
-  });
-  if (yaEnCurso) {
-    return c.json(
-      {
-        error: {
-          codigo: "CONFLICTO",
-          mensaje: `${EMPLEADOS[datos.empleadoRol].nombre} ya tiene un encargo en curso en este expediente.`,
-        },
-      },
-      409,
-    );
-  }
-
-  const descripcion = datos.descripcion?.trim() || EMPLEADOS[datos.empleadoRol].descripcion;
-  const tarea = await prisma.tarea.create({
-    data: {
-      expedienteId: id,
-      empleadoRol: datos.empleadoRol,
-      descripcion,
-      estado: "ENCARGADA",
-    },
+  const resultado = await crearTareaEncargo({
+    expedienteId: id,
+    asesorId,
+    empleadoRol: datos.empleadoRol,
+    descripcion: datos.descripcion,
   });
 
-  return c.json(
-    {
-      id: tarea.id,
-      empleadoRol: tarea.empleadoRol as RolEmpleado,
-      descripcion: tarea.descripcion,
-      estado: tarea.estado as EstadoTarea,
-      motivo: tarea.motivo,
-      progresoPct: tarea.progresoPct,
-      progresoNota: tarea.progresoNota,
-      creadoEn: tarea.creadoEn.toISOString(),
-    },
-    201,
-  );
+  switch (resultado.estado) {
+    case "NO_EXISTE":
+      return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré ese expediente." } }, 404);
+    case "AJENO":
+      return c.json({ error: { codigo: "AJENO", mensaje: "Ese expediente no es tuyo." } }, 403);
+    case "CERRADO":
+      return c.json(
+        {
+          error: {
+            codigo: "TRANSICION_INVALIDA",
+            mensaje: "Este expediente ya está cerrado; no se le pueden encargar más trabajos.",
+          },
+        },
+        409,
+      );
+    case "CONFLICTO":
+      return c.json({ error: { codigo: "CONFLICTO", mensaje: resultado.mensaje } }, 409);
+    case "OK":
+      return c.json(resultado.tarea, 201);
+  }
 });
