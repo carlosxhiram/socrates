@@ -13,7 +13,7 @@
     "test:integracion": "tsx --test --test-concurrency=1 tests-integracion/*.integracion.ts"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^2.0.109",
+    "@ai-sdk/anthropic": "^2.0.47",
     "@aws-sdk/client-s3": "^3.726.0",
     "@aws-sdk/s3-request-presigner": "^3.726.0",
     "@clerk/backend": "^1.21.0",

@@ -67,6 +67,8 @@ export const TareaDTOSchema = z.object({
   descripcion: z.string(),
   estado: EstadoTareaSchema,
   motivo: z.string().nullable().optional(),
+  progresoPct: z.number().int().nullable().optional(),
+  progresoNota: z.string().nullable().optional(),
   creadoEn: z.string(),
 });
 export type TareaDTO = z.infer<typeof TareaDTOSchema>;

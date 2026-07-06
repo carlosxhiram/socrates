@@ -155,6 +155,8 @@ expedientesRouter.get("/:id", async (c) => {
       descripcion: t.descripcion,
       estado: t.estado as EstadoTarea,
       motivo: t.motivo,
+      progresoPct: t.progresoPct,
+      progresoNota: t.progresoNota,
       creadoEn: t.creadoEn.toISOString(),
     })),
     entregables: e.entregables.map((d) => ({

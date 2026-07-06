@@ -1,19 +1,17 @@
 /**
  * proveedor-ia.ts — wrapper ÚNICO de IA (D-6, E1-S4).
  *
- * Envuelve el AI SDK (`generateText`) apuntando al Vercel AI Gateway con strings
- * "anthropic/claude-*". Toda llamada a IA pasa por aquí (regla §5.5 #4) para que
- * el fallback sea uniforme.
+ * Envuelve el AI SDK (`generateText`) hablando DIRECTO con la API de Anthropic
+ * (Claude Console) vía `@ai-sdk/anthropic` — sin intermediario de facturación.
+ * Toda llamada a IA pasa por aquí (regla §5.5 #4) para que el fallback sea
+ * uniforme.
  *
- * Versiones verificadas contra el registro npm (ver commit): `ai@^5.0.210` +
- * `@ai-sdk/gateway@^2.0.109` (ambos publicados en pareja bajo el dist-tag
- * "ai-v5"; ai@^4.x usa el spec LanguageModelV1 y NINGUNA versión publicada de
- * @ai-sdk/gateway lo soporta — todas están en LanguageModelV2+ — así que la
- * combinación previa (`ai@^4.3` + import diferido de `@ai-sdk/gateway`) nunca
- * pudo funcionar en runtime).
+ * Versiones verificadas contra el paquete instalado en este repo (no de
+ * memoria): `ai@^5.0.210` + `@ai-sdk/anthropic@^2.0.85`, ambos sobre
+ * LanguageModelV2.
  *
- * MODO SIN CLAVES (NFR-11): si falta AI_GATEWAY_API_KEY, `disponible = false` y
- * los empleados caen a su ruta de seed. NUNCA burbujea un 500 crudo.
+ * MODO SIN CLAVES (NFR-11): si falta ANTHROPIC_API_KEY, `disponible = false` y
+ * los empleados caen a su ruta de seed/bloqueo digno. NUNCA burbujea un 500 crudo.
  *
  * NFR-1: los fallos regresan { ok: false, motivo, detalle? } — nunca strings
  * "-centinela" indistinguibles de texto generado (ver ResultadoGenerarTexto).
@@ -26,9 +24,9 @@ import type {
 
 /** Modelos por defecto, por nivel de riesgo (configurable por env). */
 export const MODELOS = {
-  pesado: process.env.MODELO_PESADO ?? "anthropic/claude-opus-4.6",
-  estandar: process.env.MODELO_ESTANDAR ?? "anthropic/claude-sonnet-4.6",
-  mecanico: process.env.MODELO_MECANICO ?? "anthropic/claude-haiku-4.5",
+  pesado: process.env.MODELO_PESADO ?? "claude-opus-4-1-20250805",
+  estandar: process.env.MODELO_ESTANDAR ?? "claude-sonnet-4-5-20250929",
+  mecanico: process.env.MODELO_MECANICO ?? "claude-haiku-4-5-20251001",
 } as const;
 
 /**
@@ -62,7 +60,20 @@ class ProveedorIAFallback implements ProveedorIA {
   }
 }
 
-class ProveedorIAGateway implements ProveedorIA {
+/**
+ * Una llave rechazada por Anthropic es permanente (401/403 — avisar a Carlos),
+ * no "temporal": distinguirla evita que un caller reintente contra un error
+ * eterno. El AI SDK expone `APICallError` con `statusCode` en el error.
+ */
+function esClaveInvalida(err: unknown): boolean {
+  if (err && typeof err === "object" && "statusCode" in err) {
+    const codigo = (err as { statusCode?: unknown }).statusCode;
+    return codigo === 401 || codigo === 403;
+  }
+  return false;
+}
+
+class ProveedorIAAnthropic implements ProveedorIA {
   readonly disponible = true;
   private readonly apiKey: string;
 
@@ -81,13 +92,12 @@ class ProveedorIAGateway implements ProveedorIA {
   }): Promise<ResultadoGenerarTexto> {
     try {
       // Importación diferida (solo cuando hay clave y de verdad se invoca) pero
-      // de especificadores literales — el paquete SÍ está instalado, esto ya NO
-      // es un import "opcional" por especificador variable.
+      // de especificadores literales — el paquete SÍ está instalado.
       const { generateText } = await import("ai");
-      const { createGateway } = await import("@ai-sdk/gateway");
-      const gateway = createGateway({ apiKey: this.apiKey });
+      const { createAnthropic } = await import("@ai-sdk/anthropic");
+      const anthropic = createAnthropic({ apiKey: this.apiKey });
       const { text } = await generateText({
-        model: gateway(opts.modelo ?? MODELOS.estandar),
+        model: anthropic(opts.modelo ?? MODELOS.estandar),
         system: opts.sistema,
         prompt: opts.prompt,
       });
@@ -96,13 +106,9 @@ class ProveedorIAGateway implements ProveedorIA {
       // Cualquier fallo de red/IA se traduce a señal manejable (nunca 500 crudo,
       // nunca un string-centinela indistinguible de texto real — NFR-1).
       console.warn("[ProveedorIA] llamada falló, devolviendo señal de fallback:", err);
-      // Una llave rechazada es permanente (avisar a Carlos), no "temporal":
-      // distinguirla evita que un caller reintente contra un 401 eterno.
-      const { GatewayAuthenticationError } = await import("@ai-sdk/gateway");
-      const esClaveInvalida = GatewayAuthenticationError.isInstance(err);
       return {
         ok: false,
-        motivo: esClaveInvalida ? "clave_invalida" : "fallo_temporal",
+        motivo: esClaveInvalida(err) ? "clave_invalida" : "fallo_temporal",
         detalle: err instanceof Error ? err.message : String(err), // solo logs
       };
     }
@@ -114,8 +120,8 @@ class ProveedorIAGateway implements ProveedorIA {
   ): Promise<ResultadoGenerarTexto> {
     try {
       const { generateText } = await import("ai");
-      const { createGateway } = await import("@ai-sdk/gateway");
-      const gateway = createGateway({ apiKey: this.apiKey });
+      const { createAnthropic } = await import("@ai-sdk/anthropic");
+      const anthropic = createAnthropic({ apiKey: this.apiKey });
       const messages = historial.map((m) => ({
         role: (m.rol === "USUARIO" ? "user" : "assistant") as
           | "user"
@@ -123,7 +129,7 @@ class ProveedorIAGateway implements ProveedorIA {
         content: m.contenido,
       }));
       const { text } = await generateText({
-        model: gateway(modelo ?? MODELOS.estandar),
+        model: anthropic(modelo ?? MODELOS.estandar),
         system: SISTEMA_SOCRATES,
         messages,
       });
@@ -131,11 +137,9 @@ class ProveedorIAGateway implements ProveedorIA {
     } catch (err) {
       // Mismo contrato que generarTexto: fallo estructurado, jamás string-centinela.
       console.warn("[ProveedorIA] chat falló, devolviendo señal de fallback:", err);
-      const { GatewayAuthenticationError } = await import("@ai-sdk/gateway");
-      const esClaveInvalida = GatewayAuthenticationError.isInstance(err);
       return {
         ok: false,
-        motivo: esClaveInvalida ? "clave_invalida" : "fallo_temporal",
+        motivo: esClaveInvalida(err) ? "clave_invalida" : "fallo_temporal",
         detalle: err instanceof Error ? err.message : String(err), // solo logs
       };
     }
@@ -144,18 +148,18 @@ class ProveedorIAGateway implements ProveedorIA {
 
 /**
  * Crea el proveedor de IA según el entorno.
- * Sin AI_GATEWAY_API_KEY ⇒ fallback (modoSinClaves).
+ * Sin ANTHROPIC_API_KEY ⇒ fallback (modoSinClaves).
  */
 export function crearProveedorIA(): ProveedorIA {
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey || apiKey.trim() === "") {
     return new ProveedorIAFallback();
   }
-  return new ProveedorIAGateway(apiKey);
+  return new ProveedorIAAnthropic(apiKey);
 }
 
 /** ¿Estamos en Modo sin claves de IA? (para el ctx de los empleados). */
 export function esModoSinClaves(): boolean {
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   return !apiKey || apiKey.trim() === "";
 }
