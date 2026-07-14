@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { RevelarAlScroll } from "@/components/movimiento/RevelarAlScroll";
 
 const INCLUYE = [
   "Tu equipo completo: los 6 especialistas",
@@ -14,7 +15,7 @@ export function SeccionPrecio() {
   return (
     <section id="precio" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
+        <RevelarAlScroll className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
           {/* Texto izquierdo */}
           <div className="lg:col-span-5">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
@@ -82,7 +83,7 @@ export function SeccionPrecio() {
               </p>
             </div>
           </div>
-        </div>
+        </RevelarAlScroll>
       </div>
     </section>
   );

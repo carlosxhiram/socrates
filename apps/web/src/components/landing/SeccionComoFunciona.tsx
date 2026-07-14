@@ -1,3 +1,9 @@
+import { RevelarAlScroll } from "@/components/movimiento/RevelarAlScroll";
+import {
+  ListaEscalonada,
+  ElementoEscalonado,
+} from "@/components/movimiento/ListaEscalonada";
+
 const PASOS = [
   {
     numero: "1",
@@ -11,7 +17,7 @@ const PASOS = [
     titulo: "Sócrates reparte el trabajo",
     descripcion:
       "Él identifica qué especialistas necesita, los convoca en el orden correcto y supervisa que cada uno entregue lo que prometió.",
-    ejemplo: "El Investigador + El Asesor de Producto + El Negociador.",
+    ejemplo: "Hiram, Jair y Katya.",
   },
   {
     numero: "3",
@@ -27,19 +33,19 @@ export function SeccionComoFunciona() {
     <section id="como-funciona" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         {/* Encabezado */}
-        <div className="mb-14">
+        <RevelarAlScroll className="mb-14">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
             Cómo se siente usarlo
           </p>
           <h2 className="text-3xl font-black tracking-tight text-oficina-texto md:text-4xl">
             Tan simple como hablar con un gerente.
           </h2>
-        </div>
+        </RevelarAlScroll>
 
         {/* Pasos */}
-        <div className="grid grid-cols-1 gap-0 lg:grid-cols-3 lg:gap-px lg:bg-oficina-borde lg:rounded-xl lg:overflow-hidden">
+        <ListaEscalonada className="grid grid-cols-1 gap-0 lg:grid-cols-3 lg:gap-px lg:bg-oficina-borde lg:rounded-xl lg:overflow-hidden">
           {PASOS.map(({ numero, titulo, descripcion, ejemplo }) => (
-            <div
+            <ElementoEscalonado
               key={numero}
               className="relative bg-oficina-panel p-8 lg:p-10"
             >
@@ -67,9 +73,9 @@ export function SeccionComoFunciona() {
               <div className="rounded-lg border border-oficina-borde bg-oficina-fondo px-4 py-3">
                 <p className="text-xs italic text-oficina-tenue">{ejemplo}</p>
               </div>
-            </div>
+            </ElementoEscalonado>
           ))}
-        </div>
+        </ListaEscalonada>
       </div>
     </section>
   );
