@@ -65,4 +65,7 @@ pnpm --filter @socrates/web dev    # :3000 (modo asesor demo sin llaves)
 `NODE_ENV=production` del script build) · puertos zombis: `fuser <p>/tcp` y
 mata antes de re-arrancar · `.next` viejo entre versiones = builds rotos ·
 la CLI de Prisma solo lee `packages/db/.env` · el proxy de egress bloquea
-`ai-gateway.vercel.sh` (verificación con llave real ⇒ sesión local).
+`ai-gateway.vercel.sh` (verificación con llave real ⇒ sesión local) · no anides
+un componente con animación por-scroll propia (whileInView/useInView) dentro de
+`RevelarAlScroll`/`ListaEscalonada`: el hijo arranca en opacity:0 y su observador
+interno nunca dispara ⇒ queda mudo en prod (móntalo directo).

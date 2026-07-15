@@ -15,6 +15,12 @@ interface Props {
  * PRIMERA vez que entra en pantalla, y nunca se repite (doctrina Resend:
  * una animación, un propósito, una sola vez). Con reduced-motion activo se
  * renderiza estático.
+ *
+ * ⚠️ No anides aquí un componente que ya se anime solo al entrar en pantalla
+ * (otro whileInView, o useInView de motion): este envoltorio arranca al hijo
+ * en opacity:0, el observador interno del hijo nunca lo ve "entrar" y se queda
+ * MUDO en producción (nos pasó con ConversacionGerente el 2026-07-15). En esos
+ * casos monta el hijo DIRECTO, sin envolverlo con esta isla.
  */
 export function RevelarAlScroll({ children, retraso = 0, className }: Props) {
   const sinMovimiento = useReducedMotion();
