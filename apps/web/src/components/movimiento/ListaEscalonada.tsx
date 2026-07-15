@@ -28,6 +28,11 @@ interface Props {
  * Contenedor que revela a sus hijos en cascada (uno tras otro) la primera vez
  * que entra en pantalla. Cada hijo directo debe envolverse en
  * <ElementoEscalonado>. Con reduced-motion activo se renderiza estático.
+ *
+ * ⚠️ Misma trampa que RevelarAlScroll: no metas dentro de <ElementoEscalonado>
+ * un componente que se anime solo al entrar en pantalla (whileInView/useInView).
+ * Arranca en opacity:0 y su observador interno nunca dispara ⇒ queda mudo en
+ * producción. Móntalo directo, fuera de esta cascada.
  */
 export function ListaEscalonada({ children, className }: Props) {
   const sinMovimiento = useReducedMotion();
