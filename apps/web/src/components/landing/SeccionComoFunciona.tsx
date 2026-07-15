@@ -3,6 +3,7 @@ import {
   ListaEscalonada,
   ElementoEscalonado,
 } from "@/components/movimiento/ListaEscalonada";
+import { ConversacionGerente } from "./variantes/ConversacionGerente";
 
 const PASOS = [
   {
@@ -76,6 +77,17 @@ export function SeccionComoFunciona() {
             </ElementoEscalonado>
           ))}
         </ListaEscalonada>
+
+        {/* La experiencia real, debajo de los pasos: una conversación con
+            Sócrates. Se centra a lo ancho (no en dos columnas) para VARIAR el
+            ritmo frente al dúo lado a lado de la sección anterior y para no
+            partir la tabla de tres pasos. Clip en X: nunca scroll horizontal. */}
+        <RevelarAlScroll
+          className="mt-16 flex justify-center overflow-x-clip"
+          retraso={0.1}
+        >
+          <ConversacionGerente />
+        </RevelarAlScroll>
       </div>
     </section>
   );

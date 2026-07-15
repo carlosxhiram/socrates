@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CadenaEncargo } from "@/components/landing/CadenaEncargo";
+import { ReporteSeArma } from "./variantes/ReporteSeArma";
 
 export function SeccionHero() {
   return (
@@ -68,10 +68,12 @@ export function SeccionHero() {
             </div>
           </div>
 
-          {/* Bloque decorativo derecho — la Cadena de encargo (5 columnas).
-              Centrada en el vacío de la derecha, no pegada al borde. */}
-          <div className="hidden lg:col-span-5 lg:flex lg:items-start lg:justify-center lg:pt-4">
-            <CadenaEncargo />
+          {/* Bloque decorativo derecho — el Reporte que se arma solo (5 columnas).
+              Centrado en el vacío de la derecha, no pegado al borde. Al ser un
+              documento vertical compacto, se centra en vertical (items-center)
+              para equilibrarlo con la columna de texto, más alta. */}
+          <div className="hidden lg:col-span-5 lg:flex lg:items-center lg:justify-center">
+            <ReporteSeArma />
           </div>
         </div>
       </div>

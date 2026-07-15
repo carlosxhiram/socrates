@@ -12,6 +12,8 @@ import {
   ElementoEscalonado,
 } from "@/components/movimiento/ListaEscalonada";
 import { RevelarAlScroll } from "@/components/movimiento/RevelarAlScroll";
+import { OficinaViva } from "./variantes/OficinaViva";
+import { CadenaEncargoV2 } from "./variantes/CadenaEncargoV2";
 
 interface Empleado {
   nombre: string;
@@ -100,8 +102,10 @@ export function SeccionEquipo() {
               Seis empleados que se integran a tu oficina. No coordinas a nadie:
               le dices a Sócrates qué necesitas y él le asigna el trabajo al
               especialista correcto. Cada entregable llega listo para que tú lo
-              revises y lo uses con tu prospecto. Y la plantilla es tuya: a cada
-              especialista puedes nombrarlo como tú quieras.
+              revises y lo uses con tu prospecto. Y la plantilla es tuya:{" "}
+              <strong className="font-semibold text-oficina-texto">
+                a cada especialista puedes nombrarlo como tú quieras.
+              </strong>
             </p>
           </div>
         </RevelarAlScroll>
@@ -139,6 +143,23 @@ export function SeccionEquipo() {
             </ElementoEscalonado>
           ))}
         </ListaEscalonada>
+
+        {/* La oficina en acción — dúo de piezas vivas debajo de la plantilla.
+            Apiladas y centradas en móvil; lado a lado en escritorio. El clip
+            en X es la red de seguridad contra cualquier desbordamiento en
+            pantallas angostas (nunca scroll horizontal). */}
+        <RevelarAlScroll className="mt-20 overflow-x-clip">
+          <p className="mb-8 text-center text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
+            La oficina en acción
+          </p>
+          <div className="grid grid-cols-1 items-center justify-items-center gap-12 lg:grid-cols-2 lg:gap-8">
+            {/* OficinaViva es ancha (w-96): se oculta bajo sm para no desbordar. */}
+            <div className="hidden sm:block">
+              <OficinaViva />
+            </div>
+            <CadenaEncargoV2 />
+          </div>
+        </RevelarAlScroll>
       </div>
     </section>
   );
