@@ -97,7 +97,7 @@ export function SeccionHero() {
                 </div>
                 <div className="mt-5 border-t border-oficina-borde pt-4">
                   <p className="text-[10px] text-oficina-tenue">
-                    Preparado por el equipo Sócrates · Revisión pendiente del asesor
+                    Preparado por el equipo Socratia · Revisión pendiente del asesor
                   </p>
                 </div>
               </div>

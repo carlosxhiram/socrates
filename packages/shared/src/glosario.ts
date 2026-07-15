@@ -1,5 +1,5 @@
 /**
- * glosario.ts — el vocabulario único de Sócrates.
+ * glosario.ts — el vocabulario único de Socratia.
  *
  * Enums ESPEJO de los del esquema Prisma (packages/db/prisma/schema.prisma §7 de
  * la arquitectura). web y api los consumen de aquí para no duplicar literales.
@@ -84,7 +84,7 @@ export const ROLES_EMPLEADO = [
 ] as const;
 export type RolEmpleado = (typeof ROLES_EMPLEADO)[number];
 
-/** Los 6 empleados del panel "Tu equipo" (Sócrates es el gerente, no del panel). */
+/** Los 6 empleados del panel "Tu equipo" (Socratia es la gerente, no del panel). */
 export const ROLES_PANEL: RolEmpleado[] = [
   "PROSPECTOR",
   "INVESTIGADOR",
@@ -107,7 +107,7 @@ export interface PerfilEmpleado {
 export const EMPLEADOS: Record<RolEmpleado, PerfilEmpleado> = {
   SOCRATES: {
     rol: "SOCRATES",
-    nombre: "Sócrates",
+    nombre: "Socratia",
     descripcion: "Tu gerente: entiende lo que necesitas, reparte el trabajo y te rinde cuentas.",
     icono: "turtle",
   },

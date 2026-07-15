@@ -1,10 +1,10 @@
 /**
- * sesiones.ts — Chat persistente del Asesor con el gerente Sócrates (Sesiones).
+ * sesiones.ts — Chat persistente del Asesor con la gerente Socratia (Sesiones).
  *
  * Tenencia SIEMPRE por asesorId derivado del token (regla §5.5 #1), NUNCA del
  * payload. Respuestas cuerpo-directo; errores { error: { codigo, mensaje } }.
  *
- * NFR-11: sin AI_GATEWAY_API_KEY la conversación NO truena — Sócrates responde
+ * NFR-11: sin AI_GATEWAY_API_KEY la conversación NO truena — Socratia responde
  * con un acuse honesto en voz de oficina y el hilo se guarda igual. NFR-14: cero
  * jerga técnica en esa respuesta (nada de "IA/modelo/servicio no disponible").
  */
@@ -24,7 +24,7 @@ export const sesionesRouter = new Hono<{ Variables: AuthedVars }>();
 const TITULO_DEFAULT = "Nueva conversación";
 
 /**
- * Cuántos turnos previos se le mandan a Sócrates como contexto. Techo de
+ * Cuántos turnos previos se le mandan a Socratia como contexto. Techo de
  * contexto y de costo: una conversación larga no reenvía su historia completa
  * en cada llamada cuando entre la llave real (NFR-5). No afecta lo que se guarda
  * ni lo que ve el Asesor: solo lo que viaja al equipo en vivo.
@@ -32,9 +32,9 @@ const TITULO_DEFAULT = "Nueva conversación";
 const MAX_TURNOS_CONTEXTO = 20;
 
 /**
- * Acuse honesto de Sócrates cuando no hay conexión con el equipo en vivo.
+ * Acuse honesto de Socratia cuando no hay conexión con el equipo en vivo.
  * Es contenido de oficina DELIBERADO (no un string-centinela): se persiste como
- * un turno normal de Sócrates. Cero jerga técnica (NFR-14).
+ * un turno normal de Socratia. Cero jerga técnica (NFR-14).
  */
 const ACUSE_SIN_SERVICIO_VIVO =
   "Te leo y ya lo anoté. Ahora mismo el equipo no está disponible para trabajarlo en vivo; " +
@@ -145,7 +145,7 @@ sesionesRouter.post(
       );
     }
 
-    // Construir el historial para Sócrates: solo los últimos turnos (techo de
+    // Construir el historial para Socratia: solo los últimos turnos (techo de
     // contexto/costo) + el mensaje recién enviado.
     const historial: MensajeChatIA[] = [
       ...sesion.mensajes.slice(-MAX_TURNOS_CONTEXTO).map((m) => ({
@@ -155,7 +155,7 @@ sesionesRouter.post(
       { rol: "USUARIO", contenido: textoLimpio },
     ];
 
-    // Llamar a Sócrates. El proveedor NUNCA lanza: revisa `ok` y, si no hay
+    // Llamar a Socratia. El proveedor NUNCA lanza: revisa `ok` y, si no hay
     // servicio en vivo (sin claves o fallo), degrada a un acuse honesto de
     // oficina — sin jerga técnica (NFR-14) y guardado como un turno normal.
     const ia = crearProveedorIA();
@@ -170,7 +170,7 @@ sesionesRouter.post(
         ? textoLimpio.slice(0, 40) || TITULO_DEFAULT
         : sesion.titulo;
 
-    // Persistir el turno del usuario y la respuesta de Sócrates en UNA sola
+    // Persistir el turno del usuario y la respuesta de Socratia en UNA sola
     // transacción: si la escritura falla, no queda un mensaje del usuario
     // huérfano sin respuesta. Timestamps explícitos con 1 ms de diferencia para
     // fijar el orden usuario→asistente: dentro de una transacción de Postgres,

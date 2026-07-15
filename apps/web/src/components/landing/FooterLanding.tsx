@@ -61,7 +61,7 @@ export function FooterLanding() {
                 🐢
               </span>
               <span className="text-base font-black uppercase tracking-[0.2em] text-oficina-texto">
-                SOCRATES
+                SOCRATIA
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-oficina-tenue">
@@ -80,7 +80,7 @@ export function FooterLanding() {
         {/* Barra inferior */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-oficina-borde py-6 sm:flex-row">
           <p className="text-xs text-oficina-tenue">
-            © 2026 SOCRATES. Todos los derechos reservados.
+            © 2026 Business Innovation Atomic Novelties, S.A.S. de C.V. Todos los derechos reservados.
           </p>
           <p className="text-xs font-medium text-oficina-tenue">
             Un producto desarrollado por{" "}

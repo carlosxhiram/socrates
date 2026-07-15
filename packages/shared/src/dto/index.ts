@@ -156,7 +156,7 @@ export const YoDTOSchema = z.object({
 });
 export type YoDTO = z.infer<typeof YoDTOSchema>;
 
-// ── Sesiones de chat con Sócrates ────────────────────────────────────────────
+// ── Sesiones de chat con Socratia ────────────────────────────────────────────
 
 export const RolMensajeSchema = z.enum(["USUARIO", "ASISTENTE"]);
 export type RolMensaje = z.infer<typeof RolMensajeSchema>;

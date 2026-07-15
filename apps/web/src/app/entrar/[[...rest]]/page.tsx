@@ -4,7 +4,7 @@ import { SignIn } from "@clerk/nextjs";
  * /entrar — inicio de sesión embebido, dentro de la app y en español.
  *
  * Usa <SignIn/> de Clerk con enrutado por ruta (catch-all `[[...rest]]`), de
- * modo que TODO el inicio de sesión ocurre en socrates.app/entrar y no salta a
+ * modo que TODO el inicio de sesión ocurre en socratia.mx/entrar y no salta a
  * la página externa de Clerk en inglés.
  *
  * - Tras entrar, el asesor va a /oficina. Ahí el portero (server-side) decide:
@@ -25,7 +25,7 @@ export default function Page() {
             🐢
           </p>
           <h1 className="mt-2 text-lg font-semibold text-oficina-texto">
-            Sócrates está en modo demostración
+            Socratia está en modo demostración
           </h1>
           <p className="mt-2 text-sm text-oficina-tenue">
             Todavía no hay cuentas configuradas. Entra directo a tu oficina.

@@ -1,5 +1,5 @@
 /**
- * /sesiones — tus conversaciones con Sócrates (Sesiones).
+ * /sesiones — tus conversaciones con Socratia (Sesiones).
  * Carga la lista en el servidor y la muestra con ListaSesiones. Desde aquí se
  * abre una conversación (/sesiones/[id]) o se empieza una nueva. Si la oficina
  * no responde, lo decimos tal cual (nunca lo disfrazamos de "no hay nada").
@@ -37,7 +37,7 @@ export default async function SesionesPage() {
             Conversaciones
           </h1>
           <p className="text-sm text-oficina-tenue">
-            Tu línea directa con Sócrates. Aquí queda el hilo de todo lo que platican.
+            Tu línea directa con Socratia. Aquí queda el hilo de todo lo que platican.
           </p>
         </div>
       </header>

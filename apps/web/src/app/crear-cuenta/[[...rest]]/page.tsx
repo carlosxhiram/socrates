@@ -4,7 +4,7 @@ import { SignUp } from "@clerk/nextjs";
  * /crear-cuenta — registro embebido, dentro de la app y en español.
  *
  * Usa <SignUp/> de Clerk con enrutado por ruta (catch-all `[[...rest]]`), de
- * modo que TODO el registro ocurre en socrates.app/crear-cuenta y no salta a la
+ * modo que TODO el registro ocurre en socratia.mx/crear-cuenta y no salta a la
  * página externa de Clerk en inglés.
  *
  * - Tras registrarse, el asesor va a /bienvenida (el recibimiento: perfil,
@@ -25,7 +25,7 @@ export default function Page() {
             🐢
           </p>
           <h1 className="mt-2 text-lg font-semibold text-oficina-texto">
-            Sócrates está en modo demostración
+            Socratia está en modo demostración
           </h1>
           <p className="mt-2 text-sm text-oficina-tenue">
             Todavía no hay cuentas por crear. Entra directo a tu oficina y

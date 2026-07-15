@@ -1,5 +1,5 @@
 /**
- * app.ts — la app Hono de Sócrates, SIN levantar servidor.
+ * app.ts — la app Hono de Socratia, SIN levantar servidor.
  *
  * Separada de index.ts para poder probarla en proceso (app.request) desde los
  * tests de integración. Orden de middleware (arquitectura §6.1): CORS → Auth →

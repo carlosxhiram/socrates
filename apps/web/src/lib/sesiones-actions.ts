@@ -1,6 +1,6 @@
 "use server";
 /**
- * sesiones-actions.ts — Server Actions para el chat de Sócrates (Sesiones).
+ * sesiones-actions.ts — Server Actions para el chat de Socratia (Sesiones).
  *
  * Adjunta el JWT de Clerk cuando hay sesión. En Modo asesor demo (sin Clerk),
  * llama sin token y la api resuelve al asesor demo (NFR-11). Corren SOLO en el
@@ -76,8 +76,8 @@ export async function obtenerSesion(id: string): Promise<SesionDetalleDTO> {
 }
 
 /**
- * Envía un mensaje del usuario y obtiene la respuesta de Sócrates.
- * Devuelve los dos nuevos turnos: el del usuario y el de Sócrates.
+ * Envía un mensaje del usuario y obtiene la respuesta de Socratia.
+ * Devuelve los dos nuevos turnos: el del usuario y el de Socratia.
  */
 export async function enviarMensaje(
   sesionId: string,

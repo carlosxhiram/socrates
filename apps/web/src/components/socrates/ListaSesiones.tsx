@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ListaSesiones — explorador de conversaciones con Sócrates.
+ * ListaSesiones — explorador de conversaciones con Socratia.
  * Dos vistas alternables: TARJETAS o LISTA. Cada ítem muestra el título de la
  * sesión y un resumen (vista previa del último mensaje); al hacer clic lleva a
  * /sesiones/[id], la pantalla propia de esa conversación. "Nueva conversación"
@@ -188,7 +188,7 @@ function Vacio() {
         <span className="mr-1" aria-hidden>
           🐢
         </span>
-        Aún no tienes conversaciones. Abre una nueva y empieza a platicar con Sócrates.
+        Aún no tienes conversaciones. Abre una nueva y empieza a platicar con Socratia.
       </p>
     </div>
   );

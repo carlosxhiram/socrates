@@ -86,7 +86,7 @@ export function SeccionEquipo() {
           <div className="flex items-end lg:col-span-7">
             <p className="max-w-lg text-base leading-relaxed text-oficina-tenue">
               Seis empleados que se integran a tu oficina. No coordinas a nadie:
-              le dices a Sócrates qué necesitas y él le asigna el trabajo al
+              le dices a Socratia qué necesitas y ella le asigna el trabajo al
               especialista correcto. Cada entregable llega listo para que tú lo
               revises y lo uses con tu prospecto.
             </p>

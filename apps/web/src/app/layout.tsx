@@ -6,8 +6,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Sócrates — SOC | TALENT",
-    template: "%s · Sócrates",
+    default: "Socratia — el equipo de tu oficina",
+    template: "%s · Socratia",
   },
   description: "Tu equipo de asesoría financiera, en una sola oficina.",
 };
