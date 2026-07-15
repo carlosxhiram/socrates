@@ -20,6 +20,7 @@ import {
   stripeHabilitado,
 } from "../pago/proveedor-stripe.js";
 import type { AuthedVars } from "../middleware/auth.js";
+import { consentimientoOk, RESPUESTA_FALTA_CONSENTIMIENTO } from "../middleware/consentimiento.js";
 
 export const pagoRouter = new Hono<{ Variables: AuthedVars }>();
 
@@ -30,6 +31,14 @@ pagoRouter.post("/checkout", async (c) => {
   const asesor = await prisma.asesor.findUnique({ where: { id: asesorId } });
   if (!asesor) {
     return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré tu cuenta." } }, 404);
+  }
+
+  // Consentimiento legal ANTES del dinero: el cobro es el Paso 2 y el
+  // consentimiento se firma en el Paso 1. Sin constancia vigente no se crea
+  // sesión de checkout NI se otorga acceso demo — llamar esta ruta directo no
+  // puede brincarse la firma.
+  if (!consentimientoOk(asesor)) {
+    return c.json(RESPUESTA_FALTA_CONSENTIMIENTO, 409);
   }
 
   const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:3000";

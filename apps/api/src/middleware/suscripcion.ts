@@ -12,9 +12,15 @@
  *    trabajo, pero NO puede crear/editar/borrar hasta regularizar el pago.
  *  - SIN ACCESO (ninguna/vencida/cancelada): nada de negocio.
  *
+ * Además de suscripción, la muralla exige el CONSENTIMIENTO legal vigente
+ * (Términos + Aviso): sin constancia, ninguna suscripción abre el negocio.
+ * La regla vive aquí a profundidad — no solo en el Paso 1 del recibimiento —
+ * para que no se pueda brincar llamando rutas directas.
+ *
  * NO se monta en /yo ni /pago (se necesitan DURANTE el recibimiento, antes de
  * tener acceso) ni en /health o el webhook (públicos). El asesor demo del seed
- * tiene estado "demo", así que el modo demo local pasa sin fingir un pago.
+ * tiene estado "demo" y constancia sembrada, así que el modo demo local pasa
+ * sin fingir un pago.
  */
 import type { Context, Next } from "hono";
 import { prisma } from "@socrates/db";
@@ -24,6 +30,7 @@ import {
   type EstadoSuscripcion,
 } from "@socrates/shared";
 import type { AuthedVars } from "./auth.js";
+import { consentimientoOk, RESPUESTA_FALTA_CONSENTIMIENTO } from "./consentimiento.js";
 
 // Métodos que solo LEEN (no mutan). Un asesor en "gracia" conserva estos; pierde
 // la escritura hasta que su pago se regularice.
@@ -36,9 +43,21 @@ export async function requiereSuscripcion(
   const asesorId = c.get("asesorId");
   const asesor = await prisma.asesor.findUnique({
     where: { id: asesorId },
-    select: { estadoSuscripcion: true },
+    select: {
+      estadoSuscripcion: true,
+      consentimientoTerminosEn: true,
+      consentimientoTerminosVersion: true,
+      consentimientoAvisoEn: true,
+      consentimientoAvisoVersion: true,
+    },
   });
   const estado = (asesor?.estadoSuscripcion ?? "ninguna") as EstadoSuscripcion;
+
+  // Consentimiento legal PRIMERO (es el Paso 1 del recibimiento): sin la
+  // constancia vigente, el negocio se frena aunque haya suscripción con acceso.
+  if (!asesor || !consentimientoOk(asesor)) {
+    return c.json(RESPUESTA_FALTA_CONSENTIMIENTO, 409);
+  }
 
   // Acceso PLENO: lee y escribe.
   if (SUSCRIPCION_CON_ACCESO.includes(estado)) {

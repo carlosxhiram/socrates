@@ -22,6 +22,7 @@ import {
 } from "@socrates/shared";
 import { validarJson } from "../middleware/validacion.js";
 import type { AuthedVars } from "../middleware/auth.js";
+import { consentimientoOk, RESPUESTA_FALTA_CONSENTIMIENTO } from "../middleware/consentimiento.js";
 
 export const yoRouter = new Hono<{ Variables: AuthedVars }>();
 
@@ -43,14 +44,6 @@ interface AsesorRow {
 
 function perfilCompleto(a: AsesorRow): boolean {
   return Boolean(a.nombreOficina && a.zona && a.especialidad);
-}
-
-/**
- * Constancia de consentimiento completa: ambas firmas (Términos y Aviso).
- * La FECHA es la firma; basta con que exista para tener la constancia.
- */
-function consentimientoOk(a: AsesorRow): boolean {
-  return Boolean(a.consentimientoTerminosEn && a.consentimientoAvisoEn);
 }
 
 function tieneAcceso(a: AsesorRow): boolean {
@@ -109,22 +102,15 @@ yoRouter.patch("/perfil", validarJson(GuardarPerfilSchema), async (c) => {
   }
 
   // ── Consentimiento legal (Paso 1), fail-closed ──────────────────────────────
-  // Si el asesor AÚN no tiene constancia, para continuar debe aceptar AMBOS
-  // documentos (Términos y Aviso). Sin las dos banderas: 409, no se avanza la
-  // etapa ni se escribe nada (ni perfil ni constancia). Si ya tenía constancia,
-  // las banderas se ignoran: la fecha original es la firma y no se re-escribe.
-  const yaTeniaConstancia = consentimientoOk(actual);
-  if (!yaTeniaConstancia && !(datos.aceptaTerminos === true && datos.aceptaAviso === true)) {
-    return c.json(
-      {
-        error: {
-          codigo: "FALTA_CONSENTIMIENTO",
-          mensaje:
-            "Para continuar necesitas aceptar los Términos y Condiciones y confirmar que leíste el Aviso de Privacidad.",
-        },
-      },
-      409,
-    );
+  // Si el asesor NO tiene constancia VIGENTE (nunca firmó, o firmó una versión
+  // anterior de los documentos), para continuar debe aceptar AMBOS (Términos y
+  // Aviso). Sin las dos banderas: 409, no se avanza la etapa ni se escribe nada.
+  // Con ambas: la constancia se (re)escribe con fecha y versión nuevas — subir
+  // la versión de un documento re-pide la firma. Si la constancia ya es de la
+  // versión vigente, las banderas se ignoran: la firma original no se pisa.
+  const constanciaVigente = consentimientoOk(actual);
+  if (!constanciaVigente && !(datos.aceptaTerminos === true && datos.aceptaAviso === true)) {
+    return c.json(RESPUESTA_FALTA_CONSENTIMIENTO, 409);
   }
 
   const a = await prisma.asesor.update({
@@ -135,10 +121,10 @@ yoRouter.patch("/perfil", validarJson(GuardarPerfilSchema), async (c) => {
       especialidad: datos.especialidad,
       // Avanza el marcador de progreso si seguía en el primer paso.
       ...(actual.onboardingEtapa === "perfil" ? { onboardingEtapa: "pago" } : {}),
-      // Constancia: se escribe UNA sola vez, en el mismo update del perfil, con
-      // la fecha de ahora y la versión vigente de cada documento (LEGAL). Si ya
-      // había constancia, no se toca (la firma original manda).
-      ...(yaTeniaConstancia
+      // Constancia: se escribe en el MISMO update del perfil, con la fecha de
+      // ahora y la versión vigente de cada documento (LEGAL). Si la constancia
+      // ya era vigente, no se toca (la firma original manda).
+      ...(constanciaVigente
         ? {}
         : {
             consentimientoTerminosEn: new Date(),

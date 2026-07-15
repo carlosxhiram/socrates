@@ -12,6 +12,16 @@
  *      original es la firma);
  *   e) GET /yo refleja el siguientePaso correcto antes ("perfil") y después.
  *
+ * Consentimiento a PROFUNDIDAD DE MURALLA (no solo en el Paso 1):
+ *   f) POST /pago/checkout sin constancia ⇒ 409 y NO otorga acceso demo;
+ *   g) rutas de negocio (GET /expedientes) con suscripción "demo" pero sin
+ *      constancia ⇒ 409 (la muralla exige consentimiento además de suscripción);
+ *   h) constancia de versión VIEJA (v0.9) ⇒ como si no hubiera: siguientePaso
+ *      "perfil", negocio 409; re-aceptar actualiza la constancia a la versión
+ *      vigente y restaura el acceso (subir la versión re-pide la firma);
+ *   i) re-consentimiento sin fricción: un asesor en etapa "completo" que
+ *      re-acepta NO ve corrompida su etapa — solo se registra la constancia.
+ *
  * En modo demo (sin Clerk) el auth resuelve al asesor demo sembrado; por eso
  * cada test parte de una fila demo "limpia" (sin constancia) y el archivo la
  * restaura a su estado canónico al terminar, para no romper otras suites.
@@ -212,6 +222,106 @@ test("PATCH /yo/perfil dos veces ⇒ la constancia original NO se re-escribe (la
       "la fecha de Aviso NO cambia en la segunda llamada",
     );
     assert.equal(trasSegunda?.nombreOficina, "Otro Nombre", "el perfil sí se puede seguir editando");
+  });
+});
+
+// ── f) el checkout NO se brinca el consentimiento ─────────────────────────────
+test("POST /pago/checkout sin constancia ⇒ 409 y NO otorga acceso demo", async () => {
+  await conModoDemo(async () => {
+    // Partimos sin constancia (beforeEach) y SIN acceso, como un asesor nuevo
+    // que intenta brincarse el Paso 1 llamando el cobro directo.
+    await prisma.asesor.update({
+      where: { clerkUserId: DEMO_CLERK_ID },
+      data: { estadoSuscripcion: "ninguna" },
+    });
+    const res = await app.request("/pago/checkout", { method: "POST" });
+    assert.equal(res.status, 409, "el checkout exige consentimiento ANTES de abrir acceso");
+    const body = (await res.json()) as { error: { codigo: string } };
+    assert.equal(body.error.codigo, "FALTA_CONSENTIMIENTO");
+
+    const demo = await leerDemo();
+    assert.equal(demo?.estadoSuscripcion, "ninguna", "NO se otorgó acceso demo sin consentir");
+    assert.equal(demo?.consentimientoTerminosEn, null, "no se escribió constancia");
+  });
+});
+
+// ── g) la muralla de negocio exige consentimiento además de suscripción ───────
+test("GET /expedientes con suscripción 'demo' pero SIN constancia ⇒ 409", async () => {
+  await conModoDemo(async () => {
+    // beforeEach deja al demo con estadoSuscripcion "demo" y SIN constancia:
+    // suscripción con acceso, consentimiento ausente. La muralla debe frenar.
+    const res = await app.request("/expedientes");
+    assert.equal(res.status, 409, "sin constancia, ni una suscripción con acceso abre negocio");
+    const body = (await res.json()) as { error: { codigo: string; mensaje: string } };
+    assert.equal(body.error.codigo, "FALTA_CONSENTIMIENTO");
+    assert.match(body.error.mensaje, /Términos y Condiciones/i);
+  });
+});
+
+// ── h) la VERSIÓN de la constancia muerde ─────────────────────────────────────
+test("constancia de versión vieja (v0.9) ⇒ 'perfil' + negocio 409; re-aceptar la actualiza y restaura acceso", async () => {
+  await conModoDemo(async () => {
+    // Asesor con perfil completo, acceso demo y una constancia REAL pero de una
+    // versión anterior de los documentos (v0.9): debe tratarse como pendiente.
+    const fechaVieja = new Date("2026-01-01T12:00:00Z");
+    await prisma.asesor.update({
+      where: { clerkUserId: DEMO_CLERK_ID },
+      data: {
+        ...PERFIL_VALIDO,
+        onboardingEtapa: "completo",
+        estadoSuscripcion: "demo",
+        consentimientoTerminosEn: fechaVieja,
+        consentimientoTerminosVersion: "0.9",
+        consentimientoAvisoEn: fechaVieja,
+        consentimientoAvisoVersion: "0.9",
+      },
+    });
+
+    const yoRes = await app.request("/yo");
+    const yo = (await yoRes.json()) as { siguientePaso: string };
+    assert.equal(yo.siguientePaso, "perfil", "constancia vieja ⇒ re-pedir la firma (perfil)");
+
+    const negocio = await app.request("/expedientes");
+    assert.equal(negocio.status, 409, "constancia vieja ⇒ el negocio se frena con 409");
+
+    // Re-aceptar: PATCH con banderas SÍ re-escribe la constancia (versión nueva).
+    const patch = await patchPerfil({ ...PERFIL_VALIDO, aceptaTerminos: true, aceptaAviso: true });
+    assert.equal(patch.status, 200);
+    const demo = await leerDemo();
+    assert.equal(demo?.consentimientoTerminosVersion, LEGAL.terminosVersion, "versión actualizada");
+    assert.equal(demo?.consentimientoAvisoVersion, LEGAL.avisoVersion, "versión actualizada");
+    assert.ok(
+      demo!.consentimientoTerminosEn!.getTime() > fechaVieja.getTime(),
+      "la fecha de la re-firma es nueva",
+    );
+
+    const negocioDespues = await app.request("/expedientes");
+    assert.equal(negocioDespues.status, 200, "re-aceptar restaura el acceso al negocio");
+  });
+});
+
+// ── i) re-consentimiento sin fricción para el asesor ya establecido ───────────
+test("asesor en etapa 'completo' sin constancia: PATCH con banderas registra la constancia SIN corromper la etapa", async () => {
+  await conModoDemo(async () => {
+    // Un asesor de versión vieja: recibimiento completo, sin constancia (los
+    // campos nuevos nacieron NULL para él). Al re-aceptar, solo se registra la
+    // constancia; su etapa no se toca.
+    await prisma.asesor.update({
+      where: { clerkUserId: DEMO_CLERK_ID },
+      data: { ...PERFIL_VALIDO, onboardingEtapa: "completo", estadoSuscripcion: "demo" },
+    });
+
+    const patch = await patchPerfil({ ...PERFIL_VALIDO, aceptaTerminos: true, aceptaAviso: true });
+    assert.equal(patch.status, 200);
+
+    const demo = await leerDemo();
+    assert.equal(demo?.onboardingEtapa, "completo", "la etapa NO se corrompe ni retrocede");
+    assert.ok(demo?.consentimientoTerminosEn, "la constancia quedó escrita");
+    assert.equal(demo?.consentimientoTerminosVersion, LEGAL.terminosVersion);
+
+    const yoRes = await app.request("/yo");
+    const yo = (await yoRes.json()) as { siguientePaso: string };
+    assert.equal(yo.siguientePaso, "completo", "GET /yo lo deja pasar de vuelta a su oficina");
   });
 });
 
