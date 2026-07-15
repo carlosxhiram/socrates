@@ -175,7 +175,7 @@ export function ConversacionGerente() {
             className={
               estatico
                 ? "flex flex-col gap-3 px-4 py-4"
-                : "flex h-[19rem] flex-col justify-end gap-3 px-4 py-4"
+                : "flex h-[19rem] flex-col justify-end gap-3 overflow-hidden px-4 py-4"
             }
           >
             <AnimatePresence initial={false}>
