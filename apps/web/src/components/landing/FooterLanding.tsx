@@ -86,11 +86,11 @@ export function FooterLanding() {
         {/* Barra inferior */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-oficina-borde py-6 sm:flex-row">
           <p className="text-xs text-oficina-tenue">
-            © 2026 Business Innovation Atomic Novelties, S.A.S. de C.V. Todos los derechos reservados.
+            © 2026 SOCRATIA. Todos los derechos reservados.
           </p>
           <p className="text-xs font-medium text-oficina-tenue">
             Un producto desarrollado por{" "}
-            <span className="tracking-widest text-oficina-texto">SOC | TALENT</span>
+            <span className="tracking-widest text-oficina-texto">Mate Innovation</span>
           </p>
         </div>
       </div>
