@@ -43,7 +43,7 @@ export default function NosotrosPage() {
             siempre.
           </p>
           <p>
-            Somos <span className="font-semibold text-oficina-texto">SOC | TALENT</span>,
+            Somos <span className="font-semibold text-oficina-texto">Mate Innovation</span>,
             y construimos herramientas para el asesor de crédito PYME en México.
             Creemos que la mejor tecnología no se siente como aprender un
             programa nuevo, sino como contratar a un buen equipo: llega, entiende
