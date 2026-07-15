@@ -4,7 +4,7 @@ import { BarraSuperior } from "@/components/landing/BarraSuperior";
 import { FooterLanding } from "@/components/landing/FooterLanding";
 
 export const metadata: Metadata = {
-  title: "Acerca de nosotros · SOCRATIA",
+  title: "Acerca de nosotros",
   description:
     "SOCRATIA es un equipo completo para la oficina del asesor de crédito empresarial en México.",
 };
