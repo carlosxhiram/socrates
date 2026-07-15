@@ -157,3 +157,50 @@ export async function cambiarEtapa(
   revalidatePath(`/expedientes/${id}`);
   return { exito: true, mensaje: "" };
 }
+
+// ── Carril C1 ─────────────────────────────────────────────────────────────
+// Encargar trabajo al equipo (spec 2.1/2.11) y aprobar un entregable (spec 2.9).
+
+/** Contrato POST /expedientes/:id/tareas (spec 2.1, la construye el Carril A). */
+export async function encargarTarea(
+  expedienteId: string,
+  empleadoRol: string,
+  descripcion?: string,
+): Promise<ResultadoAccion> {
+  const res = await llamarApi(`/expedientes/${expedienteId}/tareas`, "POST", {
+    empleadoRol,
+    ...(descripcion?.trim() ? { descripcion: descripcion.trim() } : {}),
+  });
+
+  if (!res.ok) return { exito: false, mensaje: mensajeDeError(res.datos, res.status) };
+
+  revalidatePath(`/expedientes/${expedienteId}`);
+  return { exito: true, mensaje: "" };
+}
+
+/**
+ * Aprobar un entregable (spec 2.9): manda la versión vista para detectar el
+ * candado (409 VERSION_DESFASADA) sin usar api-client.ts (solo lectura desde
+ * el servidor) — las mutaciones del visor viven aquí, igual que el resto.
+ */
+export async function aprobarEntregable(
+  entregableId: string,
+  version: number,
+): Promise<ResultadoAccion & { versionDesfasada?: boolean }> {
+  const res = await llamarApi(`/entregables/${entregableId}/aprobar`, "POST", { version });
+
+  if (!res.ok) {
+    const codigo =
+      res.datos && typeof res.datos === "object" && "error" in res.datos
+        ? (res.datos as { error?: { codigo?: string } }).error?.codigo
+        : undefined;
+    return {
+      exito: false,
+      mensaje: mensajeDeError(res.datos, res.status),
+      versionDesfasada: codigo === "VERSION_DESFASADA",
+    };
+  }
+
+  revalidatePath(`/entregables/${entregableId}`);
+  return { exito: true, mensaje: "Entregable aprobado. Ya está listo para usarse con tu prospecto." };
+}
