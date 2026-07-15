@@ -1,8 +1,8 @@
 /**
- * seed.ts — siembra realista de Sócrates (FR-22, E1/E7).
+ * seed.ts — siembra realista de Socratia (FR-22, E1/E7).
  *
  * Crea:
- *   1. Los 6 empleados + Sócrates (catálogo de roles, lenguaje de oficina).
+ *   1. Los 6 empleados + Socratia (catálogo de roles, lenguaje de oficina).
  *   2. El Catálogo SOC desde catalogo-soc.json (17 instituciones, 22 productos).
  *   3. Un Asesor demo (clerkUserId = "demo-asesor") para el Modo sin claves.
  *   4. Dos Expedientes: Las Aliadas (RECOMENDADO) y Probemedic (INVESTIGADO),
@@ -19,6 +19,7 @@ import { PrismaClient } from "../generated/client/index.js";
 import {
   EMPLEADOS,
   ROLES_EMPLEADO,
+  LEGAL,
   derivarProgreso,
   parsearReporteV1,
 } from "@socrates/shared";
@@ -61,7 +62,7 @@ async function sembrarEmpleados() {
       create: { rol, nombre: perfil.nombre, descripcion: perfil.descripcion },
     });
   }
-  console.log(`  ✓ ${ROLES_EMPLEADO.length} empleados (incl. Sócrates)`);
+  console.log(`  ✓ ${ROLES_EMPLEADO.length} empleados (incl. Socratia)`);
 }
 
 async function sembrarCatalogo() {
@@ -120,9 +121,12 @@ async function sembrarCatalogo() {
 async function sembrarAsesorDemo() {
   // El asesor demo entra directo a La Oficina: perfil lleno, onboarding completo
   // y suscripción en estado "demo" (acceso del modo demostración, SIN fingir un
-  // pago real — se distingue de "activa" a propósito). Así Carlos sigue cayendo
-  // en la oficina sin pasar por el recibimiento. Se fija también en `update`
-  // para que resembrar lo repare.
+  // pago real — se distingue de "activa" a propósito). Lleva también la
+  // constancia de consentimiento sembrada (fecha de ahora + versiones de LEGAL)
+  // para que el flujo dev no se bloquee en el Paso 1. Así Carlos sigue cayendo en
+  // la oficina sin pasar por el recibimiento. Se fija también en `update` para
+  // que resembrar lo repare.
+  const ahora = new Date();
   const datosDemo = {
     nombre: "Carlos Hiram Chávez",
     email: "carloshiramchavez@icloud.com",
@@ -131,6 +135,10 @@ async function sembrarAsesorDemo() {
     especialidad: "Crédito empresarial PYME",
     onboardingEtapa: "completo",
     estadoSuscripcion: "demo",
+    consentimientoTerminosEn: ahora,
+    consentimientoTerminosVersion: LEGAL.terminosVersion,
+    consentimientoAvisoEn: ahora,
+    consentimientoAvisoVersion: LEGAL.avisoVersion,
   };
   const asesor = await prisma.asesor.upsert({
     where: { clerkUserId: DEMO_ASESOR_CLERK_ID },
@@ -249,7 +257,7 @@ async function sembrarExpedientes(asesorId: string) {
 const TITULO_SESION_DEMO = "Arranque con Probemedic";
 
 /**
- * Siembra una conversación demo del Asesor con Sócrates, en voz de oficina
+ * Siembra una conversación demo del Asesor con Socratia, en voz de oficina
  * (cero jerga técnica — NFR-14). Idempotente: borra la demo previa y la recrea.
  * Los mensajes caen por ON DELETE CASCADE al borrar la sesión.
  */
@@ -267,7 +275,7 @@ async function sembrarSesiones(asesorId: string) {
         sesionId: sesion.id,
         rol: "USUARIO",
         contenido:
-          "Sócrates, quiero avanzar con Probemedic. ¿En qué vamos y cuál es el siguiente paso?",
+          "Socratia, quiero avanzar con Probemedic. ¿En qué vamos y cuál es el siguiente paso?",
       },
       {
         sesionId: sesion.id,
@@ -278,12 +286,12 @@ async function sembrarSesiones(asesorId: string) {
     ],
   });
 
-  console.log(`  ✓ Conversación demo con Sócrates (${sesion.id})`);
+  console.log(`  ✓ Conversación demo con Socratia (${sesion.id})`);
 }
 
 /** Siembra completa. Exportada para poder probarla (idempotencia) sin efectos al importar. */
 export async function sembrar() {
-  console.log("🌱 Sembrando Sócrates...");
+  console.log("🌱 Sembrando Socratia...");
   await sembrarEmpleados();
   await sembrarCatalogo();
   const asesorId = await sembrarAsesorDemo();

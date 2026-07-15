@@ -10,21 +10,21 @@ const PASOS = [
     numero: "1",
     titulo: "Dile qué necesitas",
     descripcion:
-      "Escríbele a Sócrates en lenguaje normal: el nombre del prospecto, la oportunidad, lo que quieres lograr. Sin formularios ni categorías.",
+      "Escríbele a Socratia en lenguaje normal: el nombre del prospecto, la oportunidad, lo que quieres lograr. Sin formularios ni categorías.",
     ejemplo: '"Analiza a Transportes Garza y dime qué producto le conviene."',
   },
   {
     numero: "2",
-    titulo: "Sócrates reparte el trabajo",
+    titulo: "Socratia reparte el trabajo",
     descripcion:
-      "Él identifica qué especialistas necesita, los convoca en el orden correcto y supervisa que cada uno entregue lo que prometió.",
+      "Ella identifica qué especialistas necesita, los convoca en el orden correcto y supervisa que cada uno entregue lo que prometió.",
     ejemplo: "Hiram, Jair y Katya.",
   },
   {
     numero: "3",
     titulo: "Recibes el entregable listo para revisar",
     descripcion:
-      "Cada entregable llega a tu oficina numerado, con fuentes y con una nota de Sócrates sobre lo que revisó. Tú decides si lo usas tal cual o pides ajustes.",
+      "Cada entregable llega a tu oficina numerado, con fuentes y con una nota de Socratia sobre lo que revisó. Tú decides si lo usas tal cual o pides ajustes.",
     ejemplo: "Reporte de Inteligencia Financiera · Catálogo de productos · Pitch.",
   },
 ];
@@ -39,7 +39,7 @@ export function SeccionComoFunciona() {
             Cómo se siente usarlo
           </p>
           <h2 className="text-3xl font-black tracking-tight text-oficina-texto md:text-4xl">
-            Tan simple como hablar con un gerente.
+            Tan simple como hablar con tu gerente.
           </h2>
         </RevelarAlScroll>
 
@@ -79,7 +79,7 @@ export function SeccionComoFunciona() {
         </ListaEscalonada>
 
         {/* La experiencia real, debajo de los pasos: una conversación con
-            Sócrates. Se centra a lo ancho (no en dos columnas) para VARIAR el
+            Socratia. Se centra a lo ancho (no en dos columnas) para VARIAR el
             ritmo frente al dúo lado a lado de la sección anterior y para no
             partir la tabla de tres pasos. Clip en X: nunca scroll horizontal. */}
         <RevelarAlScroll

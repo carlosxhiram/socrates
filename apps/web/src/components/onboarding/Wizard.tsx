@@ -1,10 +1,10 @@
 "use client";
 /**
- * Wizard — el recibimiento de Sócrates en 3 pasos.
+ * Wizard — el recibimiento de Socratia en 3 pasos.
  *
  *   1. Tu oficina   — datos mínimos (Server Action guardarPerfilAction).
  *   2. Tu prueba     — Checkout de Stripe (iniciarPruebaAction → redirección).
- *   3. Conoce a tu equipo — Sócrates te presenta a los 6 y explica la dinámica.
+ *   3. Conoce a tu equipo — Socratia te presenta a los 6 y explica la dinámica.
  *
  * Entre el 2 y el 3 hay un estado "confirmando": al volver de Stripe esperamos a
  * que la suscripción quede activa (la abre el webhook firmado, no el navegador).
@@ -12,6 +12,7 @@
  */
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Building2,
   MapPin,
@@ -74,13 +75,13 @@ export function Wizard({
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-10">
-      {/* Encabezado: Sócrates recibe */}
+      {/* Encabezado: Socratia recibe */}
       <header className="mb-8 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-marca/10 text-2xl" aria-hidden>
           🐢
         </span>
         <div>
-          <p className="text-sm font-medium text-marca">Sócrates</p>
+          <p className="text-sm font-medium text-marca">Socratia</p>
           <h1 className="text-lg font-semibold tracking-tight text-oficina-texto">
             Bienvenido. Vamos a preparar tu oficina.
           </h1>
@@ -148,6 +149,10 @@ function PasoPerfil({ yo, alAvanzar }: { yo: YoDTO; alAvanzar: () => void }) {
     guardarPerfilAction,
     null,
   );
+  // Casillas de consentimiento: obligatorias en el cliente (deshabilitan el
+  // botón) y también exigidas por el servidor (fail-closed en PATCH /yo/perfil).
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [aceptaAviso, setAceptaAviso] = useState(false);
 
   useEffect(() => {
     if (estado?.ok) alAvanzar();
@@ -183,6 +188,54 @@ function PasoPerfil({ yo, alAvanzar }: { yo: YoDTO; alAvanzar: () => void }) {
           defecto={yo.perfil.especialidad}
         />
 
+        {/* Consentimiento legal: dos casillas obligatorias con la constancia. */}
+        <div className="space-y-3 rounded-xl border border-oficina-borde bg-oficina-fondo p-4">
+          <label className="flex items-start gap-2.5 text-sm text-oficina-texto">
+            <input
+              type="checkbox"
+              name="aceptaTerminos"
+              required
+              checked={aceptaTerminos}
+              onChange={(e) => setAceptaTerminos(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-oficina-borde accent-marca focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca/40"
+            />
+            <span>
+              Acepto los{" "}
+              <Link
+                href="/terminos"
+                target="_blank"
+                className="font-medium text-marca underline underline-offset-2 hover:text-marca-fuerte"
+              >
+                Términos y Condiciones
+              </Link>
+            </span>
+          </label>
+          <label className="flex items-start gap-2.5 text-sm text-oficina-texto">
+            <input
+              type="checkbox"
+              name="aceptaAviso"
+              required
+              checked={aceptaAviso}
+              onChange={(e) => setAceptaAviso(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-oficina-borde accent-marca focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca/40"
+            />
+            <span>
+              Confirmo que leí el{" "}
+              <Link
+                href="/aviso-de-privacidad"
+                target="_blank"
+                className="font-medium text-marca underline underline-offset-2 hover:text-marca-fuerte"
+              >
+                Aviso de Privacidad
+              </Link>
+            </span>
+          </label>
+          <p className="text-xs leading-relaxed text-oficina-tenue">
+            Al marcar estas casillas y continuar, esa es tu firma: guardamos fecha, hora y
+            versión de lo que aceptaste.
+          </p>
+        </div>
+
         {estado?.error && (
           <p className="text-sm text-estado-bloqueo" role="alert">
             {estado.error}
@@ -191,7 +244,7 @@ function PasoPerfil({ yo, alAvanzar }: { yo: YoDTO; alAvanzar: () => void }) {
 
         <button
           type="submit"
-          disabled={pendiente}
+          disabled={pendiente || !aceptaTerminos || !aceptaAviso}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-marca px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-fuerte disabled:opacity-60"
         >
           {pendiente ? <Loader2 size={16} className="animate-spin" aria-hidden /> : null}

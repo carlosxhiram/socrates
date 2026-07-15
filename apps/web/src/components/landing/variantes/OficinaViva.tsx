@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
  * inteligencia" con renglones skeleton que se rellenan de verde suave; alrededor,
  * los seis empleados flotan sin parar (respira siempre) y por turnos se acercan,
  * "escriben" y sueltan una palomita que VUELA hasta la tarjeta y llena el
- * siguiente renglón. Sócrates, el gerente, ancla arriba y coordina cada turno.
+ * siguiente renglón. Socratia, la gerente, ancla arriba y coordina cada turno.
  *
  * Doctrina de movimiento (Resend): un solo easing decorativo, loop lento y
  * silencioso, el estado nunca depende solo del color (se refuerza con forma:
@@ -144,7 +144,7 @@ export function OficinaViva() {
     >
       {/* El sentido para lectores de pantalla, en una sola frase honesta. */}
       <p className="sr-only">
-        Tu equipo arma tu Reporte de inteligencia en vivo. Sócrates, gerente,
+        Tu equipo arma tu Reporte de inteligencia en vivo. Socratia, gerente,
         coordina; Diego (prospector), Hiram (investigador), Jair (asesor de
         producto), Katya (negociadora), María (trámites) y Paula (gestora)
         entregan cada parte.
@@ -181,7 +181,7 @@ export function OficinaViva() {
           estatico={estatico}
         />
 
-        {/* Sócrates — chip distinguido que ancla arriba y coordina. */}
+        {/* Socratia — chip distinguido que ancla arriba y coordina. */}
         <Gerente
           escena={escena}
           motor={motor}
@@ -374,7 +374,7 @@ function Gerente({ escena, motor, estatico }: GerenteProps) {
             S
           </span>
           <span className="whitespace-nowrap text-[12px] font-bold leading-none text-white">
-            Sócrates
+            Socratia
             <span className="ml-1 font-medium text-white/70">· Gerente</span>
           </span>
         </div>

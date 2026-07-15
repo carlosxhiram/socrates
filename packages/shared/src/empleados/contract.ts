@@ -2,7 +2,7 @@
  * contract.ts — el contrato común de Empleado (D-3 de la arquitectura).
  *
  * TODOS los empleados implementan `ejecutar(entrada, ctx) → resultado`. Esto deja
- * que Sócrates enrute sin conocer los detalles de cada uno, que el worker los
+ * que Socratia enrute sin conocer los detalles de cada uno, que el worker los
  * ejecute igual, y que el Modo sin claves se maneje en un solo lugar
  * (`ctx.modoSinClaves`).
  *
@@ -12,7 +12,7 @@
 import type { RolEmpleado, EtapaExpediente } from "../glosario";
 import type { ReporteV1 } from "../reporte/ReporteV1";
 
-/** Lo que el Asesor (o Sócrates) le pide a un Empleado. */
+/** Lo que el Asesor (o Socratia) le pide a un Empleado. */
 export interface EntradaEmpleado {
   expedienteId: string;
   /** Texto libre del Asesor, si lo hubo. */
@@ -77,8 +77,8 @@ export type ResultadoGenerarTexto =
   | { ok: false; motivo: "sin_claves" | "clave_invalida" | "fallo_temporal"; detalle?: string };
 
 /**
- * Un turno del hilo de conversación del Asesor con Sócrates (Sesiones).
- * `rol` sigue la convención de la BD: "USUARIO" (el Asesor) / "ASISTENTE" (Sócrates).
+ * Un turno del hilo de conversación del Asesor con Socratia (Sesiones).
+ * `rol` sigue la convención de la BD: "USUARIO" (el Asesor) / "ASISTENTE" (Socratia).
  */
 export interface MensajeChatIA {
   rol: "USUARIO" | "ASISTENTE";
@@ -94,7 +94,7 @@ export interface ProveedorIA {
   /** Genera texto libre. Nunca lanza: los fallos vienen como { ok: false, ... }. */
   generarTexto(opts: { sistema?: string; prompt: string; modelo?: string }): Promise<ResultadoGenerarTexto>;
   /**
-   * Conversa con Sócrates sobre un historial (Sesiones). Igual que `generarTexto`,
+   * Conversa con Socratia sobre un historial (Sesiones). Igual que `generarTexto`,
    * NUNCA lanza ni devuelve un string-centinela: los fallos vienen como
    * { ok: false, motivo }, y es la RUTA quien traduce ese fallo a un mensaje
    * honesto en voz de oficina antes de persistirlo (NFR-1/NFR-11/NFR-14).

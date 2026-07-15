@@ -1,5 +1,5 @@
 /**
- * /sesiones/[id] — pantalla propia de UNA conversación con Sócrates.
+ * /sesiones/[id] — pantalla propia de UNA conversación con Socratia.
  * Carga la sesión en el servidor y muestra el hilo + caja de redacción. La lista
  * de conversaciones vive en /sesiones.
  *
@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { SesionDetalleDTO } from "@socrates/shared";
 import { obtenerSesion } from "@/lib/sesiones-actions";
+import { requerirAcceso } from "@/lib/portero";
 import { ErrorSesion } from "@/lib/sesiones-error";
 import { ConversacionSesion } from "@/components/socrates/ConversacionSesion";
 
@@ -31,6 +32,10 @@ export async function generateMetadata({ params }: Parametros): Promise<Metadata
 
 export default async function ConversacionPage({ params }: Parametros) {
   const { id } = await params;
+
+  // Portero: sin acceso (o sin consentimiento) el asesor va a /bienvenida, no se
+  // topa con un 409 crudo. Defensa en profundidad; el api valida igual.
+  await requerirAcceso();
 
   let sesion: SesionDetalleDTO;
   try {

@@ -1,5 +1,5 @@
 /**
- * /sesiones — tus conversaciones con Sócrates (Sesiones).
+ * /sesiones — tus conversaciones con Socratia (Sesiones).
  * Carga la lista en el servidor y la muestra con ListaSesiones. Desde aquí se
  * abre una conversación (/sesiones/[id]) o se empieza una nueva. Si la oficina
  * no responde, lo decimos tal cual (nunca lo disfrazamos de "no hay nada").
@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { SesionResumenDTO } from "@socrates/shared";
 import { listarSesiones } from "@/lib/sesiones-actions";
+import { requerirAcceso } from "@/lib/portero";
 import { ListaSesiones } from "@/components/socrates/ListaSesiones";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
 };
 
 export default async function SesionesPage() {
+  // Portero: sin acceso (o sin consentimiento) el asesor va a /bienvenida, no se
+  // topa con un 409 crudo. Defensa en profundidad; el api valida igual.
+  await requerirAcceso();
+
   let sesiones: SesionResumenDTO[] | null = null;
   try {
     sesiones = await listarSesiones();
@@ -37,7 +42,7 @@ export default async function SesionesPage() {
             Conversaciones
           </h1>
           <p className="text-sm text-oficina-tenue">
-            Tu línea directa con Sócrates. Aquí queda el hilo de todo lo que platican.
+            Tu línea directa con Socratia. Aquí queda el hilo de todo lo que platican.
           </p>
         </div>
       </header>

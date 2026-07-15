@@ -124,11 +124,20 @@ export type EmpleadoEstadoDTO = z.infer<typeof EmpleadoEstadoDTOSchema>;
 export const EtapaOnboardingSchema = z.enum(ETAPAS_ONBOARDING);
 export const EstadoSuscripcionSchema = z.enum(ESTADOS_SUSCRIPCION);
 
-/** Paso 1 del recibimiento: los datos mínimos de la oficina del asesor. */
+/**
+ * Paso 1 del recibimiento: los datos mínimos de la oficina del asesor.
+ *
+ * `aceptaTerminos`/`aceptaAviso` son OPCIONALES en el schema para no romper a
+ * otros consumidores del perfil (p. ej. la ficha del asesor). La EXIGENCIA es
+ * del servidor (fail-closed en PATCH /yo/perfil): si el asesor aún no tiene
+ * constancia, el servidor exige que ambas vengan en true.
+ */
 export const GuardarPerfilSchema = z.object({
   nombreOficina: z.string().min(1, "¿Cómo se llama tu oficina?"),
   zona: z.string().min(1, "¿En qué zona operas?"),
   especialidad: z.string().min(1, "¿Cuál es tu especialidad?"),
+  aceptaTerminos: z.boolean().optional(),
+  aceptaAviso: z.boolean().optional(),
 });
 export type GuardarPerfil = z.infer<typeof GuardarPerfilSchema>;
 
@@ -156,7 +165,7 @@ export const YoDTOSchema = z.object({
 });
 export type YoDTO = z.infer<typeof YoDTOSchema>;
 
-// ── Sesiones de chat con Sócrates ────────────────────────────────────────────
+// ── Sesiones de chat con Socratia ────────────────────────────────────────────
 
 export const RolMensajeSchema = z.enum(["USUARIO", "ASISTENTE"]);
 export type RolMensaje = z.infer<typeof RolMensajeSchema>;

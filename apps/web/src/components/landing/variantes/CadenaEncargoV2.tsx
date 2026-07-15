@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from "react";
  *
  * Línea de tiempo del loop (~8.9 s, movimiento continuo, nunca frenético):
  *   0.00–0.85 s  el encargo aparece en "Tu encargo".
- *   0.85–1.70 s  el punto viaja a "Sócrates · Gerente"; el riel se dibuja detrás.
+ *   0.85–1.70 s  el punto viaja a "Socratia · Gerente"; el riel se dibuja detrás.
  *   1.70–6.12 s  el punto llega a la casilla del especialista, que SE LEVANTA;
  *                los seis rotan (Diego → Hiram → Jair → Katya → María → Paula),
  *                ~0.72 s cada uno, con fundido y deslizamiento.
@@ -244,7 +244,7 @@ export function CadenaEncargoV2() {
                   {i === 1 && (
                     <div className="min-w-0">
                       <p className="text-[13px] font-semibold leading-tight text-oficina-texto">
-                        Sócrates
+                        Socratia
                         <span className="font-normal text-oficina-tenue"> · Gerente</span>
                       </p>
                       <p className="mt-0.5 text-[11px] leading-tight text-oficina-tenue">

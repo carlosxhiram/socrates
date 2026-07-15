@@ -2,7 +2,7 @@
   "name": "socrates",
   "version": "0.1.0",
   "private": true,
-  "description": "Sócrates — la plataforma de agentes de IA de SOC | TALENT (monorepo)",
+  "description": "Socratia — el equipo digital de la oficina del asesor (monorepo)",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=20"

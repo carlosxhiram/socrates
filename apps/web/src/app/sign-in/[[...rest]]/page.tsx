@@ -11,7 +11,7 @@ export default function Page() {
             🐢
           </p>
           <h1 className="mt-2 text-lg font-semibold text-oficina-texto">
-            Sócrates está en modo demostración
+            Socratia está en modo demostración
           </h1>
           <p className="mt-2 text-sm text-oficina-tenue">
             Todavía no hay cuentas configuradas. Entra directo a tu oficina.

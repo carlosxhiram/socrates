@@ -402,7 +402,7 @@ export type RecomendacionFinanciamiento = z.infer<typeof RecomendacionFinanciami
 
 /**
  * Resultado AUDITABLE de la verificación de citas (C-2). Se muestra en la bandeja
- * ANTES de abrir el reporte y Sócrates advierte si es bajo. Lo calcula el segundo
+ * ANTES de abrir el reporte y Socratia advierte si es bajo. Lo calcula el segundo
  * pase del Investigador y se persiste también en `EntregableVersion.verificacion`.
  */
 export const IndiceCoberturaSchema = z.object({

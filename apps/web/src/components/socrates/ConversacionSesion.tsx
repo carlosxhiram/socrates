@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ConversacionSesion — el hilo de UNA conversación con Sócrates, en su pantalla
+ * ConversacionSesion — el hilo de UNA conversación con Socratia, en su pantalla
  * propia (/sesiones/[id]). Recibe los mensajes ya cargados en el servidor y deja
  * seguir escribiendo (envío optimista). La lista de conversaciones vive aparte,
  * en /sesiones (ListaSesiones).
@@ -56,8 +56,8 @@ function IndicadorEscribiendo() {
         🐢
       </span>
       <div className="rounded-2xl rounded-bl-sm border border-oficina-borde bg-oficina-panel px-4 py-3">
-        <span className="inline-flex items-center gap-1" aria-label="Sócrates está escribiendo">
-          <span className="text-xs text-oficina-tenue">Sócrates está escribiendo</span>
+        <span className="inline-flex items-center gap-1" aria-label="Socratia está escribiendo">
+          <span className="text-xs text-oficina-tenue">Socratia está escribiendo</span>
           <span className="flex gap-0.5 pl-1">
             {[0, 1, 2].map((i) => (
               <span
@@ -80,10 +80,10 @@ function EstadoVacioChat() {
         🐢
       </span>
       <p className="text-sm font-medium text-oficina-texto">
-        Escríbele a Sócrates para empezar
+        Escríbele a Socratia para empezar
       </p>
       <p className="max-w-[240px] text-xs text-oficina-tenue">
-        Tu asesor está listo. Cuéntale qué necesitas y empieza la conversación.
+        Tu gerente está lista. Cuéntale qué necesitas y empieza la conversación.
       </p>
     </div>
   );
@@ -203,8 +203,8 @@ export function ConversacionSesion({
                   handleEnviar(e as unknown as React.FormEvent);
                 }
               }}
-              placeholder="Escríbele a Sócrates… (Enter para enviar, Shift+Enter para saltar línea)"
-              aria-label="Mensaje para Sócrates"
+              placeholder="Escríbele a Socratia… (Enter para enviar, Shift+Enter para saltar línea)"
+              aria-label="Mensaje para Socratia"
               rows={1}
               disabled={escribiendo}
               className="flex-1 resize-none overflow-hidden bg-transparent text-sm text-oficina-texto outline-none placeholder:text-oficina-tenue disabled:opacity-50"
