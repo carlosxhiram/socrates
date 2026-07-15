@@ -37,13 +37,13 @@ const config: Config = {
       // Resend: consistencia sobre cantidad). Decorativo = lento; feedback = rápido.
       keyframes: {
         "entrada-hero": {
-          from: { opacity: "0", transform: "translateY(14px)" },
+          from: { opacity: "0", transform: "translateY(22px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
         "entrada-hero": "entrada-hero 0.8s cubic-bezier(0.4, 0, 0.2, 1) both",
-        "entrada-hero-tarde": "entrada-hero 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both",
+        "entrada-hero-tarde": "entrada-hero 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.25s both",
       },
     },
   },

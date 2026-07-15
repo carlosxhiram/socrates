@@ -6,15 +6,16 @@ import type { ReactNode } from "react";
 
 const contenedor: Variants = {
   oculto: {},
-  visible: { transition: { staggerChildren: 0.12 } },
+  visible: { transition: { staggerChildren: 0.18 } },
 };
 
 const elemento: Variants = {
-  oculto: { opacity: 0, y: 16 },
+  oculto: { opacity: 0, y: 24, scale: 0.97 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+    scale: 1,
+    transition: { duration: 0.65, ease: [0.4, 0, 0.2, 1] },
   },
 };
 
