@@ -15,6 +15,7 @@ import {
   GuardarPerfilSchema,
   derivarSiguientePaso,
   SUSCRIPCION_CON_ACCESO_LECTURA,
+  LEGAL,
   type YoDTO,
   type EstadoSuscripcion,
   type EtapaOnboarding,
@@ -34,10 +35,22 @@ interface AsesorRow {
   onboardingEtapa: string;
   estadoSuscripcion: string;
   pruebaTermina: Date | null;
+  consentimientoTerminosEn: Date | null;
+  consentimientoTerminosVersion: string | null;
+  consentimientoAvisoEn: Date | null;
+  consentimientoAvisoVersion: string | null;
 }
 
 function perfilCompleto(a: AsesorRow): boolean {
   return Boolean(a.nombreOficina && a.zona && a.especialidad);
+}
+
+/**
+ * Constancia de consentimiento completa: ambas firmas (Términos y Aviso).
+ * La FECHA es la firma; basta con que exista para tener la constancia.
+ */
+function consentimientoOk(a: AsesorRow): boolean {
+  return Boolean(a.consentimientoTerminosEn && a.consentimientoAvisoEn);
 }
 
 function tieneAcceso(a: AsesorRow): boolean {
@@ -69,6 +82,7 @@ function aYoDTO(a: AsesorRow, esDemo: boolean): YoDTO {
       perfilCompleto: perfilCompleto(a),
       estadoSuscripcion: estado,
       bienvenidaVista: a.onboardingEtapa === "completo",
+      consentimientoOk: consentimientoOk(a),
     }),
   };
 }
@@ -93,6 +107,26 @@ yoRouter.patch("/perfil", validarJson(GuardarPerfilSchema), async (c) => {
   if (!actual) {
     return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré tu cuenta." } }, 404);
   }
+
+  // ── Consentimiento legal (Paso 1), fail-closed ──────────────────────────────
+  // Si el asesor AÚN no tiene constancia, para continuar debe aceptar AMBOS
+  // documentos (Términos y Aviso). Sin las dos banderas: 409, no se avanza la
+  // etapa ni se escribe nada (ni perfil ni constancia). Si ya tenía constancia,
+  // las banderas se ignoran: la fecha original es la firma y no se re-escribe.
+  const yaTeniaConstancia = consentimientoOk(actual);
+  if (!yaTeniaConstancia && !(datos.aceptaTerminos === true && datos.aceptaAviso === true)) {
+    return c.json(
+      {
+        error: {
+          codigo: "FALTA_CONSENTIMIENTO",
+          mensaje:
+            "Para continuar necesitas aceptar los Términos y Condiciones y confirmar que leíste el Aviso de Privacidad.",
+        },
+      },
+      409,
+    );
+  }
+
   const a = await prisma.asesor.update({
     where: { id: actual.id },
     data: {
@@ -101,6 +135,17 @@ yoRouter.patch("/perfil", validarJson(GuardarPerfilSchema), async (c) => {
       especialidad: datos.especialidad,
       // Avanza el marcador de progreso si seguía en el primer paso.
       ...(actual.onboardingEtapa === "perfil" ? { onboardingEtapa: "pago" } : {}),
+      // Constancia: se escribe UNA sola vez, en el mismo update del perfil, con
+      // la fecha de ahora y la versión vigente de cada documento (LEGAL). Si ya
+      // había constancia, no se toca (la firma original manda).
+      ...(yaTeniaConstancia
+        ? {}
+        : {
+            consentimientoTerminosEn: new Date(),
+            consentimientoTerminosVersion: LEGAL.terminosVersion,
+            consentimientoAvisoEn: new Date(),
+            consentimientoAvisoVersion: LEGAL.avisoVersion,
+          }),
     },
   });
   return c.json(aYoDTO(a, c.get("esDemo")));

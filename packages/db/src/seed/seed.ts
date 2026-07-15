@@ -19,6 +19,7 @@ import { PrismaClient } from "../generated/client/index.js";
 import {
   EMPLEADOS,
   ROLES_EMPLEADO,
+  LEGAL,
   derivarProgreso,
   parsearReporteV1,
 } from "@socrates/shared";
@@ -120,9 +121,12 @@ async function sembrarCatalogo() {
 async function sembrarAsesorDemo() {
   // El asesor demo entra directo a La Oficina: perfil lleno, onboarding completo
   // y suscripción en estado "demo" (acceso del modo demostración, SIN fingir un
-  // pago real — se distingue de "activa" a propósito). Así Carlos sigue cayendo
-  // en la oficina sin pasar por el recibimiento. Se fija también en `update`
-  // para que resembrar lo repare.
+  // pago real — se distingue de "activa" a propósito). Lleva también la
+  // constancia de consentimiento sembrada (fecha de ahora + versiones de LEGAL)
+  // para que el flujo dev no se bloquee en el Paso 1. Así Carlos sigue cayendo en
+  // la oficina sin pasar por el recibimiento. Se fija también en `update` para
+  // que resembrar lo repare.
+  const ahora = new Date();
   const datosDemo = {
     nombre: "Carlos Hiram Chávez",
     email: "carloshiramchavez@icloud.com",
@@ -131,6 +135,10 @@ async function sembrarAsesorDemo() {
     especialidad: "Crédito empresarial PYME",
     onboardingEtapa: "completo",
     estadoSuscripcion: "demo",
+    consentimientoTerminosEn: ahora,
+    consentimientoTerminosVersion: LEGAL.terminosVersion,
+    consentimientoAvisoEn: ahora,
+    consentimientoAvisoVersion: LEGAL.avisoVersion,
   };
   const asesor = await prisma.asesor.upsert({
     where: { clerkUserId: DEMO_ASESOR_CLERK_ID },

@@ -49,6 +49,14 @@ model Asesor {
   stripeCustomerId  String?   @unique
   pruebaTermina     DateTime?
 
+  // ── Constancia de consentimiento legal (Términos + Aviso) ──────────────────
+  // La FECHA es la firma: se escribe UNA vez (cuando el asesor acepta en el
+  // Paso 1) y no se re-escribe. La versión guarda QUÉ documento aceptó (LEGAL).
+  consentimientoTerminosEn      DateTime?
+  consentimientoTerminosVersion String?
+  consentimientoAvisoEn         DateTime?
+  consentimientoAvisoVersion    String?
+
   expedientes   Expediente[]
   sesiones      Sesion[]
   creadoEn      DateTime     @default(now())

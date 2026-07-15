@@ -25,6 +25,9 @@ export async function guardarPerfilAction(
     nombreOficina: formData.get("nombreOficina"),
     zona: formData.get("zona"),
     especialidad: formData.get("especialidad"),
+    // Las casillas nativas llegan como "on" si están marcadas, ausentes si no.
+    aceptaTerminos: formData.get("aceptaTerminos") === "on",
+    aceptaAviso: formData.get("aceptaAviso") === "on",
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
