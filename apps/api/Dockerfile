@@ -21,6 +21,9 @@ RUN pnpm --filter @socrates/api build
 FROM base AS runtime
 ENV NODE_ENV=production
 COPY --from=build /app /app
-# En producción: corre migraciones de Postgres y arranca.
-#   prisma migrate deploy && node apps/api/dist/index.js
-CMD ["sh", "-c", "pnpm --filter @socrates/db exec prisma migrate deploy && node apps/api/dist/index.js"]
+# En producción: corre migraciones de Postgres y arranca. El dist compilado
+# importa a @socrates/db y @socrates/shared por su fuente TypeScript (sin
+# paso de build propio); "node" puro no resuelve esos módulos, así que el
+# arranque usa tsx (ya presente como devDependency) como runtime.
+#   prisma migrate deploy && tsx dist/index.js
+CMD ["sh", "-c", "pnpm --filter @socrates/db exec prisma migrate deploy && pnpm --filter @socrates/api exec tsx dist/index.js"]
