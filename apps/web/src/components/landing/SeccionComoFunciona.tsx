@@ -10,22 +10,19 @@ const PASOS = [
     numero: "1",
     titulo: "Dile qué necesitas",
     descripcion:
-      "Escríbele a Socratia en lenguaje normal: el nombre del prospecto, la oportunidad, lo que quieres lograr. Sin formularios ni categorías.",
-    ejemplo: '"Analiza a Transportes Garza y dime qué producto le conviene."',
+      "Escríbele en lenguaje normal, como a un colega. Sin formularios ni categorías.",
   },
   {
     numero: "2",
     titulo: "Socratia reparte el trabajo",
     descripcion:
-      "Ella identifica qué especialistas necesita, los convoca en el orden correcto y supervisa que cada uno entregue lo que prometió.",
-    ejemplo: "Hiram, Jair y Katya.",
+      "Convoca a los especialistas correctos y supervisa que cada uno cumpla.",
   },
   {
     numero: "3",
-    titulo: "Recibes el entregable listo para revisar",
+    titulo: "Recibes el entregable listo",
     descripcion:
-      "Cada entregable llega a tu oficina numerado, con fuentes y con una nota de Socratia sobre lo que revisó. Tú decides si lo usas tal cual o pides ajustes.",
-    ejemplo: "Reporte de Inteligencia Financiera · Catálogo de productos · Pitch.",
+      "Llega a tu oficina con fuentes. Tú decides si lo usas o pides ajustes.",
   },
 ];
 
@@ -43,51 +40,51 @@ export function SeccionComoFunciona() {
           </h2>
         </RevelarAlScroll>
 
-        {/* Pasos */}
-        <ListaEscalonada className="grid grid-cols-1 gap-0 lg:grid-cols-3 lg:gap-px lg:bg-oficina-borde lg:rounded-xl lg:overflow-hidden">
-          {PASOS.map(({ numero, titulo, descripcion, ejemplo }) => (
-            <ElementoEscalonado
-              key={numero}
-              className="relative bg-oficina-panel p-8 lg:p-10"
-            >
-              {/* Barra lateral de acento en el primer paso */}
-              {numero === "1" && (
-                <div
-                  aria-hidden
-                  className="absolute left-0 top-8 bottom-8 w-[3px] bg-marca rounded-r-full"
-                />
-              )}
+        {/* Layout de dos columnas: los tres pasos apilados verticalmente
+            (izquierda) y la conversación con Socratia acompañándolos (derecha).
+            En móvil se apilan: primero los pasos, luego la conversación. */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+          {/* Columna izquierda — los tres pasos en cascada vertical. No
+              colapsan: cada uno es su propia tarjeta, apiladas una sobre otra. */}
+          <ListaEscalonada className="flex flex-col gap-4">
+            {PASOS.map(({ numero, titulo, descripcion }) => (
+              <ElementoEscalonado
+                key={numero}
+                className="relative rounded-xl border border-oficina-borde bg-oficina-panel p-5 lg:p-6"
+              >
+                {/* Barra lateral de acento en el primer paso */}
+                {numero === "1" && (
+                  <div
+                    aria-hidden
+                    className="absolute left-0 top-6 bottom-6 w-[3px] bg-marca rounded-r-full"
+                  />
+                )}
 
-              {/* Número */}
-              <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-full border-2 border-marca text-sm font-black text-marca">
-                {numero}
-              </div>
+                {/* Número + título en la misma línea para compactar la altura */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-marca text-sm font-black text-marca">
+                    {numero}
+                  </div>
+                  <h3 className="text-base font-bold text-oficina-texto">
+                    {titulo}
+                  </h3>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-oficina-tenue">
+                  {descripcion}
+                </p>
+              </ElementoEscalonado>
+            ))}
+          </ListaEscalonada>
 
-              <h3 className="mb-3 text-base font-bold text-oficina-texto">
-                {titulo}
-              </h3>
-              <p className="mb-4 text-sm leading-relaxed text-oficina-tenue">
-                {descripcion}
-              </p>
-
-              {/* Cita de ejemplo */}
-              <div className="rounded-lg border border-oficina-borde bg-oficina-fondo px-4 py-3">
-                <p className="text-xs italic text-oficina-tenue">{ejemplo}</p>
-              </div>
-            </ElementoEscalonado>
-          ))}
-        </ListaEscalonada>
-
-        {/* La experiencia real, debajo de los pasos: una conversación con
-            Socratia. Se centra a lo ancho (no en dos columnas) para VARIAR el
-            ritmo frente al dúo lado a lado de la sección anterior y para no
-            partir la tabla de tres pasos. Clip en X: nunca scroll horizontal. */}
-        <RevelarAlScroll
-          className="mt-16 flex justify-center overflow-x-clip"
-          retraso={0.1}
-        >
-          <ConversacionGerente />
-        </RevelarAlScroll>
+          {/* Columna derecha — la experiencia real: una conversación con
+              Socratia. Se monta DIRECTA (sin RevelarAlScroll): la conversación
+              ya arranca sola al entrar en vista con su propio useInView; anidarla
+              dentro de otro observador de scroll impedía que su loop despertara y
+              dejaba el chat vacío. Clip en X: nunca scroll horizontal. */}
+          <div className="flex justify-center overflow-x-clip">
+            <ConversacionGerente />
+          </div>
+        </div>
       </div>
     </section>
   );
