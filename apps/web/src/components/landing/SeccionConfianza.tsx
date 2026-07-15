@@ -1,4 +1,9 @@
 import { ShieldCheck, BookOpen, MessageSquare } from "lucide-react";
+import { RevelarAlScroll } from "@/components/movimiento/RevelarAlScroll";
+import {
+  ListaEscalonada,
+  ElementoEscalonado,
+} from "@/components/movimiento/ListaEscalonada";
 
 const PILARES = [
   {
@@ -26,7 +31,7 @@ export function SeccionConfianza() {
     <section className="border-t border-oficina-borde bg-oficina-panel py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         {/* Encabezado — dos columnas editoriales */}
-        <div className="mb-14 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-end">
+        <RevelarAlScroll className="mb-14 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-6">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
               Por qué confiar
@@ -44,12 +49,12 @@ export function SeccionConfianza() {
               siempre con el asesor en control.
             </p>
           </div>
-        </div>
+        </RevelarAlScroll>
 
         {/* Pilares */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <ListaEscalonada className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {PILARES.map(({ Icono, titulo, descripcion }) => (
-            <div
+            <ElementoEscalonado
               key={titulo}
               className="rounded-xl border border-oficina-borde bg-oficina-fondo p-6"
             >
@@ -62,12 +67,12 @@ export function SeccionConfianza() {
               <p className="text-sm leading-relaxed text-oficina-tenue">
                 {descripcion}
               </p>
-            </div>
+            </ElementoEscalonado>
           ))}
-        </div>
+        </ListaEscalonada>
 
         {/* Nota institucional */}
-        <div className="mt-10 flex items-start gap-3 rounded-xl border border-marca/20 bg-marca/5 px-6 py-5">
+        <RevelarAlScroll className="mt-10 flex items-start gap-3 rounded-xl border border-marca/20 bg-marca/5 px-6 py-5">
           <span className="mt-0.5 text-xl" aria-hidden>🐢</span>
           <p className="text-sm leading-relaxed text-oficina-texto">
             <span className="font-semibold">Socratia es tu gerente, no un oráculo.</span>{" "}
@@ -75,7 +80,7 @@ export function SeccionConfianza() {
             algo necesita verificación adicional. La experiencia y el juicio del asesor
             siempre tienen la última palabra.
           </p>
-        </div>
+        </RevelarAlScroll>
       </div>
     </section>
   );

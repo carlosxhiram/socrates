@@ -22,3 +22,26 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Guardarraíl de accesibilidad: si la persona pidió menos movimiento, TODO se
+   aquieta. 0.01ms (no 0) para no romper listeners de animationend/transitionend. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Red de seguridad sin JavaScript: los reveals de scroll parten de opacity:0
+   inline (SSR de motion); si el JS no corre, este !important los hace visibles. */
+@media (scripting: none) {
+  [data-revelar] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
