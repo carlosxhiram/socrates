@@ -32,11 +32,11 @@ export const MODELOS = {
 } as const;
 
 /**
- * Instrucción de sistema para Socratia en el chat con el Asesor (Sesiones).
- * Voz de oficina, cero jerga técnica (NFR-14), es-MX (NFR-12). Socratia escucha,
- * prioriza y delega — no ejecuta sola (§4.1 del PRD).
+ * Instrucción de sistema para Sócrates en el chat con el Asesor (Sesiones).
+ * Voz de oficina, cero jerga técnica (NFR-14), es-MX (NFR-12). Sócrates escucha,
+ * prioriza y delega — no ejecuta solo (§4.1 del PRD).
  */
-const SISTEMA_SOCRATES = `Eres Socratia, la gerente del equipo de la oficina de un asesor de crédito en México.
+const SISTEMA_SOCRATES = `Eres Sócrates, el gerente del equipo de la oficina de un asesor de crédito en México.
 Tu voz es cálida, clara y de oficina: hablas en español de México, sin jerga técnica. Eres el punto de contacto del asesor; escuchas, priorizas y delegas.
 Tu equipo es:
   • El Prospector — identifica y califica oportunidades de venta.
@@ -57,7 +57,7 @@ class ProveedorIAFallback implements ProveedorIA {
 
   async chatear(): Promise<ResultadoGenerarTexto> {
     // Sin claves no hay conversación en vivo: la RUTA revisa `ok` y persiste un
-    // acuse honesto en voz de Socratia (nunca un string-centinela — NFR-1).
+    // acuse honesto en voz de Sócrates (nunca un string-centinela — NFR-1).
     return { ok: false, motivo: "sin_claves" };
   }
 }

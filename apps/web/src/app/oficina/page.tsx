@@ -1,6 +1,6 @@
 /**
  * P-1 La Oficina — la vista raíz (FR-5, UX P-2).
- * Panel "Tu equipo" + lista de Expedientes con progreso + barra de Socratia.
+ * Panel "Tu equipo" + lista de Expedientes con progreso + barra de Sócrates.
  * Renderiza el seed (Las Aliadas, Probemedic) vía la api.
  */
 import type { Metadata } from "next";
@@ -112,7 +112,7 @@ function Marco({ children }: { children: React.ReactNode }) {
             Tu oficina
           </h1>
           <p className="text-sm text-oficina-tenue">
-            Socratia y tu equipo, organizados por prospecto.
+            Sócrates y tu equipo, organizados por prospecto.
           </p>
         </div>
       </header>

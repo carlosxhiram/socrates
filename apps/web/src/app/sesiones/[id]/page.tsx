@@ -1,5 +1,5 @@
 /**
- * /sesiones/[id] — pantalla propia de UNA conversación con Socratia.
+ * /sesiones/[id] — pantalla propia de UNA conversación con Sócrates.
  * Carga la sesión en el servidor y muestra el hilo + caja de redacción. La lista
  * de conversaciones vive en /sesiones.
  *

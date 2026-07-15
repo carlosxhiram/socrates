@@ -10,7 +10,7 @@ const PILARES = [
     Icono: BookOpen,
     titulo: "Anclado al catálogo real",
     descripcion:
-      "Cada recomendación de producto está amarrada al catálogo vigente de instituciones aliadas de SOC. Socratia no inventa opciones: propone lo que existe y lo que es elegible para ese prospecto.",
+      "Cada recomendación de producto está amarrada al catálogo vigente de instituciones aliadas de SOC. Sócrates no inventa opciones: propone lo que existe y lo que es elegible para ese prospecto.",
   },
   {
     Icono: ShieldCheck,
@@ -75,7 +75,7 @@ export function SeccionConfianza() {
         <RevelarAlScroll className="mt-10 flex items-start gap-3 rounded-xl border border-marca/20 bg-marca/5 px-6 py-5">
           <span className="mt-0.5 text-xl" aria-hidden>🐢</span>
           <p className="text-sm leading-relaxed text-oficina-texto">
-            <span className="font-semibold">Socratia es tu gerente, no un oráculo.</span>{" "}
+            <span className="font-semibold">Sócrates es tu gerente, no un oráculo.</span>{" "}
             Trabaja con la información que le das, cita sus fuentes y te dice cuando
             algo necesita verificación adicional. La experiencia y el juicio del asesor
             siempre tienen la última palabra.

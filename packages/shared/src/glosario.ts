@@ -75,8 +75,8 @@ export const ESTADO_ENTREGABLE_ETIQUETA: Record<EstadoEntregable, string> = {
 // ── Roles de Empleado ───────────────────────────────────────────────────────
 // CONVENCIÓN DUAL (no la "corrijas"): el valor "SOCRATES" es el VALOR REAL de
 // filas en Postgres (Empleado.rol es PK y Tarea.empleadoRol es FK) y NO debe
-// renombrarse aunque la marca visible sea "Socratia" — renombrarlo exigiría
-// una migración de datos. Lo que ve el asesor sale de EMPLEADOS[rol].nombre.
+// renombrarse aunque el nombre visible del gerente sea "Sócrates" — renombrarlo
+// exigiría una migración de datos. Lo que ve el asesor sale de EMPLEADOS[rol].nombre.
 export const ROLES_EMPLEADO = [
   "SOCRATES",
   "PROSPECTOR",
@@ -88,7 +88,7 @@ export const ROLES_EMPLEADO = [
 ] as const;
 export type RolEmpleado = (typeof ROLES_EMPLEADO)[number];
 
-/** Los 6 empleados del panel "Tu equipo" (Socratia es la gerente, no del panel). */
+/** Los 6 empleados del panel "Tu equipo" (Sócrates es el gerente, no del panel). */
 export const ROLES_PANEL: RolEmpleado[] = [
   "PROSPECTOR",
   "INVESTIGADOR",
@@ -110,10 +110,11 @@ export interface PerfilEmpleado {
 /** Identidad de oficina de cada empleado (UX C-1, P-4). */
 export const EMPLEADOS: Record<RolEmpleado, PerfilEmpleado> = {
   // La clave/rol "SOCRATES" se queda (valor real en BD, ver ROLES_EMPLEADO);
-  // el `nombre` es la marca visible y por eso dice "Socratia".
+  // el `nombre` es el del personaje gerente, que se llama "Sócrates" (la MARCA
+  // del producto es "Socratia" — son cosas distintas a propósito).
   SOCRATES: {
     rol: "SOCRATES",
-    nombre: "Socratia",
+    nombre: "Sócrates",
     descripcion: "Tu gerente: entiende lo que necesitas, reparte el trabajo y te rinde cuentas.",
     icono: "turtle",
   },

@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * BarraComando — la línea directa a la gerente Socratia (UX C-3).
+ * BarraComando — la línea directa al gerente Sócrates (UX C-3).
  * El campo recibe texto; al Enviar, abre una conversación nueva en
  * Conversaciones (Sesiones) con ese texto como primer mensaje y navega ahí —
- * el asesor aterriza viendo su mensaje y la respuesta de Socratia (hoy, sin
+ * el asesor aterriza viendo su mensaje y la respuesta de Sócrates (hoy, sin
  * llaves de IA, el acuse honesto del equipo). La interpretación/plan plenos
  * (delegar a empleados) llegan en E3. Opcionalmente muestra "chips" de
  * acciones rápidas que rellenan el campo y lo enfocan.
@@ -49,7 +49,7 @@ export function BarraComando({
     try {
       // Reusa el flujo existente de Sesiones: crea la conversación y manda el
       // texto del asesor como primer mensaje, luego navega ahí — el asesor
-      // aterriza viendo su mensaje ya enviado y la respuesta de Socratia.
+      // aterriza viendo su mensaje ya enviado y la respuesta de Sócrates.
       const nueva = await crearSesion();
       await enviarMensaje(nueva.id, limpio);
       setTexto("");
@@ -93,7 +93,7 @@ export function BarraComando({
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           placeholder={placeholder}
-          aria-label="Escríbele a Socratia"
+          aria-label="Escríbele a Sócrates"
           disabled={enviando}
           className="flex-1 rounded-md bg-transparent text-sm text-oficina-texto outline-none placeholder:text-oficina-tenue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca focus-visible:ring-offset-1 disabled:opacity-50"
         />
@@ -138,7 +138,7 @@ export function BarraComando({
           href="/sesiones"
           className="inline-flex items-center gap-1.5 text-xs font-medium text-oficina-tenue transition-colors hover:text-marca"
         >
-          <MessagesSquare size={13} aria-hidden /> Ver mis conversaciones con Socratia
+          <MessagesSquare size={13} aria-hidden /> Ver mis conversaciones con Sócrates
         </Link>
       )}
     </div>

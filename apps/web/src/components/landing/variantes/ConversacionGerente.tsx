@@ -12,9 +12,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 /**
  * "Conversación con el gerente" — variante del gráfico estrella del Hero.
  *
- * Cuenta la experiencia real del producto: le pides algo a Socratia, tu
+ * Cuenta la experiencia real del producto: le pides algo a Sócrates, tu
  * gerente, como a cualquier colega en la mensajería interna de la oficina, y
- * la oficina ENTERA se mueve por ti. Entra tu encargo, Socratia contesta,
+ * la oficina ENTERA se mueve por ti. Entra tu encargo, Sócrates contesta,
  * reparte el trabajo entre el equipo (cada quien pasa de "trabajando" a
  * "listo") y te entrega el reporte. Luego la charla se desvanece y renace.
  *
@@ -24,7 +24,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
  * "menos movimiento" se congela en una foto con la conversación completa y la
  * tarjeta final. El texto de las burbujas es real y legible; lo decorativo va
  * marcado como aria-hidden. Es mensajería interna premium, NO un chatbot:
- * Socratia es una persona (tu gerente), no un asistente.
+ * Sócrates es una persona (tu gerente), no un asistente.
  */
 
 const EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
@@ -33,10 +33,10 @@ const EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
 const T = {
   INICIO: 450, // beat en vacío antes de la primera burbuja
   LEER_ASESOR: 1300, // tu encargo en pantalla
-  TIPEO: 1500, // Socratia "escribiendo…"
-  LEER_SOC1: 1500, // Socratia reparte el trabajo
+  TIPEO: 1500, // Sócrates "escribiendo…"
+  LEER_SOC1: 1500, // Sócrates reparte el trabajo
   DELEGACION: 2800, // los chips entran y pasan a "listo"
-  LEER_SOC2: 1000, // Socratia avisa que ya está
+  LEER_SOC2: 1000, // Sócrates avisa que ya está
   PAUSA: 2600, // celebración con la tarjeta a la vista
   SALIDA: 600, // la conversación se desvanece antes de renacer
 } as const;
@@ -140,7 +140,7 @@ export function ConversacionGerente() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="text-[13px] font-semibold text-oficina-texto">
-              Socratia
+              Sócrates
             </p>
             <PuntoPresencia animar={animar} />
           </div>
@@ -171,7 +171,7 @@ export function ConversacionGerente() {
         >
           <ol
             key={ciclo}
-            aria-label="Conversación con Socratia, tu gerente"
+            aria-label="Conversación con Sócrates, tu gerente"
             className={
               estatico
                 ? "flex flex-col gap-3 px-4 py-4"
@@ -181,7 +181,7 @@ export function ConversacionGerente() {
             <AnimatePresence initial={false}>
               {verAsesor && (
                 <Mensaje key="asesor" lado="asesor" estatico={estatico}>
-                  Socratia, prepárame a Grupo Andrade para el martes.
+                  Sócrates, prepárame a Grupo Andrade para el martes.
                 </Mensaje>
               )}
               {verTipeo && <Tipeo key="tipeo" animar={animar} />}
@@ -211,7 +211,7 @@ export function ConversacionGerente() {
         className="flex items-center gap-2 border-t border-oficina-borde px-3 py-2.5"
       >
         <div className="flex-1 rounded-full border border-oficina-borde bg-oficina-fondo px-3.5 py-2 text-[12px] text-oficina-tenue">
-          Escríbele a Socratia…
+          Escríbele a Sócrates…
         </div>
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-marca text-white">
           <IconoEnviar />
@@ -283,7 +283,7 @@ function Mensaje({ lado, estatico, children }: MensajeProps) {
   );
 }
 
-// Indicador de "escribiendo…" de Socratia — tres puntitos con plop escalonado.
+// Indicador de "escribiendo…" de Sócrates — tres puntitos con plop escalonado.
 function Tipeo({ animar }: { animar: boolean }) {
   return (
     <motion.li
