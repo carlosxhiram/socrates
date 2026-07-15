@@ -14,7 +14,7 @@ const PASOS = [
   },
   {
     numero: "2",
-    titulo: "Socratia reparte el trabajo",
+    titulo: "Sócrates reparte el trabajo",
     descripcion:
       "Convoca a los especialistas correctos y supervisa que cada uno cumpla.",
   },
@@ -41,7 +41,7 @@ export function SeccionComoFunciona() {
         </RevelarAlScroll>
 
         {/* Layout de dos columnas: los tres pasos apilados verticalmente
-            (izquierda) y la conversación con Socratia acompañándolos (derecha).
+            (izquierda) y la conversación con Sócrates acompañándolos (derecha).
             En móvil se apilan: primero los pasos, luego la conversación. */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
           {/* Columna izquierda — los tres pasos en cascada vertical. No
@@ -77,7 +77,7 @@ export function SeccionComoFunciona() {
           </ListaEscalonada>
 
           {/* Columna derecha — la experiencia real: una conversación con
-              Socratia. Se monta DIRECTA (sin RevelarAlScroll): la conversación
+              Sócrates. Se monta DIRECTA (sin RevelarAlScroll): la conversación
               ya arranca sola al entrar en vista con su propio useInView; anidarla
               dentro de otro observador de scroll impedía que su loop despertara y
               dejaba el chat vacío. Clip en X: nunca scroll horizontal. */}

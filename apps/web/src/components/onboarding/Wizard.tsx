@@ -1,10 +1,10 @@
 "use client";
 /**
- * Wizard — el recibimiento de Socratia en 3 pasos.
+ * Wizard — el recibimiento de Sócrates en 3 pasos.
  *
  *   1. Tu oficina   — datos mínimos (Server Action guardarPerfilAction).
  *   2. Tu prueba     — Checkout de Stripe (iniciarPruebaAction → redirección).
- *   3. Conoce a tu equipo — Socratia te presenta a los 6 y explica la dinámica.
+ *   3. Conoce a tu equipo — Sócrates te presenta a los 6 y explica la dinámica.
  *
  * Entre el 2 y el 3 hay un estado "confirmando": al volver de Stripe esperamos a
  * que la suscripción quede activa (la abre el webhook firmado, no el navegador).
@@ -75,13 +75,13 @@ export function Wizard({
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-5 py-10">
-      {/* Encabezado: Socratia recibe */}
+      {/* Encabezado: Sócrates recibe */}
       <header className="mb-8 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-marca/10 text-2xl" aria-hidden>
           🐢
         </span>
         <div>
-          <p className="text-sm font-medium text-marca">Socratia</p>
+          <p className="text-sm font-medium text-marca">Sócrates</p>
           <h1 className="text-lg font-semibold tracking-tight text-oficina-texto">
             Bienvenido. Vamos a preparar tu oficina.
           </h1>
