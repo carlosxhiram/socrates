@@ -5,6 +5,7 @@
  * DTOs Zod compartidos (D-9/D-10) y la derivación pura de progreso (P-3).
  */
 export * from "./glosario";
+export * from "./legal";
 export * from "./etapas";
 export * from "./progreso";
 export * from "./onboarding/paso";

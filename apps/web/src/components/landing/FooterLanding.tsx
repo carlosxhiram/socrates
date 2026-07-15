@@ -18,6 +18,11 @@ const EMPEZAR: Enlace[] = [
 
 const EMPRESA: Enlace[] = [{ texto: "Acerca de nosotros", href: "/nosotros" }];
 
+const LEGAL: Enlace[] = [
+  { texto: "Términos y Condiciones", href: "/terminos" },
+  { texto: "Aviso de Privacidad", href: "/aviso-de-privacidad" },
+];
+
 function ColumnaFooter({
   titulo,
   enlaces,
@@ -55,7 +60,7 @@ export function FooterLanding() {
         {/* Cuerpo */}
         <div className="grid grid-cols-2 gap-8 py-14 md:grid-cols-12">
           {/* Marca */}
-          <div className="col-span-2 md:col-span-5">
+          <div className="col-span-2 md:col-span-4">
             <div className="flex items-center gap-2.5">
               <span className="text-xl leading-none" aria-hidden>
                 🐢
@@ -72,9 +77,10 @@ export function FooterLanding() {
           </div>
 
           {/* Menús */}
-          <ColumnaFooter titulo="Producto" enlaces={PRODUCTO} className="md:col-span-3" />
+          <ColumnaFooter titulo="Producto" enlaces={PRODUCTO} className="md:col-span-2" />
           <ColumnaFooter titulo="Empezar" enlaces={EMPEZAR} className="md:col-span-2" />
           <ColumnaFooter titulo="Empresa" enlaces={EMPRESA} className="md:col-span-2" />
+          <ColumnaFooter titulo="Legal" enlaces={LEGAL} className="md:col-span-2" />
         </div>
 
         {/* Barra inferior */}
