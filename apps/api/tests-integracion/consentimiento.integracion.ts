@@ -258,6 +258,28 @@ test("GET /expedientes con suscripción 'demo' pero SIN constancia ⇒ 409", asy
   });
 });
 
+// ── g bis) las SESIONES (chat que quema IA real) también están tras la muralla ─
+test("sesiones con suscripción 'demo' pero SIN constancia ⇒ 409 (GET y POST)", async () => {
+  await conModoDemo(async () => {
+    // El chat con Socratia es ruta de negocio (consume IA/dinero): sin
+    // constancia vigente no se alcanza ni para leer ni para escribir.
+    const lectura = await app.request("/sesiones");
+    assert.equal(lectura.status, 409, "GET /sesiones sin constancia ⇒ 409");
+    const bodyLectura = (await lectura.json()) as { error: { codigo: string } };
+    assert.equal(bodyLectura.error.codigo, "FALTA_CONSENTIMIENTO");
+
+    const escritura = await app.request("/sesiones", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    assert.equal(escritura.status, 409, "POST /sesiones sin constancia ⇒ 409");
+    const bodyEscritura = (await escritura.json()) as { error: { codigo: string; mensaje: string } };
+    assert.equal(bodyEscritura.error.codigo, "FALTA_CONSENTIMIENTO");
+    assert.match(bodyEscritura.error.mensaje, /Términos y Condiciones/i);
+  });
+});
+
 // ── h) la VERSIÓN de la constancia muerde ─────────────────────────────────────
 test("constancia de versión vieja (v0.9) ⇒ 'perfil' + negocio 409; re-aceptar la actualiza y restaura acceso", async () => {
   await conModoDemo(async () => {

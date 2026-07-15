@@ -84,8 +84,11 @@ app.route("/yo", yoRouter);
 app.route("/pago", pagoRouter);
 
 // ── Muralla del dinero: las rutas de NEGOCIO exigen suscripción con acceso ────
-// (demo/prueba/activa), no solo identidad. Un JWT válido sin suscripción NO lee
-// datos de negocio. Se aplica ANTES de montar sus routers.
+// (demo/prueba/activa) Y consentimiento legal vigente, no solo identidad. Un JWT
+// válido sin suscripción NO lee datos de negocio. Se aplica ANTES de montar sus
+// routers. INCLUYE las sesiones: el chat con Socratia es negocio real (consume
+// IA/dinero), así que va tras la misma muralla que expedientes/empleados/etc.
+// (solo /yo y /pago quedan fuera: son el recibimiento, ANTES de tener acceso).
 app.use("/expedientes/*", requiereSuscripcion);
 app.use("/expedientes", requiereSuscripcion);
 app.use("/empleados/*", requiereSuscripcion);
@@ -94,6 +97,8 @@ app.use("/catalogo/*", requiereSuscripcion);
 app.use("/catalogo", requiereSuscripcion);
 app.use("/entregables/*", requiereSuscripcion);
 app.use("/entregables", requiereSuscripcion);
+app.use("/sesiones/*", requiereSuscripcion);
+app.use("/sesiones", requiereSuscripcion);
 
 // ── Rutas de negocio ─────────────────────────────────────────────────────────
 app.route("/expedientes", expedientesRouter);
