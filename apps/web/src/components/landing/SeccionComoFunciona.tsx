@@ -10,7 +10,7 @@ const PASOS = [
     numero: "2",
     titulo: "Socratia reparte el trabajo",
     descripcion:
-      "Él identifica qué especialistas necesita, los convoca en el orden correcto y supervisa que cada uno entregue lo que prometió.",
+      "Ella identifica qué especialistas necesita, los convoca en el orden correcto y supervisa que cada uno entregue lo que prometió.",
     ejemplo: "El Investigador + El Asesor de Producto + El Negociador.",
   },
   {
@@ -32,7 +32,7 @@ export function SeccionComoFunciona() {
             Cómo se siente usarlo
           </p>
           <h2 className="text-3xl font-black tracking-tight text-oficina-texto md:text-4xl">
-            Tan simple como hablar con un gerente.
+            Tan simple como hablar con tu gerente.
           </h2>
         </div>
 

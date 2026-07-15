@@ -73,6 +73,10 @@ export const ESTADO_ENTREGABLE_ETIQUETA: Record<EstadoEntregable, string> = {
 };
 
 // ── Roles de Empleado ───────────────────────────────────────────────────────
+// CONVENCIÓN DUAL (no la "corrijas"): el valor "SOCRATES" es el VALOR REAL de
+// filas en Postgres (Empleado.rol es PK y Tarea.empleadoRol es FK) y NO debe
+// renombrarse aunque la marca visible sea "Socratia" — renombrarlo exigiría
+// una migración de datos. Lo que ve el asesor sale de EMPLEADOS[rol].nombre.
 export const ROLES_EMPLEADO = [
   "SOCRATES",
   "PROSPECTOR",
@@ -105,6 +109,8 @@ export interface PerfilEmpleado {
 
 /** Identidad de oficina de cada empleado (UX C-1, P-4). */
 export const EMPLEADOS: Record<RolEmpleado, PerfilEmpleado> = {
+  // La clave/rol "SOCRATES" se queda (valor real en BD, ver ROLES_EMPLEADO);
+  // el `nombre` es la marca visible y por eso dice "Socratia".
   SOCRATES: {
     rol: "SOCRATES",
     nombre: "Socratia",
