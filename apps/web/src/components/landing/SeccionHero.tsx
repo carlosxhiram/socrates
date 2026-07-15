@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReporteSeArma } from "./variantes/ReporteSeArma";
 
 export function SeccionHero() {
   return (
@@ -34,7 +35,7 @@ export function SeccionHero() {
             </div>
 
             {/* Titular */}
-            <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-oficina-texto md:text-5xl xl:text-6xl">
+            <h1 className="animate-entrada-hero text-4xl font-black leading-[1.05] tracking-tight text-oficina-texto md:text-5xl xl:text-6xl">
               Contrata un equipo completo para tu oficina.{" "}
               <span className="relative inline-block">
                 <span className="relative z-10 text-marca">Por $499 al mes.</span>
@@ -47,14 +48,14 @@ export function SeccionHero() {
             </h1>
 
             {/* Subtítulo */}
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-oficina-tenue">
+            <p className="animate-entrada-hero-tarde mt-6 max-w-xl text-lg leading-relaxed text-oficina-tenue">
               Un investigador, un negociador, un gestor y tres especialistas más:
               seis empleados que se integran a tu oficina y hacen el trabajo pesado
               que hoy haces tú —o le pagas a alguien—. Tú solo revisas y firmas.
             </p>
 
             {/* CTAs */}
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="animate-entrada-hero-tarde mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/crear-cuenta"
                 className="inline-flex items-center justify-center rounded-md bg-marca px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-fuerte"
@@ -67,59 +68,12 @@ export function SeccionHero() {
             </div>
           </div>
 
-          {/* Bloque decorativo derecho — 5 columnas */}
-          <div className="hidden lg:col-span-5 lg:flex lg:items-start lg:justify-end lg:pt-4">
-            <div className="relative">
-              {/* Tarjeta principal decorativa: simula el reporte de inteligencia */}
-              <div className="w-72 rounded-xl border border-oficina-borde bg-oficina-panel p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
-                    Reporte de Inteligencia
-                  </span>
-                  <span className="rounded-full bg-estado-entrego/10 px-2 py-0.5 text-[10px] font-semibold text-estado-entrego">
-                    Listo
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { label: "Empresa", valor: "Grupo Empresarial ····" },
-                    { label: "Sector", valor: "Manufactura PYME" },
-                    { label: "Producto sugerido", valor: "Crédito Revolvente" },
-                    { label: "Institución", valor: "Catálogo SOC" },
-                  ].map(({ label, valor }) => (
-                    <div key={label}>
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-oficina-tenue">
-                        {label}
-                      </p>
-                      <p className="text-sm font-semibold text-oficina-texto">{valor}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 border-t border-oficina-borde pt-4">
-                  <p className="text-[10px] text-oficina-tenue">
-                    Preparado por el equipo Sócrates · Revisión pendiente del asesor
-                  </p>
-                </div>
-              </div>
-
-              {/* Chip flotante — el Negociador terminó */}
-              <div className="absolute -bottom-4 -left-8 flex items-center gap-2 rounded-lg border border-oficina-borde bg-oficina-panel px-3 py-2 shadow-md">
-                <span className="text-base" aria-hidden>🤝</span>
-                <div>
-                  <p className="text-[11px] font-semibold text-oficina-texto">El Negociador</p>
-                  <p className="text-[10px] text-estado-entrego">Pitch listo</p>
-                </div>
-              </div>
-
-              {/* Chip flotante — el Investigador trabajando */}
-              <div className="absolute -top-4 -right-6 flex items-center gap-2 rounded-lg border border-oficina-borde bg-oficina-panel px-3 py-2 shadow-md">
-                <span className="text-base" aria-hidden>🔍</span>
-                <div>
-                  <p className="text-[11px] font-semibold text-oficina-texto">El Investigador</p>
-                  <p className="text-[10px] text-marca">En proceso</p>
-                </div>
-              </div>
-            </div>
+          {/* Bloque decorativo derecho — el Reporte que se arma solo (5 columnas).
+              Centrado en el vacío de la derecha, no pegado al borde. Al ser un
+              documento vertical compacto, se centra en vertical (items-center)
+              para equilibrarlo con la columna de texto, más alta. */}
+          <div className="hidden lg:col-span-5 lg:flex lg:items-center lg:justify-center">
+            <ReporteSeArma />
           </div>
         </div>
       </div>
