@@ -22,16 +22,19 @@ RUN pnpm install --frozen-lockfile=false
 # ── Build ─────────────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY . .
-RUN pnpm --filter @socrates/db prisma:generate
+# db se compila a JS (genera cliente Prisma + emite dist + copia el cliente
+# generado con su motor a dist). Debe ir ANTES del API: el bundle del API deja
+# @socrates/db externo y node lo resuelve en runtime desde packages/db/dist.
+RUN pnpm --filter @socrates/db build
 RUN pnpm --filter @socrates/api build
 
 # ── Runtime ───────────────────────────────────────────────────────────────────
 FROM base AS runtime
 ENV NODE_ENV=production
 COPY --from=build /app /app
-# En producción: corre migraciones de Postgres y arranca. El dist compilado
-# importa a @socrates/db y @socrates/shared por su fuente TypeScript (sin
-# paso de build propio); "node" puro no resuelve esos módulos, así que el
-# arranque usa tsx (ya presente como devDependency) como runtime.
-#   prisma migrate deploy && tsx dist/index.js
-CMD ["sh", "-c", "pnpm --filter @socrates/db exec prisma migrate deploy && pnpm --filter @socrates/api exec tsx dist/index.js"]
+# En producción: corre migraciones de Postgres y arranca. El API es un bundle
+# autocontenido (tsup) con @socrates/shared incrustado; @socrates/db queda
+# externo y node lo resuelve desde packages/db/dist. Arranca con "node" puro —
+# sin tsx.
+#   prisma migrate deploy && node apps/api/dist/index.js
+CMD ["sh", "-c", "pnpm --filter @socrates/db exec prisma migrate deploy && node apps/api/dist/index.js"]

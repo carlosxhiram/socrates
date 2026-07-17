@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "noEmit": false,
+    "sourceMap": false,
+    "types": ["node"]
+  },
+  "include": ["src/index.ts", "src/client.ts"],
+  "exclude": ["src/generated/**", "src/seed/**", "tests-integracion/**"]
+}
