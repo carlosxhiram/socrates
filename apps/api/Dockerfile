@@ -22,16 +22,30 @@ RUN pnpm install --frozen-lockfile=false
 # ── Build ─────────────────────────────────────────────────────────────────────
 FROM deps AS build
 COPY . .
-RUN pnpm --filter @socrates/db prisma:generate
+# db se compila a JS (genera cliente Prisma + emite dist + copia el cliente
+# generado con su motor a dist). Debe ir ANTES del API: el bundle del API deja
+# @socrates/db externo y node lo resuelve en runtime desde packages/db/dist.
+RUN pnpm --filter @socrates/db build
 RUN pnpm --filter @socrates/api build
 
-# ── Runtime ───────────────────────────────────────────────────────────────────
+# ── Runtime (imagen delgada) ─────────────────────────────────────────────────
+# NO copia todo /app. Reinstala SOLO dependencias de producción (deja fuera
+# tsx/tsup/turbo/typescript, que solo sirven para construir) y trae únicamente
+# los artefactos ya compilados. prisma (CLI) vive en las dependencies de
+# @socrates/db porque el arranque corre `prisma migrate deploy`.
 FROM base AS runtime
 ENV NODE_ENV=production
-COPY --from=build /app /app
-# En producción: corre migraciones de Postgres y arranca. El dist compilado
-# importa a @socrates/db y @socrates/shared por su fuente TypeScript (sin
-# paso de build propio); "node" puro no resuelve esos módulos, así que el
-# arranque usa tsx (ya presente como devDependency) como runtime.
-#   prisma migrate deploy && tsx dist/index.js
-CMD ["sh", "-c", "pnpm --filter @socrates/db exec prisma migrate deploy && pnpm --filter @socrates/api exec tsx dist/index.js"]
+WORKDIR /app
+COPY --from=build /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
+COPY --from=build /app/apps/api/package.json ./apps/api/
+COPY --from=build /app/packages/db/package.json ./packages/db/
+COPY --from=build /app/packages/shared/package.json ./packages/shared/
+RUN pnpm install --prod --frozen-lockfile=false && pnpm store prune
+# Artefactos compilados: el bundle del API (con @socrates/shared incrustado), el
+# JS de db con su cliente Prisma + motor, y el schema+migraciones para migrar.
+COPY --from=build /app/apps/api/dist ./apps/api/dist
+COPY --from=build /app/packages/db/dist ./packages/db/dist
+COPY --from=build /app/packages/db/prisma ./packages/db/prisma
+# En producción: corre migraciones de Postgres y arranca con "node" puro (sin tsx).
+#   prisma migrate deploy && node apps/api/dist/index.js
+CMD ["sh", "-c", "pnpm --filter @socrates/db exec prisma migrate deploy && node apps/api/dist/index.js"]
