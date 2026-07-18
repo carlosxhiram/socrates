@@ -2,10 +2,17 @@
 import Link from "next/link";
 import { AlertTriangle, CircleAlert } from "lucide-react";
 import type { ExpedienteResumenDTO } from "@socrates/shared";
-import { EMPLEADOS, etiquetaEtapaActual } from "@socrates/shared";
+import { nombreEmpleado, etiquetaEtapaActual } from "@socrates/shared";
 import { BarraProgreso } from "./BarraProgreso";
 
-export function TarjetaExpediente({ expediente }: { expediente: ExpedienteResumenDTO }) {
+export function TarjetaExpediente({
+  expediente,
+  nombresEquipo,
+}: {
+  expediente: ExpedienteResumenDTO;
+  /** Overrides de nombres de la oficina, para mostrar el nombre propio del equipo. */
+  nombresEquipo?: Record<string, string>;
+}) {
   const cerrado = expediente.etapa === "GANADO" || expediente.etapa === "PERDIDO";
   return (
     <Link
@@ -37,7 +44,7 @@ export function TarjetaExpediente({ expediente }: { expediente: ExpedienteResume
               key={rol}
               className="rounded-md bg-marca/10 px-2 py-0.5 text-[11px] font-medium text-marca"
             >
-              {EMPLEADOS[rol]?.nombre ?? rol}
+              {nombreEmpleado(rol, nombresEquipo)}
             </span>
           ))}
         </div>

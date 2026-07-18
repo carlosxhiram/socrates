@@ -5,10 +5,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
-import { obtenerExpediente, ErrorApi } from "@/lib/api-client";
+import { obtenerExpediente, obtenerYo, ErrorApi } from "@/lib/api-client";
 import { requerirAcceso } from "@/lib/portero";
 import {
-  EMPLEADOS,
+  nombreEmpleado,
   etiquetaEtapaActual,
   ESTADO_TAREA_ETIQUETA,
   TIPO_ENTREGABLE_ETIQUETA,
@@ -58,6 +58,15 @@ export default async function ExpedientePage({ params }: Parametros) {
         </p>
       </main>
     );
+  }
+
+  // Nombres propios que la oficina le puso a su equipo, para mostrarlos junto a
+  // cada tarea y entregable. Si no se puede leer, se cae a los de fábrica.
+  let nombresEquipo: Record<string, string> = {};
+  try {
+    nombresEquipo = (await obtenerYo()).nombresEquipo;
+  } catch {
+    nombresEquipo = {};
   }
 
   return (
@@ -129,7 +138,7 @@ export default async function ExpedientePage({ params }: Parametros) {
                     </p>
                     <p className="mt-0.5 text-xs text-oficina-tenue">
                       {d.empleadoRol
-                        ? EMPLEADOS[d.empleadoRol as RolEmpleado]?.nombre
+                        ? nombreEmpleado(d.empleadoRol as RolEmpleado, nombresEquipo)
                         : "Equipo"}{" "}
                       · {fechaCorta(d.creadoEn)}
                     </p>
@@ -166,7 +175,7 @@ export default async function ExpedientePage({ params }: Parametros) {
                   className="rounded-lg border border-oficina-borde bg-oficina-panel p-3"
                 >
                   <p className="text-sm font-medium text-oficina-texto">
-                    {EMPLEADOS[t.empleadoRol as RolEmpleado]?.nombre ?? t.empleadoRol}
+                    {nombreEmpleado(t.empleadoRol as RolEmpleado, nombresEquipo)}
                   </p>
                   <p className="mt-0.5 text-xs text-oficina-tenue">{t.descripcion}</p>
                   <p className="mt-1 text-[11px] font-medium text-oficina-tenue">

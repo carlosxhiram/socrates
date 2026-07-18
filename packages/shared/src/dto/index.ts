@@ -11,14 +11,36 @@ import {
   ESTADOS_TAREA,
   ESTADOS_ENTREGABLE,
   ROLES_EMPLEADO,
+  ROLES_PANEL,
   ETAPAS_ONBOARDING,
   ESTADOS_SUSCRIPCION,
+  type RolEmpleado,
 } from "../glosario";
 
 export const EtapaSchema = z.enum(ETAPAS_EXPEDIENTE);
 export const EstadoTareaSchema = z.enum(ESTADOS_TAREA);
 export const EstadoEntregableSchema = z.enum(ESTADOS_ENTREGABLE);
 export const RolEmpleadoSchema = z.enum(ROLES_EMPLEADO);
+
+// ── Renombrar al equipo (override de nombres por oficina) ────────────────────
+/**
+ * Validación del PATCH que renombra empleados. Mapa { rol: nombre } con SOLO los
+ * 6 roles del panel (el gerente SOCRATES no se renombra) y nombre de 1–40
+ * caracteres tras recortar espacios. Rechaza vacío y roles fuera del panel.
+ */
+export const NombresEquipoSchema = z
+  .record(
+    RolEmpleadoSchema,
+    z
+      .string()
+      .trim()
+      .min(1, "El nombre no puede ir vacío.")
+      .max(40, "El nombre no puede pasar de 40 caracteres."),
+  )
+  .refine((mapa) => Object.keys(mapa).every((r) => ROLES_PANEL.includes(r as RolEmpleado)), {
+    message: "Solo puedes renombrar a los 6 de tu equipo.",
+  });
+export type NombresEquipo = z.infer<typeof NombresEquipoSchema>;
 
 // ── Error estándar de la API ────────────────────────────────────────────────
 export const ErrorApiSchema = z.object({
@@ -110,6 +132,8 @@ export type ExpedienteDetalleDTO = z.infer<typeof ExpedienteDetalleDTOSchema>;
 export const EmpleadoEstadoDTOSchema = z.object({
   rol: RolEmpleadoSchema,
   nombre: z.string(),
+  /** Puesto mostrado como cargo (subtítulo) bajo el nombre. Vacío para el gerente. */
+  cargo: z.string(),
   descripcion: z.string(),
   icono: z.string(),
   estado: z.enum(["LIBRE", "TRABAJANDO", "ENTREGO"]),
@@ -162,6 +186,12 @@ export const YoDTOSchema = z.object({
     pruebaTermina: z.string().nullable(),
   }),
   siguientePaso: EtapaOnboardingSchema,
+  /**
+   * Overrides de nombres que la oficina le puso a su equipo ({ rol: nombre }),
+   * SOLO los cambiados. Se usa en la web para propagar el nombre a expedientes
+   * y tareas vía `nombreEmpleado(rol, nombresEquipo)`.
+   */
+  nombresEquipo: z.record(z.string(), z.string()),
 });
 export type YoDTO = z.infer<typeof YoDTOSchema>;
 

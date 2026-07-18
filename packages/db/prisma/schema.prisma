@@ -38,6 +38,10 @@ model Asesor {
   zona          String?
   especialidad  String?
 
+  // Nombres propios que la oficina le puso a sus 6 empleados (glosario ROLES_PANEL).
+  // Mapa { rol: nombre }; solo los cambiados. Cosmético, sin FK. Ver nombreEmpleado().
+  nombresEquipo Json?
+
   // ── Estado de onboarding y suscripción (la VERDAD del acceso vive aquí) ─────
   // onboardingEtapa: perfil | pago | bienvenida | completo (glosario ETAPAS_ONBOARDING)
   onboardingEtapa   String    @default("perfil")

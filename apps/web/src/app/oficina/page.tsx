@@ -5,7 +5,7 @@
  */
 import type { Metadata } from "next";
 import type { ExpedienteResumenDTO, EmpleadoEstadoDTO } from "@socrates/shared";
-import { obtenerExpedientes, obtenerEquipo, apiViva } from "@/lib/api-client";
+import { obtenerExpedientes, obtenerEquipo, obtenerYo, apiViva } from "@/lib/api-client";
 import { requerirAcceso } from "@/lib/portero";
 import { PanelEquipo } from "@/components/oficina/PanelEquipo";
 import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
@@ -50,8 +50,16 @@ export default async function OficinaPage() {
   // tuyos, y eso hay que decirlo tal cual (nunca disfrazarlo de vacío).
   let expedientes: ExpedienteResumenDTO[];
   let equipo: EmpleadoEstadoDTO[];
+  let nombresEquipo: Record<string, string> = {};
   try {
-    [expedientes, equipo] = await Promise.all([obtenerExpedientes(), obtenerEquipo()]);
+    const [exps, eq, yo] = await Promise.all([
+      obtenerExpedientes(),
+      obtenerEquipo(),
+      obtenerYo(),
+    ]);
+    expedientes = exps;
+    equipo = eq;
+    nombresEquipo = yo.nombresEquipo;
   } catch {
     return (
       <Marco>
@@ -86,7 +94,7 @@ export default async function OficinaPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {expedientes.map((e) => (
-                <TarjetaExpediente key={e.id} expediente={e} />
+                <TarjetaExpediente key={e.id} expediente={e} nombresEquipo={nombresEquipo} />
               ))}
             </div>
           )}
