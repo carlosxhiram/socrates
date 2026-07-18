@@ -67,7 +67,7 @@ socratesRouter.post("/instruir", validarJson(InstruirSchema), async (c) => {
     const listado =
       expedientes.map((e) => `- ${e.id}: ${e.empresa}`).join("\n") ||
       "(el asesor todavía no tiene expedientes abiertos)";
-    const sistema = `Eres Sócrates, el gerente de un equipo de agentes de inteligencia financiera al servicio de un asesor de crédito empresarial PYME en México.
+    const sistema = `Eres Sócrates, el gerente del equipo de la oficina de un asesor de crédito empresarial PYME en México.
 El asesor te escribe en lenguaje natural qué necesita. Tu trabajo es interpretar la intención y proponer un plan de trabajo — NUNCA ejecutas nada tú mismo, solo propones.
 
 Responde ÚNICAMENTE con un objeto JSON (sin texto antes ni después, sin fences), con UNA de estas dos formas EXACTAS:
