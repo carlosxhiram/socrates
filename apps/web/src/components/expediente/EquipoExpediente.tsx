@@ -17,7 +17,7 @@ import {
   Loader2,
   type LucideIcon,
 } from "lucide-react";
-import { ROLES_PANEL, EMPLEADOS, type RolEmpleado, type TareaDTO } from "@socrates/shared";
+import { ROLES_PANEL, EMPLEADOS, nombreEmpleado, type RolEmpleado, type TareaDTO } from "@socrates/shared";
 import { encargarTarea } from "@/lib/acciones";
 import { usarPollingExpediente } from "@/lib/usar-polling";
 
@@ -41,7 +41,15 @@ function tareaDelRol(tareas: TareaDTO[], rol: RolEmpleado): TareaDTO | null {
   return [...delRol].sort((a, b) => b.creadoEn.localeCompare(a.creadoEn))[0] ?? null;
 }
 
-export function EquipoExpediente({ expedienteId, tareas }: { expedienteId: string; tareas: TareaDTO[] }) {
+export function EquipoExpediente({
+  expedienteId,
+  tareas,
+  nombresEquipo,
+}: {
+  expedienteId: string;
+  tareas: TareaDTO[];
+  nombresEquipo: Record<string, string>;
+}) {
   const hayTareasActivas = tareas.some((t) => ESTADOS_ACTIVOS.includes(t.estado));
   const huellaEstado = tareas.map((t) => `${t.id}:${t.estado}:${t.progresoPct ?? ""}`).join("|");
   usarPollingExpediente({ hayTareasActivas, huellaEstado });
@@ -53,7 +61,13 @@ export function EquipoExpediente({ expedienteId, tareas }: { expedienteId: strin
       </h2>
       <div className="space-y-2">
         {ROLES_PANEL.map((rol) => (
-          <TarjetaEmpleado key={rol} expedienteId={expedienteId} rol={rol} tarea={tareaDelRol(tareas, rol)} />
+          <TarjetaEmpleado
+            key={rol}
+            expedienteId={expedienteId}
+            rol={rol}
+            tarea={tareaDelRol(tareas, rol)}
+            nombresEquipo={nombresEquipo}
+          />
         ))}
       </div>
     </section>
@@ -64,12 +78,15 @@ function TarjetaEmpleado({
   expedienteId,
   rol,
   tarea,
+  nombresEquipo,
 }: {
   expedienteId: string;
   rol: RolEmpleado;
   tarea: TareaDTO | null;
+  nombresEquipo: Record<string, string>;
 }) {
   const perfil = EMPLEADOS[rol];
+  const nombre = nombreEmpleado(rol, nombresEquipo);
   const Icono = ICONOS[perfil.icono] ?? Briefcase;
   const [abierto, setAbierto] = useState(false);
   const [descripcion, setDescripcion] = useState(perfil.descripcion);
@@ -98,7 +115,7 @@ function TarjetaEmpleado({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-sm font-semibold text-oficina-texto">{perfil.nombre}</p>
+            <p className="truncate text-sm font-semibold text-oficina-texto">{nombre}</p>
             <EstadoTarjeta tarea={tarea} />
           </div>
           <p className="mt-0.5 text-xs text-oficina-tenue">
@@ -141,7 +158,7 @@ function TarjetaEmpleado({
           {abierto && (
             <div className="mt-2 rounded-lg border border-oficina-borde bg-oficina-fondo p-3">
               <label htmlFor={`descripcion-${rol}`} className="block text-xs font-medium text-oficina-tenue">
-                ¿Qué le encargas a {perfil.nombre}?
+                ¿Qué le encargas a {nombre}?
               </label>
               <textarea
                 id={`descripcion-${rol}`}

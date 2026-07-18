@@ -4,9 +4,9 @@ import { BarraSuperior } from "@/components/landing/BarraSuperior";
 import { FooterLanding } from "@/components/landing/FooterLanding";
 
 export const metadata: Metadata = {
-  title: "Acerca de nosotros · SOCRATES",
+  title: "Acerca de nosotros",
   description:
-    "SOCRATES es un producto de SOC | TALENT: un equipo completo para la oficina del asesor de crédito empresarial en México.",
+    "SOCRATIA es un equipo completo para la oficina del asesor de crédito empresarial en México.",
 };
 
 /**
@@ -35,7 +35,7 @@ export default function NosotrosPage() {
             de verdad cierra tratos: sentarse con el cliente.
           </p>
           <p>
-            <span className="font-semibold text-oficina-texto">Sócrates</span>{" "}
+            <span className="font-semibold text-oficina-texto">Socratia</span>{" "}
             nació para eso: que cualquier asesor tenga, desde el primer día, un
             equipo de especialistas trabajando en su oficina. Le dices qué
             necesitas en lenguaje normal y cada quien hace su parte. Tú revisas y
@@ -43,7 +43,7 @@ export default function NosotrosPage() {
             siempre.
           </p>
           <p>
-            Somos <span className="font-semibold text-oficina-texto">SOC | TALENT</span>,
+            Somos <span className="font-semibold text-oficina-texto">Mate Innovation</span>,
             y construimos herramientas para el asesor de crédito PYME en México.
             Creemos que la mejor tecnología no se siente como aprender un
             programa nuevo, sino como contratar a un buen equipo: llega, entiende

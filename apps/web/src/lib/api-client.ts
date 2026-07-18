@@ -18,6 +18,7 @@ import type {
   EmpleadoEstadoDTO,
   YoDTO,
   GuardarPerfil,
+  NombresEquipo,
 } from "@socrates/shared";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8787";
@@ -197,6 +198,11 @@ export async function guardarPerfil(datos: GuardarPerfil): Promise<YoDTO> {
 /** Paso 3: marca la bienvenida como vista (solo si ya hay acceso). */
 export async function completarBienvenida(): Promise<YoDTO> {
   return enviar<YoDTO>("/yo/completar", "POST");
+}
+
+/** Renombra a los empleados de la oficina (cambio parcial; la api hace merge). */
+export async function guardarNombresEquipo(nombres: NombresEquipo): Promise<YoDTO> {
+  return enviar<YoDTO>("/yo/equipo", "PATCH", nombres);
 }
 
 /** Paso 2: inicia el Checkout. Devuelve la URL a donde mandar al asesor. */

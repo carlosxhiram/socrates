@@ -12,6 +12,7 @@
  */
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Building2,
   MapPin,
@@ -28,7 +29,7 @@ import {
   Briefcase,
   type LucideIcon,
 } from "lucide-react";
-import type { YoDTO, EmpleadoEstadoDTO } from "@socrates/shared";
+import type { YoDTO, EmpleadoEstadoDTO, RolEmpleado } from "@socrates/shared";
 import {
   guardarPerfilAction,
   iniciarPruebaAction,
@@ -36,6 +37,7 @@ import {
   estadoAction,
   type ResultadoPerfil,
 } from "@/app/acciones/onboarding";
+import { EditorNombreEmpleado } from "@/components/oficina/EditorNombreEmpleado";
 
 type Paso = "perfil" | "pago" | "confirmando" | "bienvenida";
 
@@ -148,6 +150,10 @@ function PasoPerfil({ yo, alAvanzar }: { yo: YoDTO; alAvanzar: () => void }) {
     guardarPerfilAction,
     null,
   );
+  // Casillas de consentimiento: obligatorias en el cliente (deshabilitan el
+  // botón) y también exigidas por el servidor (fail-closed en PATCH /yo/perfil).
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [aceptaAviso, setAceptaAviso] = useState(false);
 
   useEffect(() => {
     if (estado?.ok) alAvanzar();
@@ -183,6 +189,54 @@ function PasoPerfil({ yo, alAvanzar }: { yo: YoDTO; alAvanzar: () => void }) {
           defecto={yo.perfil.especialidad}
         />
 
+        {/* Consentimiento legal: dos casillas obligatorias con la constancia. */}
+        <div className="space-y-3 rounded-xl border border-oficina-borde bg-oficina-fondo p-4">
+          <label className="flex items-start gap-2.5 text-sm text-oficina-texto">
+            <input
+              type="checkbox"
+              name="aceptaTerminos"
+              required
+              checked={aceptaTerminos}
+              onChange={(e) => setAceptaTerminos(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-oficina-borde accent-marca focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca/40"
+            />
+            <span>
+              Acepto los{" "}
+              <Link
+                href="/terminos"
+                target="_blank"
+                className="font-medium text-marca underline underline-offset-2 hover:text-marca-fuerte"
+              >
+                Términos y Condiciones
+              </Link>
+            </span>
+          </label>
+          <label className="flex items-start gap-2.5 text-sm text-oficina-texto">
+            <input
+              type="checkbox"
+              name="aceptaAviso"
+              required
+              checked={aceptaAviso}
+              onChange={(e) => setAceptaAviso(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-oficina-borde accent-marca focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca/40"
+            />
+            <span>
+              Confirmo que leí el{" "}
+              <Link
+                href="/aviso-de-privacidad"
+                target="_blank"
+                className="font-medium text-marca underline underline-offset-2 hover:text-marca-fuerte"
+              >
+                Aviso de Privacidad
+              </Link>
+            </span>
+          </label>
+          <p className="text-xs leading-relaxed text-oficina-tenue">
+            Al marcar estas casillas y continuar, esa es tu firma: guardamos fecha, hora y
+            versión de lo que aceptaste.
+          </p>
+        </div>
+
         {estado?.error && (
           <p className="text-sm text-estado-bloqueo" role="alert">
             {estado.error}
@@ -191,7 +245,7 @@ function PasoPerfil({ yo, alAvanzar }: { yo: YoDTO; alAvanzar: () => void }) {
 
         <button
           type="submit"
-          disabled={pendiente}
+          disabled={pendiente || !aceptaTerminos || !aceptaAviso}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-marca px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-marca-fuerte disabled:opacity-60"
         >
           {pendiente ? <Loader2 size={16} className="animate-spin" aria-hidden /> : null}
@@ -408,7 +462,7 @@ function PasoBienvenida({ yo, equipo }: { yo: YoDTO; equipo: EmpleadoEstadoDTO[]
           <p className="mt-1 text-sm text-oficina-tenue">
             Aquí tú eres el dueño y yo, tu gerente. Me dices qué necesitas{" "}
             <span className="text-oficina-texto">en tus propias palabras</span> y yo reparto el
-            trabajo entre ellos. Así de fácil.
+            trabajo entre ellos. Ponles el nombre que quieras con el lápiz, o déjalos así.
           </p>
         </div>
       </div>
@@ -425,8 +479,8 @@ function PasoBienvenida({ yo, equipo }: { yo: YoDTO; equipo: EmpleadoEstadoDTO[]
                 <Icono size={18} aria-hidden />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-oficina-texto">{emp.nombre}</p>
-                <p className="mt-0.5 text-xs text-oficina-tenue">{emp.descripcion}</p>
+                <EditorNombreEmpleado rol={emp.rol as RolEmpleado} nombre={emp.nombre} />
+                <p className="mt-0.5 text-xs text-oficina-tenue">{emp.cargo}</p>
               </div>
             </div>
           );

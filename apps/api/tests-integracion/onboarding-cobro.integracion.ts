@@ -20,6 +20,7 @@ import { test, before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { app } from "../src/app.js";
 import { prisma } from "@socrates/db";
+import { LEGAL } from "@socrates/shared";
 
 // ── Utilería de entorno (los flags se leen POR REQUEST) ─────────────────────
 async function conEnv(vars: Record<string, string | undefined>, fn: () => Promise<void>) {
@@ -118,16 +119,27 @@ async function crearAsesor(clerkUserId: string, datos: Record<string, unknown>) 
 
 /**
  * Deja la fila del asesor demo en su estado canónico (acceso "demo", onboarding
- * "completo"), como la deja el seed. Las pruebas de la muralla mutan esa fila
- * COMPARTIDA (en modo demo el auth resuelve a ella, no a una propia). Resetearla
- * antes de cada test y al cerrar el archivo hace la suite auto-sanable: un test
- * que muera a media mutación ya no deja a los siguientes —ni a otras suites que
- * corren después— sin acceso (402). updateMany no truena si la fila no existe.
+ * "completo", constancia de consentimiento vigente), como la deja el seed. Las
+ * pruebas de la muralla mutan esa fila COMPARTIDA (en modo demo el auth resuelve
+ * a ella, no a una propia). Resetearla antes de cada test y al cerrar el archivo
+ * hace la suite auto-sanable: un test que muera a media mutación ya no deja a
+ * los siguientes —ni a otras suites que corren después— sin acceso (402).
+ * La constancia se restaura porque esta suite prueba la muralla del DINERO; el
+ * consentimiento tiene su propia suite (consentimiento.integracion.ts).
+ * updateMany no truena si la fila no existe.
  */
 async function restaurarDemoCanonico() {
+  const ahora = new Date();
   await prisma.asesor.updateMany({
     where: { clerkUserId: "demo-asesor" },
-    data: { estadoSuscripcion: "demo", onboardingEtapa: "completo" },
+    data: {
+      estadoSuscripcion: "demo",
+      onboardingEtapa: "completo",
+      consentimientoTerminosEn: ahora,
+      consentimientoTerminosVersion: LEGAL.terminosVersion,
+      consentimientoAvisoEn: ahora,
+      consentimientoAvisoVersion: LEGAL.avisoVersion,
+    },
   });
 }
 

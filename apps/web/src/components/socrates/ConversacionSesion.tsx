@@ -83,7 +83,7 @@ function EstadoVacioChat() {
         Escríbele a Sócrates para empezar
       </p>
       <p className="max-w-[240px] text-xs text-oficina-tenue">
-        Tu asesor está listo. Cuéntale qué necesitas y empieza la conversación.
+        Tu gerente está listo. Cuéntale qué necesitas y empieza la conversación.
       </p>
     </div>
   );

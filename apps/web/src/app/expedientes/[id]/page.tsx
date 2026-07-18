@@ -5,10 +5,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
-import { obtenerExpediente, ErrorApi } from "@/lib/api-client";
+import { obtenerExpediente, obtenerYo, ErrorApi } from "@/lib/api-client";
 import { requerirAcceso } from "@/lib/portero";
 import {
-  EMPLEADOS,
+  nombreEmpleado,
   etiquetaEtapaActual,
   TIPO_ENTREGABLE_ETIQUETA,
   type RolEmpleado,
@@ -57,6 +57,15 @@ export default async function ExpedientePage({ params }: Parametros) {
         </p>
       </main>
     );
+  }
+
+  // Nombres propios que la oficina le puso a su equipo, para mostrarlos junto a
+  // cada tarea y entregable. Si no se puede leer, se cae a los de fábrica.
+  let nombresEquipo: Record<string, string> = {};
+  try {
+    nombresEquipo = (await obtenerYo()).nombresEquipo;
+  } catch {
+    nombresEquipo = {};
   }
 
   return (
@@ -128,7 +137,7 @@ export default async function ExpedientePage({ params }: Parametros) {
                     </p>
                     <p className="mt-0.5 text-xs text-oficina-tenue">
                       {d.empleadoRol
-                        ? EMPLEADOS[d.empleadoRol as RolEmpleado]?.nombre
+                        ? nombreEmpleado(d.empleadoRol as RolEmpleado, nombresEquipo)
                         : "Equipo"}{" "}
                       · {fechaCorta(d.creadoEn)}
                     </p>
@@ -150,7 +159,11 @@ export default async function ExpedientePage({ params }: Parametros) {
 
         {/* Equipo en este expediente */}
         <aside>
-          <EquipoExpediente expedienteId={exp.id} tareas={exp.tareas} />
+          <EquipoExpediente
+            expedienteId={exp.id}
+            tareas={exp.tareas}
+            nombresEquipo={nombresEquipo}
+          />
         </aside>
       </div>
 

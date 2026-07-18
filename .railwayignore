@@ -1,0 +1,20 @@
+.git
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+.turbo
+**/.turbo
+*.jpeg
+*.jpg
+*.png
+.claude
+.vercel
+_bmad*
+*.db
+.env*
+# El cliente Prisma generado lo recrea `prisma generate` dentro del build; no
+# tiene caso subir ~18 MB del motor de macOS. (Espejo de .dockerignore.)
+**/src/generated

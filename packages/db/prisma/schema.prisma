@@ -38,6 +38,10 @@ model Asesor {
   zona          String?
   especialidad  String?
 
+  // Nombres propios que la oficina le puso a sus 6 empleados (glosario ROLES_PANEL).
+  // Mapa { rol: nombre }; solo los cambiados. Cosmético, sin FK. Ver nombreEmpleado().
+  nombresEquipo Json?
+
   // ── Estado de onboarding y suscripción (la VERDAD del acceso vive aquí) ─────
   // onboardingEtapa: perfil | pago | bienvenida | completo (glosario ETAPAS_ONBOARDING)
   onboardingEtapa   String    @default("perfil")
@@ -48,6 +52,14 @@ model Asesor {
   estadoSuscripcion String    @default("ninguna")
   stripeCustomerId  String?   @unique
   pruebaTermina     DateTime?
+
+  // ── Constancia de consentimiento legal (Términos + Aviso) ──────────────────
+  // La FECHA es la firma: se escribe UNA vez (cuando el asesor acepta en el
+  // Paso 1) y no se re-escribe. La versión guarda QUÉ documento aceptó (LEGAL).
+  consentimientoTerminosEn      DateTime?
+  consentimientoTerminosVersion String?
+  consentimientoAvisoEn         DateTime?
+  consentimientoAvisoVersion    String?
 
   expedientes   Expediente[]
   sesiones      Sesion[]

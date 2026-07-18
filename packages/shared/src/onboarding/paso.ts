@@ -18,13 +18,18 @@ import {
  * Decide el siguiente paso del recibimiento a partir de hechos verificables.
  * Orden no negociable: perfil → pago → bienvenida → completo. El pago va ANTES
  * que la bienvenida (no se abre nada sin acceso pagado/en prueba).
+ *
+ * `consentimientoOk` (constancia de Términos + Aviso) se captura en el Paso 1
+ * (perfil), antes del cobro. Sin constancia el asesor se queda en "perfil"
+ * aunque el resto de sus datos estén completos: no avanza sin aceptar.
  */
 export function derivarSiguientePaso(f: {
   perfilCompleto: boolean;
   estadoSuscripcion: EstadoSuscripcion;
   bienvenidaVista: boolean;
+  consentimientoOk: boolean;
 }): EtapaOnboarding {
-  if (!f.perfilCompleto) return "perfil";
+  if (!f.perfilCompleto || !f.consentimientoOk) return "perfil";
   // Basta acceso de LECTURA para entrar al recibimiento/oficina: un asesor en
   // "gracia" (renovación rebotada) NO se manda de vuelta al paso de pago —
   // conserva acceso a su trabajo; la restricción de escritura la aplica la

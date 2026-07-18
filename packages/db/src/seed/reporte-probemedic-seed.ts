@@ -6,7 +6,7 @@
  *
  * Triple propósito (decisiones-bloqueantes B-3):
  *   1. SEED del demo sin claves (Modo sin claves, NFR-11) — el Investigador
- *      devuelve este reporte cuando no hay AI_GATEWAY_API_KEY.
+ *      devuelve este reporte cuando no hay ANTHROPIC_API_KEY.
  *   2. REFERENCIA DE CALIDAD del PoC del Investigador — la vara contra la que se
  *      mide la paridad de calidad antes de construir el pipeline caro (E4).
  *   3. REFERENCIA VISUAL del render PDF (R-6).

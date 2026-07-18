@@ -53,6 +53,7 @@ export default async function OficinaPage() {
   let equipo: EmpleadoEstadoDTO[];
   let nombreOficina: string | null = null;
   let esDemo = true; // fail-closed: sin datos de "quién soy", no ofrecemos cerrar una sesión que no confirmamos que existe
+  let nombresEquipo: Record<string, string> = {};
   try {
     const [expedientesRes, equipoRes, yo] = await Promise.all([
       obtenerExpedientes(),
@@ -63,6 +64,7 @@ export default async function OficinaPage() {
     equipo = equipoRes;
     nombreOficina = yo.perfil.nombreOficina;
     esDemo = yo.esDemo;
+    nombresEquipo = yo.nombresEquipo;
   } catch {
     return (
       <Marco>
@@ -97,7 +99,7 @@ export default async function OficinaPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {expedientes.map((e) => (
-                <TarjetaExpediente key={e.id} expediente={e} />
+                <TarjetaExpediente key={e.id} expediente={e} nombresEquipo={nombresEquipo} />
               ))}
             </div>
           )}

@@ -32,3 +32,4 @@ coverage/
 .claude/
 .playwright-mcp/
 tavily-home.png
+.vercel

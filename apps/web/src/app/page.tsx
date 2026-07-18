@@ -7,7 +7,7 @@ import { SeccionPrecio } from "@/components/landing/SeccionPrecio";
 import { FooterLanding } from "@/components/landing/FooterLanding";
 
 /**
- * Landing pública de Sócrates.
+ * Landing pública de Socratia.
  * Server Component estático — sin hooks de cliente, sin "use client".
  * "Empieza tu prueba gratis" lleva a /crear-cuenta (registro) y "Entrar" a
  * /entrar (inicio de sesión): ambas pantallas viven dentro de la app y en

@@ -2,14 +2,14 @@ import Link from "next/link";
 
 export function BarraSuperior() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-oficina-borde bg-oficina-panel/95 backdrop-blur-sm">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-oficina-borde bg-oficina-panel/95 backdrop-blur-sm transition-colors duration-200">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        {/* Logotipo — wordmark en mayúsculas (sin acento, es marca; el texto
-            corrido conserva "Sócrates" con acento). */}
-        <Link href="/" className="flex items-center gap-2.5" aria-label="SOCRATES — inicio">
+        {/* Logotipo — wordmark en mayúsculas (SOCRATIA); en prosa se escribe
+            "Socratia". */}
+        <Link href="/" className="group flex items-center gap-2.5" aria-label="SOCRATIA — inicio">
           <span className="text-xl leading-none" aria-hidden>🐢</span>
-          <span className="text-base font-black uppercase tracking-[0.2em] text-oficina-texto">
-            SOCRATES
+          <span className="text-base font-black uppercase tracking-[0.2em] text-oficina-texto transition-colors group-hover:text-marca">
+            SOCRATIA
           </span>
         </Link>
 

@@ -1,0 +1,26 @@
+# Espejo de .railwayignore. Sin esto, `docker build` manda ~830 MB de contexto
+# (node_modules + .git) al motor y el build tarda una eternidad. Todo lo que se
+# excluye aquí lo reconstruye el Dockerfile por dentro (pnpm install, prisma
+# generate, tsc/tsup).
+.git
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+.turbo
+**/.turbo
+*.jpeg
+*.jpg
+*.png
+.claude
+.vercel
+_bmad*
+*.db
+.env*
+# El cliente Prisma generado NO viaja: lo recrea `prisma generate` dentro del
+# contenedor. Si se copiara, se colaría el motor de macOS (~18 MB muertos) y
+# quedaría ambigüedad sobre cuál motor carga. Excluyéndolo, la imagen se queda
+# solo con el motor nativo de su plataforma.
+**/src/generated

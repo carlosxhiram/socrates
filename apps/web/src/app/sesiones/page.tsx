@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { SesionResumenDTO } from "@socrates/shared";
 import { listarSesiones } from "@/lib/sesiones-actions";
+import { requerirAcceso } from "@/lib/portero";
 import { ListaSesiones } from "@/components/socrates/ListaSesiones";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
 };
 
 export default async function SesionesPage() {
+  // Portero: sin acceso (o sin consentimiento) el asesor va a /bienvenida, no se
+  // topa con un 409 crudo. Defensa en profundidad; el api valida igual.
+  await requerirAcceso();
+
   let sesiones: SesionResumenDTO[] | null = null;
   try {
     sesiones = await listarSesiones();
