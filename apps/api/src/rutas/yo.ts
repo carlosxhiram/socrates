@@ -10,9 +10,10 @@
  * Tenencia: el asesor se deriva del token (c.get("asesorId")), nunca del payload.
  */
 import { Hono } from "hono";
-import { prisma } from "@socrates/db";
+import { prisma, Prisma } from "@socrates/db";
 import {
   GuardarPerfilSchema,
+  NombresEquipoSchema,
   derivarSiguientePaso,
   SUSCRIPCION_CON_ACCESO_LECTURA,
   LEGAL,
@@ -40,6 +41,7 @@ interface AsesorRow {
   consentimientoTerminosVersion: string | null;
   consentimientoAvisoEn: Date | null;
   consentimientoAvisoVersion: string | null;
+  nombresEquipo: Prisma.JsonValue | null;
 }
 
 function perfilCompleto(a: AsesorRow): boolean {
@@ -77,6 +79,7 @@ function aYoDTO(a: AsesorRow, esDemo: boolean): YoDTO {
       bienvenidaVista: a.onboardingEtapa === "completo",
       consentimientoOk: consentimientoOk(a),
     }),
+    nombresEquipo: (a.nombresEquipo ?? {}) as Record<string, string>,
   };
 }
 
@@ -133,6 +136,26 @@ yoRouter.patch("/perfil", validarJson(GuardarPerfilSchema), async (c) => {
             consentimientoAvisoVersion: LEGAL.avisoVersion,
           }),
     },
+  });
+  return c.json(aYoDTO(a, c.get("esDemo")));
+});
+
+// ── PATCH /yo/equipo — renombrar a los 6 empleados de la oficina ─────────────
+// El asesor se deriva del token (nunca del payload). MERGE con lo existente:
+// llega un cambio parcial ({rol: nombre}) y se fusiona sobre los previos, así el
+// asesor puede renombrar de a uno sin borrar el resto. zod ya rechazó vacíos,
+// nombres >40 y roles fuera del panel (SOCRATES incluido).
+yoRouter.patch("/equipo", validarJson(NombresEquipoSchema), async (c) => {
+  const cambios = c.req.valid("json");
+  const actual = await cargarAsesor(c.get("asesorId"));
+  if (!actual) {
+    return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré tu cuenta." } }, 404);
+  }
+  const previos = (actual.nombresEquipo ?? {}) as Record<string, string>;
+  const fusion = { ...previos, ...cambios };
+  const a = await prisma.asesor.update({
+    where: { id: actual.id },
+    data: { nombresEquipo: fusion },
   });
   return c.json(aYoDTO(a, c.get("esDemo")));
 });
