@@ -1,125 +1,138 @@
-# STATUS — Sócrates
+# STATUS — Socratia
 
-Fecha: 2026-07-03 · Director de ingeniería: Fable · Fase: CHECKPOINT fusionado (auditoría + endurecimiento post-E1) · El mapa de lo que sigue: `PLAN-DE-ORQUESTACION.md`
+Fecha: 2026-07-18 · Director de ingeniería: Fable · Fase: producto vivo en producción (Railway + Vercel), PR #19 (el motor + los 6 empleados reales) construido y probado pero **sin fusionar** · El mapa histórico (congelado al 2026-07-03): `PLAN-DE-ORQUESTACION.md`
 
-> Resumen de una línea: **checkpoint FUSIONADO a master (PRs #1–#5, #7, #8, con
-> autorización de Carlos): Postgres en dev y prod, Next 16, máquina de Etapas y
-> candados de seguridad en el servidor bajo 20 tests de integración verdes, La
-> Oficina crea/edita/cierra expedientes con citas visibles en el Reporte — sin
-> llaves, sin deploy, sin tocar el catálogo. Batería completa corrida sobre el
-> master integrado: 11/11 tareas verdes y la app tocada en vivo.**
+> Resumen de una línea: **desde el checkpoint del 2026-07-03 (PRs #1–#8) se
+> fusionaron 21 PRs más a `master` (#9–#18, #20–#30): Sesiones, Onboarding +
+> cobro Stripe, superficie 100% en español, renombre completo de marca a
+> SOCRATIA con blindaje legal (Términos/Aviso + consentimiento versionado por
+> documento), nombres propios editables para los 6 empleados de cada oficina,
+> y el API vive en Railway (arranca con `node` puro, sin `tsx`, imagen
+> adelgazada) con la web en Vercel. El PR #19 — el motor real (encargar
+> trabajo, worker, los 6 empleados produciendo entregables, aprobar) — está
+> construido y probado en draft desde el 2026-07-06, sin fusionar: no es
+> "trabajo en curso hoy", es trabajo terminado esperando una decisión de
+> merge.**
 >
-> Para quien siga este trabajo (Opus/Sonnet): el mapa completo de etapas,
-> doctrina y trampas del terreno vive en **`PLAN-DE-ORQUESTACION.md`**; las
-> reglas duras operativas, en **`CLAUDE.md`**.
+> Para quien siga este trabajo: la doctrina y trampas del terreno viven en
+> `CLAUDE.md`; el mapa histórico completo (congelado al checkpoint) en
+> `PLAN-DE-ORQUESTACION.md`. **El estado vivo de PRs es GitHub, no esta
+> tabla** — corre `gh pr list --state all` antes de asumir nada.
 
 ---
 
-## Primero, la verdad: discrepancias encontradas al tomar la batuta
+## Primero, la verdad: una corrección al encargo que generó este documento
 
-1. **El repo estaba en E1, no en E7.** El encargo afirmaba que E7 había dejado
-   las compuertas C-1/C-2/C-3 bajo tests, worker durable con locking y
-   deploy-prep. Realidad verificada: un solo commit (Cimientos E1), **cero**
-   tests de compuertas, **ningún** worker, **ningún** script `test:integracion`.
-2. **"Postgres local ya migrado y sembrado por el setup script" era falso.**
-   El servicio estaba apagado y no existían ni el rol ni la base `socrates`
-   (los creé a mano). El esquema Prisma era SQLite: la api arrancaba con
-   `db:"error"` en este mismo entorno.
-3. **El clon fresco no corría**: `pnpm db:migrate` fallaba (P1012) porque el
-   `.env` de Prisma nunca se versionó.
-4. El entorno exporta `NODE_ENV=development` globalmente, lo que **rompe el
-   build de Next 16** (aislado con app mínima; mitigado en el script de build).
+Se me pidió describir el PR #19 como "en curso de cierre — sesión del 18-jul
+en curso". Verifiqué con `git log --all --since=2026-07-18` y con
+`gh pr view 19`: **eso no es cierto**. El PR #19 (`claude/socrates-carril-api`)
+no tiene un solo commit desde el **2026-07-06** (12 días), su `mergeable`
+está en **`CONFLICTING`** contra el `master` de hoy (que avanzó mucho:
+renombre a SOCRATIA, deploy, nombres de equipo), y ninguna rama del repo
+tiene actividad hoy salvo los merges de los PRs #29 y #30. Toda la actividad
+real del 18-jul en el repo es esa — no hay ninguna sesión tocando el #19.
+
+Se documenta abajo el estado real del #19 (construido, probado, estancado,
+en conflicto) en vez del asumido. Si Carlos quiere retomarlo, el primer paso
+es un rebase/resolución de conflictos contra `master`, no un "cierre" que ya
+esté en marcha.
 
 ---
 
-## ✅ Verificado de verdad (corrido, no asumido)
+## Qué está fusionado en `master` hoy (PRs #9–#18 y #20–#30; el checkpoint 2026-07-03 con #1–#8 sigue documentado en `PLAN-DE-ORQUESTACION.md`)
 
-| Prueba | Resultado |
+### Ola 1 (2026-07-04 a 2026-07-05) — Sesiones, cobro y superficie en español
+
+| PR | Qué entrega |
 |---|---|
-| `pnpm install --frozen-lockfile` | OK |
-| `pnpm db:generate` + `pnpm db:deploy` | OK — migración inicial re-cortada a **Postgres** aplicada al Postgres local |
-| `pnpm db:seed` | OK — 7 empleados, 17 instituciones, 22 productos, 2 expedientes, Reporte Probemedic APROBADO |
-| `pnpm turbo run typecheck build test` | OK — verde en los 4 paquetes |
-| `pnpm test:integracion` (script NUEVO) | OK — db 4/4 (seed idempotente, catálogo fiel, C-1, ReporteV1 desde la BD) + api 16/16 (máquina de Etapas, candados de auth, contrato de error, C-3 con versión) |
-| api `/health` sin llaves | `{estado:"vivo", db:"ok", modoSinClavesIA:true}` (NFR-11 vivo) |
-| api con Postgres APAGADO | arranca, `/health` **HTTP 503** honesto con `db:"error"`, rutas degradan con mensaje de oficina — no truena |
-| Carrera TOCTOU en PATCH | reproducida en vivo (GANADO+PERDIDO concurrentes ambos 200) y **cerrada** (candado optimista: uno 200, otro 409, estado final consistente) |
-| La Oficina en navegador real (Playwright) | crear expediente → detalle → "Avanzar a Investigado" bloqueado con mensaje de prerrequisito → editar datos con confirmación → Ganado con motivo → tarjeta en la lista |
-| Build Next 16 (rama #2) | 2/2 estable con `--webpack` + `NODE_ENV=production`; `ƒ Proxy` detectado; Turbopack documentado flaky en máquinas chicas |
-| Lenguaje de oficina (NFR-14) | mensajes nuevos del servidor y de la UI en español de oficina; tests lo afirman (`doesNotMatch(/enum|state|transition/)`) |
+| [#9 Sesiones](https://github.com/carlosxhiram/socrates/pull/9) | Chat del Asesor con Sócrates (replantado sobre la arquitectura del checkpoint: Postgres nativo, `ai@5`+Gateway); tenencia por `asesorId` del token; sin llave de IA, Sócrates degrada a un acuse honesto — nunca truena. |
+| [#10 Onboarding + cobro Stripe](https://github.com/carlosxhiram/socrates/pull/10) | Landing pública, recibimiento de 3 pasos, suscripción mensual con periodo de prueba; wrapper de Stripe + webhook firmado + muralla de suscripción server-side; sin llaves de Stripe corre en modo demo honesto. |
+| [#11 Addendum de herencia](https://github.com/carlosxhiram/socrates/pull/11) | Cierre de las 2 decisiones que bloqueaban el cobro: `past_due` → estado **gracia** (solo lectura, `402 PAGO_PENDIENTE` al escribir) y copy "Pago seguro y cifrado" (NFR-14, sin nombrar al procesador). |
+| [#12 Landing v2](https://github.com/carlosxhiram/socrates/pull/12) | Reencuadre de venta ("un equipo para tu oficina"), logotipo y footer profesional. |
+| [#13 Deploy fixes](https://github.com/carlosxhiram/socrates/pull/13) | `/nosotros` pública en el proxy + restaura `.vercelignore`. |
+| [#14 Favicon](https://github.com/carlosxhiram/socrates/pull/14) | Favicon de marca (tortuga verde salvia). |
+| [#15 Caja en español](https://github.com/carlosxhiram/socrates/pull/15) | `locale: "es-419"` en el Checkout de Stripe + email precargado (se fija al crear el Customer, no como `customer_email`) — hallazgo de un recorrido E2E real contra Stripe test. |
+| [#16 Acceso en español](https://github.com/carlosxhiram/socrates/pull/16) | Pantallas de acceso/registro de Clerk en español dentro de la app. |
+| [#17 BarraComando↔Sesiones](https://github.com/carlosxhiram/socrates/pull/17) | La barra de comando de la oficina ya no pierde el encargo: queda conectada a Sesiones. |
+| [#18 Ficha del Asesor](https://github.com/carlosxhiram/socrates/pull/18) | Nombre/email reales del Asesor al asegurar su fila desde Clerk. |
 
-## ⚠️ Verificado a medias (honestidad ante el límite de sesión)
+### En vuelo, sin fusionar — ver sección dedicada abajo
 
-- **Auditoría multi-agente (7 dimensiones):** ~74 hallazgos preliminares;
-  60 veredictos adversariales alcanzaron a correr (44 confirmados / 16
-  refutados) antes de que el límite de uso cortara a los verificadores. Lo
-  confirmado de seguridad y correctness está corregido en los PRs; la cola de
-  UX/silent-failures quedó como **plausible, sin doble verificación** y vive en
-  el backlog de abajo.
+**PR #19** ("El equipo en marcha") se abrió el 2026-07-06, entre la Ola 1 y
+la Ola 2 cronológicamente, pero **no está en `master`**.
 
----
+### Ola 2 (2026-07-14 a 2026-07-15) — Renombre a SOCRATIA + blindaje legal
 
-## Qué quedó hecho (esta sesión) — en PRs chicos, uno por propósito (TODOS fusionados)
+| PR | Qué entrega |
+|---|---|
+| [#20 Equipo con nombre propio](https://github.com/carlosxhiram/socrates/pull/20) | Las 6 tarjetas pasan de "6 especialistas" a nombre humano + rol (Diego·Prospector, Hiram·Investigador, Jair·Asesor de producto, Katya·Negociadora, María·Trámites, Paula·Gestora); landing viva con 4 gráficos animados (Hero, equipo, Cómo funciona). |
+| [#21 SOCRATIA: renombre + legal + consentimiento](https://github.com/carlosxhiram/socrates/pull/21) | Tras el dictamen de marca, el producto opera como **SOCRATIA** (femenino) en toda la superficie. Páginas `/terminos` y `/aviso-de-privacidad` (v1.0). Consentimiento **obligatorio y versionado**: 2 casillas en el registro, la muralla de suscripción exige consentimiento vigente (incluida `/sesiones`, el chat), subir la versión de un documento re-pide firma a todos, guardia fail-closed server-side (`409 FALTA_CONSENTIMIENTO`). |
+| [#22 ComoFunciona a 2 columnas](https://github.com/carlosxhiram/socrates/pull/22) | Rediseño + corrige la conversación animada que se quedaba muda (`overflow-hidden` sobre el header). |
+| [#23 Footer sin afiliación con SOC](https://github.com/carlosxhiram/socrates/pull/23) | Corrección legal de superficie: el pie de página ya no insinúa afiliación con SOC. |
+| [#24 Título de pestaña](https://github.com/carlosxhiram/socrates/pull/24) | Corrige el título duplicado de la pestaña en `/nosotros`. |
+| [#25 Nota de trampas del terreno](https://github.com/carlosxhiram/socrates/pull/25) | Documenta (en `CLAUDE.md`) no anidar animaciones por-scroll propias dentro de `RevelarAlScroll`/`ListaEscalonada`. |
+| [#26 El gerente se llama "Sócrates"](https://github.com/carlosxhiram/socrates/pull/26) | Ajuste de personaje: el gerente es **Sócrates** (nombre propio, masculino); la marca/producto sigue siendo **Socratia**. Decisión de Carlos asumiendo el riesgo de marca a sabiendas — el rol interno `SOCRATES` (PK/FK) no se toca. |
 
-| PR | Qué entrega | Base |
-|---|---|---|
-| [#1 Postgres en dev y prod](https://github.com/carlosxhiram/socrates/pull/1) | provider `postgresql`, migración inicial re-cortada (cero cartas enviadas: verificado que la migración SQLite jamás llegó a base compartida), `packages/db/.env` versionado (clon fresco reproducible), tests de integración del seed con guardia anti-producción | master |
-| [#2 Next 15→16](https://github.com/carlosxhiram/socrates/pull/2) | `middleware.ts`→`proxy.ts` (Clerk ≥6.34 lo soporta; verificado contra npm/changelog), next 16.2.10 (nunca <16.2.6 por GHSA-26hh-7cqf-hhc6), build endurecido contra `NODE_ENV` contaminado y Turbopack flaky | master |
-| [#3 Máquina de Etapas (FR-7)](https://github.com/carlosxhiram/socrates/pull/3) | transiciones válidas en el servidor, prerrequisito de Investigado (Reporte APROBADO), Ganado/Perdido manual, terminales cerrados, candado optimista anti-carrera, `progreso` persistido honesto | #1 |
-| [#4 E2 UI](https://github.com/carlosxhiram/socrates/pull/4) | "Nuevo expediente", editar datos del prospecto, Ganado/Perdido con confirmación, errores 409 mostrados tal cual (mensaje de oficina); enlaces solo http(s) | #3 |
-| [#5 Endurecimiento api](https://github.com/carlosxhiram/socrates/pull/5) | candado de producción del modo demo (fail-open cerrado), fail-closed con Clerk parcial, `authorizedParties`, `/health` 503 honesto, contrato de error en español, C-3 con fijado de versión | #3 |
-| [#7 La Oficina honesta](https://github.com/carlosxhiram/socrates/pull/7) | citas visibles junto a cada cifra del Reporte (NFR-1 en superficie), estados de error veraces (api caída ≠ oficina vacía ≠ archivero degradado), error.tsx es-MX, accesibilidad (progressbar/aria/foco), fechas es-MX sin desfase | #4 |
-| [#8 Capa de IA activable](https://github.com/carlosxhiram/socrates/pull/8) | dependencias del Gateway verificadas contra npm (la ruta documentada NO podía funcionar: provider v1 vs v2), contrato `generarTexto` tipado sin strings-centinela, `clave_invalida` distinguida de fallo temporal | master |
+### Ola 3 (2026-07-17 a 2026-07-18) — Producción real + nombres de equipo por oficina
 
-**Fusionados a master el 2026-07-03** en el orden #1 → #3 → #4 → #5 → #7 → #2 → #8 (el lockfile de #8 se reconcilió con #2 antes del merge); #6 es esta documentación.
-
----
-
-## Decisiones de Director tomadas (documentadas en código y addendums)
-
-1. **Postgres también en desarrollo** (paridad con arquitectura §7 y con este
-   entorno; el espíritu "sin Docker, sin llaves" se conserva). Addendum en
-   `decisiones-bloqueantes.md`; la decisión "SQLite en dev" quedó superada
-   hacia adelante.
-2. **Máquina de Etapas con dos defaults nuevos a confirmar con Carlos (I-1b):**
-   retroceder es válido (corregir es honesto); Ganado/Perdido no se reabren por
-   la vía normal. Prerrequisito implementado: solo `→ Investigado` (Reporte
-   APROBADO); el resto del mapa I-1 llega con E4/E5.
-3. **El modo demo es primera clase pero con candado**: automático en
-   desarrollo, opt-in explícito (`MODO_ASESOR_DEMO=1`) en producción.
+| PR | Qué entrega |
+|---|---|
+| [#27 Railway durable](https://github.com/carlosxhiram/socrates/pull/27) | La config que sostenía el deploy vivía fuera de git (un redeploy limpio lo habría roto). `railway.json` + `.railwayignore` a `master`; Dockerfile instala `openssl`/`ca-certificates` (Prisma caía a un motor `1.1.x` sin ellos); `healthcheckTimeout` 30→300 (la migración inicial mataba el contenedor a medias). Verificado con `railway up --ci`: deploy Online, `/health` 200. |
+| [#28 API arranca con `node` puro](https://github.com/carlosxhiram/socrates/pull/28) | Salda la deuda del #27: `@socrates/db` se compila a JS real (con su cliente Prisma copiado a `dist/generated`); `@socrates/api` se empaqueta con `tsup` incrustando `@socrates/shared` (evita tocar el paquete que la web transpila). El contenedor arranca con `node apps/api/dist/index.js`, ya no con `tsx`. Verificado con `docker build` + `docker run` contra Postgres limpio: 4 migraciones aplicadas, `/health` 200. |
+| [#29 Imagen adelgazada](https://github.com/carlosxhiram/socrates/pull/29) | El runtime copiaba TODO `/app` (957 MB, incl. herramientas de build). Ahora reinstala solo `--prod` y copia únicamente los artefactos compilados. **Nota de honestidad**: el propio PR decía "NO fusionar hasta validar el arranque" y dejaba esa prueba pendiente por inestabilidad de Docker Desktop local; se fusionó igual — la validación de arranque post-adelgazamiento vive en el deploy real de Railway, no en un log de esta sesión. Vale la pena confirmarlo con un `/health` fresco si no se ha hecho ya. |
+| [#30 Nombres de equipo por oficina](https://github.com/carlosxhiram/socrates/pull/30) | Cada asesor renombra a sus 6 empleados (solo nombre, sin avatar); Sócrates no se renombra. Fuente única en `@socrates/shared` (glosario), campo `Asesor.nombresEquipo Json?` (merge parcial), `PATCH /yo/equipo` con validación zod, editor inline en el Panel de Equipo y en el onboarding, propagado a expedientes/entregables. Verificado: 11/11 tareas de turbo, **54/54** test:integracion, 35/35 unitarios de `shared`, flujo en vivo en modo demo. |
 
 ---
 
-## Pendiente (backlog priorizado, avanzable sin llaves)
+## En vuelo: PR #19 — "El equipo en marcha" (construido, probado, sin fusionar)
 
-1. **Gate C-3 en la UI**: el visor no tiene botón "Aprobar" (el endpoint existe
-   y ahora exige versión); es la mitad UI de E4-S8.
-2. **FR-5 completo**: filtros "esperando mi revisión"/por Etapa + polling
-   (5–10 s) en La Oficina (E2-S2/S3).
-3. **PanelEquipo honesto**: hoy muestra "Libre" con tarea BLOQUEADA y "Entregó"
-   se queda pegado (hallazgo plausible, sin doble verificación).
-4. **DTOs vivos**: la api no valida sus respuestas contra los esquemas Zod y el
-   cliente web castea con `as`; conviene `parse` en el borde (anti-drift).
-5. Deuda menor confirmada: `turbo.json` sin dependencia typecheck→generate
-   (carrera en clon fresco), Dockerfile con `--frozen-lockfile=false`,
-   `lint`≡`typecheck` duplicado, config de seed deprecada para Prisma 7.
-6. **E3/E4 (worker + Investigador)**: siguen siendo el corazón pendiente; el
-   PoC del Investigador requiere la llave de IA (decisión de Carlos).
+**[PR #19](https://github.com/carlosxhiram/socrates/pull/19)** (`claude/socrates-carril-api` → `master`, **DRAFT**, abierto 2026-07-06,
+**sin un solo commit desde entonces**, hoy en **`CONFLICTING`** contra
+`master`) construye exactamente lo que el negocio necesita para que el
+equipo deje de ser aparador:
+
+- `POST /expedientes/:id/tareas` — encargar trabajo a un rol (tenencia, expediente-no-cerrado, anti-duplicado).
+- Worker in-process: reclama Tareas vía `UPDATE...WHERE id=(SELECT...FOR UPDATE SKIP LOCKED)` (atómico entre instancias), concurrencia máx. 2, timeout 20 min → BLOQUEADA digna, recupera huérfanas al arrancar.
+- `POST /socrates/instruir` + `/confirmar` — Sócrates propone un plan (o pregunta si es ambiguo), el Asesor confirma; nunca ejecuta solo.
+- Los 6 empleados reales: el Investigador con su pipeline de 6 fases (citas que solo quedan "verificadas" si la URL viene de una búsqueda real de esa corrida — nunca por la palabra de la IA); los otros 5 con `EntregableGenericoV1` y la misma disciplina de citas honestas.
+- La oficina (web): las 6 tarjetas con botón "Encargar" → progreso en vivo (polling 5s/30s) → botón "Aprobar" (Gate C-3 con versión).
+- El proveedor de IA cambia de Vercel AI Gateway a **Anthropic directo** (`ANTHROPIC_API_KEY` en vez de `AI_GATEWAY_API_KEY`) — este cambio SOLO existe en esta rama; `master` sigue en AI Gateway (ver `DECISIONES-PARA-CARLOS.md`).
+
+En su última actualización (2026-07-06), el PR reporta 57/57 pruebas de
+integración verdes y un recorrido en vivo con Playwright de punta a punta.
+Esos números son de hace 12 días contra un `master` que ya no existe tal
+cual — hoy en conflicto, necesitará resolverse antes de volver a confiar en
+ellos.
+
+El propio PR deja 3 preguntas abiertas para Carlos (ver
+`DECISIONES-PARA-CARLOS.md` para el contexto completo): falta la llave de
+IA, la UI de chat "Sócrates propone y confirma" no está conectada (el
+encargo directo por tarjeta sí cubre la misma capacidad de negocio), y el
+campo "Tu nombre" personal no se captura en el onboarding.
+
+---
+
+## Deuda técnica vigente (verificada en el código de `master` hoy, no asumida)
+
+1. **Metadato del catálogo desalineado consigo mismo**: `packages/db/src/seed/catalogo-soc.json` declara `_meta.totalProductos: 37`, pero `tiposDeProducto` (las categorías de producto) solo tiene **11** entradas (10 reales + una nota), y los productos realmente sembrados por institución suman **22**. Archivo sin tocar desde el commit fundacional (`d7cabb2`, anterior al checkpoint) — nadie lo ha corregido ni empeorado.
+2. **`turbo.json`: `typecheck` no depende de su propio `build`** (solo de `^build`, el de sus dependencias) — el `typecheck` de `web` puede correr en carrera con `next build` y leer `.next/types` a medio generar (carrera flaky confirmada en el terreno). Mitigación actual: correr la batería en serie (`build` → `typecheck` → `test`), nunca con `turbo run typecheck build test` de un jalón.
+3. **`lint` ≡ `typecheck` duplicados**: en `packages/db`, `packages/shared` y `apps/web` son literalmente el mismo comando (`tsc ... --noEmit`); en `apps/api`, `lint` es un subconjunto de `typecheck` (le falta `tsconfig.tests.json`). Redundancia de CI, no un bug.
+4. **Config de seed deprecada para Prisma 7**: el seed se declara vía `package.json#prisma.seed` (Prisma `^6.2.1` hoy); Prisma 7 mueve esa configuración a `prisma.config.ts`, que todavía no existe en el repo.
+5. **`Dockerfile` con `--frozen-lockfile=false`** en las dos instalaciones (`deps` y `runtime`) — presente incluso después de los PRs #27–#29 que tocaron el mismo archivo esta semana; no es deuda vieja olvidada, es una bandera que sigue ahí a propósito o por descuido, vale la pena decidir cuál.
+6. **Metadato del reporte sembrado** (Probemedic): `indiceCobertura` declara `totalAfirmaciones: 11, verificadas: 6, estimaciones: 3, brechas: 2` — consistente internamente, pero la auditoría del checkpoint encontró que el contenido real tiene menos afirmaciones de las que el índice presume. Sin tocar desde el commit fundacional.
+7. **Gate C-3 en la UI de `master`**: el visor de entregables todavía no tiene botón "Aprobar" en producción — ese botón sí existe, probado, en el PR #19 sin fusionar.
+8. **FR-5 (filtros + polling) sigue sin construirse en `master`**: "esperando mi revisión" / por Etapa + polling ligero — también vive ya en el PR #19 (`usar-polling.ts`), sin fusionar.
+9. **`PanelEquipo` en `master` sigue mostrando estado estático** (Libre/Trabajando/Entregó como badge fijo, sin derivarlo de Tareas reales) — el comentario en el propio componente lo admite: "el editor/aprobar/exportar plenos llegan en E4". El PR #19 construye la maquinaria real (Tareas) que lo haría honesto.
+10. **DTOs vivos**: `apps/web/src/lib/api-client.ts` sigue haciendo `(await resp.json()) as T` sin validar con zod contra los esquemas de `shared/dto` — confirmado en el código hoy. La excepción es el contenido de entregables (`ReporteV1Schema.safeParse`), que sí se valida por venir de datos variables/generados.
 
 ---
 
 ## Llaves y decisiones que faltan de Carlos
 
-Ver **`DECISIONES-PARA-CARLOS.md`** (nuevo, en la raíz): llaves por pegar y qué
-enciende cada una, banderazos de deploy, decisiones de producto (mapa de
-Etapas, catálogo/ids `soc_*`, métrica de cobertura del reporte sembrado) y
-recomendaciones de entorno. Nada de eso se ejecutó: está preparado, no hecho.
-
----
-
-## Notas de datos (sin cambios)
-
-- Catálogo curado v1: 17 instituciones / 22 productos reales; el `_meta` del
-  JSON sigue diciendo "37" (inexactitud del metadato, no de los datos).
-- El Reporte sembrado de Probemedic conserva ids placeholder `soc_*` sin fila
-  `Recomendacion` (C-1 respetado por diseño y ahora **afirmado por test**).
+Ver **`DECISIONES-PARA-CARLOS.md`**: llaves por pegar y qué variable exacta
+espera cada proveedor, la decisión pendiente sobre el PR #19, el mapa de
+Etapas, la curaduría del catálogo, el metadato del reporte sembrado, los
+umbrales del PRD y la profundidad del Negociador. Nada de eso se ejecutó:
+está preparado, no hecho. **El estado vivo de PRs es GitHub, no esta
+tabla** — antes de actuar sobre cualquier fila de arriba, confirma con
+`gh pr list --state all` que sigue siendo cierta.
