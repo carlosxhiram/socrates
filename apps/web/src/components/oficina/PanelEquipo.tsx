@@ -11,7 +11,8 @@ import {
   Briefcase,
   type LucideIcon,
 } from "lucide-react";
-import type { EmpleadoEstadoDTO } from "@socrates/shared";
+import type { EmpleadoEstadoDTO, RolEmpleado } from "@socrates/shared";
+import { EditorNombreEmpleado } from "./EditorNombreEmpleado";
 
 const ICONOS: Record<string, LucideIcon> = {
   search: Search,
@@ -48,12 +49,12 @@ export function PanelEquipo({ equipo }: { equipo: EmpleadoEstadoDTO[] }) {
                   <Icono size={18} aria-hidden />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold text-oficina-texto">
-                      {emp.nombre}
-                    </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="min-w-0">
+                      <EditorNombreEmpleado rol={emp.rol as RolEmpleado} nombre={emp.nombre} />
+                    </span>
                     <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${badge.clase}`}
+                      className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${badge.clase}`}
                     >
                       {badge.texto}
                     </span>
@@ -63,9 +64,7 @@ export function PanelEquipo({ equipo }: { equipo: EmpleadoEstadoDTO[] }) {
                       Expediente: {emp.expedienteActual.empresa}
                     </p>
                   ) : (
-                    <p className="mt-0.5 truncate text-xs text-oficina-tenue">
-                      {emp.descripcion}
-                    </p>
+                    <p className="mt-0.5 truncate text-xs text-oficina-tenue">{emp.cargo}</p>
                   )}
                 </div>
               </div>

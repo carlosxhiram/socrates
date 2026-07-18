@@ -29,7 +29,7 @@ import {
   Briefcase,
   type LucideIcon,
 } from "lucide-react";
-import type { YoDTO, EmpleadoEstadoDTO } from "@socrates/shared";
+import type { YoDTO, EmpleadoEstadoDTO, RolEmpleado } from "@socrates/shared";
 import {
   guardarPerfilAction,
   iniciarPruebaAction,
@@ -37,6 +37,7 @@ import {
   estadoAction,
   type ResultadoPerfil,
 } from "@/app/acciones/onboarding";
+import { EditorNombreEmpleado } from "@/components/oficina/EditorNombreEmpleado";
 
 type Paso = "perfil" | "pago" | "confirmando" | "bienvenida";
 
@@ -461,7 +462,7 @@ function PasoBienvenida({ yo, equipo }: { yo: YoDTO; equipo: EmpleadoEstadoDTO[]
           <p className="mt-1 text-sm text-oficina-tenue">
             Aquí tú eres el dueño y yo, tu gerente. Me dices qué necesitas{" "}
             <span className="text-oficina-texto">en tus propias palabras</span> y yo reparto el
-            trabajo entre ellos. Así de fácil.
+            trabajo entre ellos. Ponles el nombre que quieras con el lápiz, o déjalos así.
           </p>
         </div>
       </div>
@@ -478,8 +479,8 @@ function PasoBienvenida({ yo, equipo }: { yo: YoDTO; equipo: EmpleadoEstadoDTO[]
                 <Icono size={18} aria-hidden />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-oficina-texto">{emp.nombre}</p>
-                <p className="mt-0.5 text-xs text-oficina-tenue">{emp.descripcion}</p>
+                <EditorNombreEmpleado rol={emp.rol as RolEmpleado} nombre={emp.nombre} />
+                <p className="mt-0.5 text-xs text-oficina-tenue">{emp.cargo}</p>
               </div>
             </div>
           );
