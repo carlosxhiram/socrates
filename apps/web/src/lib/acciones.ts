@@ -157,3 +157,35 @@ export async function cambiarEtapa(
   revalidatePath(`/expedientes/${id}`);
   return { exito: true, mensaje: "" };
 }
+
+// ── Encargar trabajo a un Empleado (misión de lanzamiento §2.1/2.11) ────────
+export async function encargarTarea(
+  expedienteId: string,
+  empleadoRol: string,
+  descripcion?: string,
+): Promise<ResultadoAccion> {
+  const res = await llamarApi(`/expedientes/${expedienteId}/tareas`, "POST", {
+    empleadoRol,
+    ...(descripcion?.trim() ? { descripcion: descripcion.trim() } : {}),
+  });
+
+  if (!res.ok) return { exito: false, mensaje: mensajeDeError(res.datos, res.status) };
+
+  revalidatePath(`/expedientes/${expedienteId}`);
+  return { exito: true, mensaje: "" };
+}
+
+// ── Aprobar un Entregable (Gate humano, A1: version obligatoria) ────────────
+export async function aprobarEntregable(
+  entregableId: string,
+  version: number,
+  expedienteId: string,
+): Promise<ResultadoAccion> {
+  const res = await llamarApi(`/entregables/${entregableId}/aprobar`, "POST", { version });
+
+  if (!res.ok) return { exito: false, mensaje: mensajeDeError(res.datos, res.status) };
+
+  revalidatePath(`/entregables/${entregableId}`);
+  revalidatePath(`/expedientes/${expedienteId}`);
+  return { exito: true, mensaje: "" };
+}

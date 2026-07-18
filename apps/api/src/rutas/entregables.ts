@@ -73,25 +73,26 @@ entregablesRouter.post("/:id/aprobar", async (c) => {
     return c.json({ error: { codigo: "AJENO", mensaje: "Ese entregable no es tuyo." } }, 403);
   }
 
+  // A1: `version` es OBLIGATORIA (antes era opcional) — que la garantía
+  // "aprobó lo que VIO" no dependa de la disciplina de quien llame al endpoint.
+  // No existen otros clientes todavía: romper compatibilidad es gratis hoy.
   const cuerpo = (await c.req.json().catch(() => ({}))) as { version?: unknown };
-  if (cuerpo.version !== undefined) {
-    if (typeof cuerpo.version !== "number" || !Number.isInteger(cuerpo.version)) {
-      return c.json(
-        { error: { codigo: "DATOS_INVALIDOS", mensaje: "No pude guardar: version: revisa este dato" } },
-        400,
-      );
-    }
-    if (cuerpo.version !== res.ent.versionActual) {
-      return c.json(
-        {
-          error: {
-            codigo: "VERSION_DESFASADA",
-            mensaje: "Este entregable cambió desde que lo abriste; revísalo de nuevo antes de aprobarlo.",
-          },
+  if (typeof cuerpo.version !== "number" || !Number.isInteger(cuerpo.version)) {
+    return c.json(
+      { error: { codigo: "DATOS_INVALIDOS", mensaje: "No pude guardar: version: revisa este dato" } },
+      400,
+    );
+  }
+  if (cuerpo.version !== res.ent.versionActual) {
+    return c.json(
+      {
+        error: {
+          codigo: "VERSION_DESFASADA",
+          mensaje: "Este entregable cambió desde que lo abriste; revísalo de nuevo antes de aprobarlo.",
         },
-        409,
-      );
-    }
+      },
+      409,
+    );
   }
 
   // Idempotente: aprobar dos veces no crea dos versiones.

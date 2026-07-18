@@ -21,6 +21,7 @@ import { pagoRouter } from "./rutas/pago.js";
 import { manejarWebhookStripe } from "./pago/webhook.js";
 import { stripeHabilitado } from "./pago/proveedor-stripe.js";
 import { sesionesRouter } from "./rutas/sesiones.js";
+import { socratesRouter } from "./rutas/socrates.js";
 import { esModoSinClaves } from "./ia/proveedor-ia.js";
 import { crearProveedorBusqueda } from "./busqueda/proveedor-busqueda.js";
 import { crearAlmacenR2 } from "./storage/r2-client.js";
@@ -97,8 +98,14 @@ app.use("/catalogo/*", requiereSuscripcion);
 app.use("/catalogo", requiereSuscripcion);
 app.use("/entregables/*", requiereSuscripcion);
 app.use("/entregables", requiereSuscripcion);
+// Sesiones (el chat con Sócrates) y /socrates (propone/confirma encargos) son
+// tan de negocio como el resto — sin suscripción con acceso no se conversa ni
+// se le pide nada al equipo (mina detectada en el reconocimiento: /sesiones se
+// había quedado fuera de la muralla).
 app.use("/sesiones/*", requiereSuscripcion);
 app.use("/sesiones", requiereSuscripcion);
+app.use("/socrates/*", requiereSuscripcion);
+app.use("/socrates", requiereSuscripcion);
 
 // ── Rutas de negocio ─────────────────────────────────────────────────────────
 app.route("/expedientes", expedientesRouter);
@@ -106,3 +113,4 @@ app.route("/empleados", empleadosRouter);
 app.route("/catalogo", catalogoRouter);
 app.route("/entregables", entregablesRouter);
 app.route("/sesiones", sesionesRouter);
+app.route("/socrates", socratesRouter);

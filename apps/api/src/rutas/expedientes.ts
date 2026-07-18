@@ -10,6 +10,7 @@ import { validarJson } from "../middleware/validacion.js";
 import {
   CrearExpedienteSchema,
   EditarExpedienteSchema,
+  CrearTareaSchema,
   derivarProgreso,
   evaluarTransicionEtapa,
   esAvanceLineal,
@@ -21,6 +22,7 @@ import {
   type EtapaExpediente,
 } from "@socrates/shared";
 import type { AuthedVars } from "../middleware/auth.js";
+import { crearTareaEncargo } from "../servicios/encargos.js";
 
 export const expedientesRouter = new Hono<{ Variables: AuthedVars }>();
 
@@ -155,6 +157,8 @@ expedientesRouter.get("/:id", async (c) => {
       descripcion: t.descripcion,
       estado: t.estado as EstadoTarea,
       motivo: t.motivo,
+      progresoPct: t.progresoPct,
+      progresoNota: t.progresoNota,
       creadoEn: t.creadoEn.toISOString(),
     })),
     entregables: e.entregables.map((d) => ({
@@ -270,4 +274,40 @@ expedientesRouter.patch("/:id", validarJson(EditarExpedienteSchema), async (c) =
     );
   }
   return c.json(aResumen(actualizado));
+});
+
+// ── POST /expedientes/:id/tareas — encargar trabajo a un Empleado (misión de
+// lanzamiento §2.1). El worker (worker/index.ts) la toma después, en su ciclo. ─
+expedientesRouter.post("/:id/tareas", validarJson(CrearTareaSchema), async (c) => {
+  const asesorId = c.get("asesorId");
+  const id = c.req.param("id");
+  const datos = c.req.valid("json");
+
+  const resultado = await crearTareaEncargo({
+    expedienteId: id,
+    asesorId,
+    empleadoRol: datos.empleadoRol,
+    descripcion: datos.descripcion,
+  });
+
+  switch (resultado.estado) {
+    case "NO_EXISTE":
+      return c.json({ error: { codigo: "NO_EXISTE", mensaje: "No encontré ese expediente." } }, 404);
+    case "AJENO":
+      return c.json({ error: { codigo: "AJENO", mensaje: "Ese expediente no es tuyo." } }, 403);
+    case "CERRADO":
+      return c.json(
+        {
+          error: {
+            codigo: "TRANSICION_INVALIDA",
+            mensaje: "Este expediente ya está cerrado; no se le pueden encargar más trabajos.",
+          },
+        },
+        409,
+      );
+    case "CONFLICTO":
+      return c.json({ error: { codigo: "CONFLICTO", mensaje: resultado.mensaje } }, 409);
+    case "OK":
+      return c.json(resultado.tarea, 201);
+  }
 });

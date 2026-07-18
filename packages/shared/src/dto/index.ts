@@ -21,6 +21,13 @@ export const EtapaSchema = z.enum(ETAPAS_EXPEDIENTE);
 export const EstadoTareaSchema = z.enum(ESTADOS_TAREA);
 export const EstadoEntregableSchema = z.enum(ESTADOS_ENTREGABLE);
 export const RolEmpleadoSchema = z.enum(ROLES_EMPLEADO);
+/**
+ * Solo los 6 del panel: a Sócrates (el gerente) no se le "encarga" directo.
+ * El cast preserva los literales de RolEmpleado (ROLES_PANEL está tipado como
+ * RolEmpleado[] mutable, no `as const`, así que sin el cast z.enum infiere
+ * `string` genérico y se pierde el chequeo de las claves de EMPLEADOS).
+ */
+export const RolPanelSchema = z.enum(ROLES_PANEL as unknown as readonly [RolEmpleado, ...RolEmpleado[]]);
 
 // ── Renombrar al equipo (override de nombres por oficina) ────────────────────
 /**
@@ -82,6 +89,58 @@ export const EditarExpedienteSchema = z
   });
 export type EditarExpediente = z.infer<typeof EditarExpedienteSchema>;
 
+// ── Encargar trabajo a un Empleado (spec de la misión §2.1) ─────────────────
+export const CrearTareaSchema = z.object({
+  empleadoRol: RolPanelSchema,
+  descripcion: z.string().min(3, "Cuéntale al equipo qué necesitas (mínimo 3 letras).").max(500).optional(),
+});
+export type CrearTarea = z.infer<typeof CrearTareaSchema>;
+
+// ── Sócrates propone, el Asesor confirma (spec de la misión §2.8, D-4) ─────
+// Sócrates NUNCA ejecuta solo: /instruir solo PROPONE un plan (no toca la
+// base); /confirmar es el banderazo del Asesor el que de verdad encarga.
+export const InstruirSchema = z.object({
+  texto: z.string().min(1, "Cuéntale a Sócrates qué necesitas."),
+  expedienteId: z.string().optional(),
+});
+export type Instruir = z.infer<typeof InstruirSchema>;
+
+export const PasoPlanSchema = z.object({
+  empleadoRol: RolPanelSchema,
+  descripcion: z.string().min(1),
+});
+export type PasoPlan = z.infer<typeof PasoPlanSchema>;
+
+export const PlanSocratesSchema = z.object({
+  tipo: z.literal("plan"),
+  resumen: z.string().min(1),
+  expedienteId: z.string().nullable(),
+  empresaNueva: z
+    .object({ empresa: z.string().min(1), ciudad: z.string().optional(), giro: z.string().optional() })
+    .optional(),
+  pasos: z.array(PasoPlanSchema).min(1),
+});
+export type PlanSocrates = z.infer<typeof PlanSocratesSchema>;
+
+export const PreguntaSocratesSchema = z.object({
+  tipo: z.literal("pregunta"),
+  pregunta: z.string().min(1),
+});
+export type PreguntaSocrates = z.infer<typeof PreguntaSocratesSchema>;
+
+/** Lo que devuelve POST /socrates/instruir: un plan propuesto o UNA pregunta. */
+export const RespuestaInstruirSchema = z.discriminatedUnion("tipo", [
+  PlanSocratesSchema,
+  PreguntaSocratesSchema,
+]);
+export type RespuestaInstruir = z.infer<typeof RespuestaInstruirSchema>;
+
+export const ConfirmarSchema = z.object({
+  expedienteId: z.string().min(1),
+  pasos: z.array(PasoPlanSchema).min(1),
+});
+export type Confirmar = z.infer<typeof ConfirmarSchema>;
+
 // ── DTOs de salida (lo que la api devuelve a web) ───────────────────────────
 export const TareaDTOSchema = z.object({
   id: z.string(),
@@ -89,6 +148,8 @@ export const TareaDTOSchema = z.object({
   descripcion: z.string(),
   estado: EstadoTareaSchema,
   motivo: z.string().nullable().optional(),
+  progresoPct: z.number().int().nullable().optional(),
+  progresoNota: z.string().nullable().optional(),
   creadoEn: z.string(),
 });
 export type TareaDTO = z.infer<typeof TareaDTOSchema>;

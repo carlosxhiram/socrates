@@ -141,6 +141,8 @@ model Tarea {
   descripcion    String // legible para el Asesor
   estado         String      @default("ENCARGADA") // EstadoTarea
   motivo         String? // si BLOQUEADA (progreso honesto)
+  progresoPct    Int? // 0-100, lo escribe el worker vía registrarProgreso
+  progresoNota   String? // "Investigando la industria…" (NFR-14, visible al Asesor)
   dependeDeId    String? // dependencia entre Tareas (FR-2)
   idempotencyKey String?     @unique // anti doble efecto
   entregable     Entregable?

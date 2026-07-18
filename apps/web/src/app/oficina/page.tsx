@@ -11,6 +11,7 @@ import { PanelEquipo } from "@/components/oficina/PanelEquipo";
 import { TarjetaExpediente } from "@/components/oficina/TarjetaExpediente";
 import { NuevoExpediente } from "@/components/oficina/NuevoExpediente";
 import { BarraComando } from "@/components/socrates/BarraComando";
+import { MenuCuenta } from "@/components/oficina/MenuCuenta";
 
 export const dynamic = "force-dynamic";
 
@@ -50,15 +51,19 @@ export default async function OficinaPage() {
   // tuyos, y eso hay que decirlo tal cual (nunca disfrazarlo de vacío).
   let expedientes: ExpedienteResumenDTO[];
   let equipo: EmpleadoEstadoDTO[];
+  let nombreOficina: string | null = null;
+  let esDemo = true; // fail-closed: sin datos de "quién soy", no ofrecemos cerrar una sesión que no confirmamos que existe
   let nombresEquipo: Record<string, string> = {};
   try {
-    const [exps, eq, yo] = await Promise.all([
+    const [expedientesRes, equipoRes, yo] = await Promise.all([
       obtenerExpedientes(),
       obtenerEquipo(),
       obtenerYo(),
     ]);
-    expedientes = exps;
-    equipo = eq;
+    expedientes = expedientesRes;
+    equipo = equipoRes;
+    nombreOficina = yo.perfil.nombreOficina;
+    esDemo = yo.esDemo;
     nombresEquipo = yo.nombresEquipo;
   } catch {
     return (
@@ -69,7 +74,7 @@ export default async function OficinaPage() {
   }
 
   return (
-    <Marco>
+    <Marco menuCuenta={!esDemo && <MenuCuenta nombreOficina={nombreOficina ?? "Tu oficina"} />}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
         {/* Columna izquierda: el equipo */}
         <aside>
@@ -108,7 +113,13 @@ export default async function OficinaPage() {
   );
 }
 
-function Marco({ children }: { children: React.ReactNode }) {
+function Marco({
+  children,
+  menuCuenta,
+}: {
+  children: React.ReactNode;
+  menuCuenta?: React.ReactNode;
+}) {
   return (
     <main className="mx-auto min-h-screen max-w-[1400px] px-6 py-8">
       <header className="mb-8 flex items-center gap-3">
@@ -123,6 +134,7 @@ function Marco({ children }: { children: React.ReactNode }) {
             Sócrates y tu equipo, organizados por prospecto.
           </p>
         </div>
+        {menuCuenta}
       </header>
       {children}
     </main>
