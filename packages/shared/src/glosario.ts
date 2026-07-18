@@ -100,11 +100,19 @@ export const ROLES_PANEL: RolEmpleado[] = [
 
 export interface PerfilEmpleado {
   rol: RolEmpleado;
+  /** Nombre "de sistema": el gerente ("Sócrates") o el legado de puesto ("El Prospector"). */
   nombre: string;
   /** Una línea, en lenguaje de oficina, de qué hace. */
   descripcion: string;
   /** Ícono de rol (estilo organigrama, no avatar de robot) — clave lucide-react. */
   icono: string;
+  /**
+   * Nombre propio de fábrica del empleado del panel (Diego…). Fuente única que
+   * comparten landing y producto. Ausente en SOCRATES (el gerente no se renombra).
+   */
+  nombrePorDefecto?: string;
+  /** Puesto mostrado como cargo (subtítulo) bajo el nombre (Prospector…). Ausente en SOCRATES. */
+  cargo?: string;
 }
 
 /** Identidad de oficina de cada empleado (UX C-1, P-4). */
@@ -123,38 +131,70 @@ export const EMPLEADOS: Record<RolEmpleado, PerfilEmpleado> = {
     nombre: "El Prospector",
     descripcion: "Califica y enriquece a los prospectos que le traes.",
     icono: "search",
+    nombrePorDefecto: "Diego",
+    cargo: "Prospector",
   },
   INVESTIGADOR: {
     rol: "INVESTIGADOR",
     nombre: "El Investigador",
     descripcion: "Arma el reporte de inteligencia financiera del prospecto, con todo y fuentes.",
     icono: "file-search",
+    nombrePorDefecto: "Hiram",
+    cargo: "Investigador",
   },
   ASESOR_PRODUCTO: {
     rol: "ASESOR_PRODUCTO",
     nombre: "El Asesor de producto",
     descripcion: "Identifica el mejor financiamiento del catálogo SOC para cada necesidad.",
     icono: "landmark",
+    nombrePorDefecto: "Jair",
+    cargo: "Asesor de Producto",
   },
   NEGOCIADOR: {
     rol: "NEGOCIADOR",
     nombre: "El Negociador",
     descripcion: "Prepara el guion de acercamiento, el pitch y el manejo de objeciones.",
     icono: "handshake",
+    nombrePorDefecto: "Katya",
+    cargo: "Negociadora",
   },
   TRAMITADOR: {
     rol: "TRAMITADOR",
     nombre: "El Tramitador",
     descripcion: "Reúne requisitos y arma la cotización estimada (no vinculante).",
     icono: "file-check",
+    nombrePorDefecto: "María",
+    cargo: "Trámites",
   },
   GESTOR: {
     rol: "GESTOR",
     nombre: "El Gestor",
     descripcion: "Da seguimiento, cierra y acompaña en la postventa.",
     icono: "briefcase",
+    nombrePorDefecto: "Paula",
+    cargo: "Gestora",
   },
 };
+
+/**
+ * Nombre a mostrar de un empleado: override de la oficina > nombre de fábrica >
+ * nombre de sistema (legado). Un rol desconocido en el mapa se ignora (defensa
+ * ante datos viejos). Es la ÚNICA puerta para resolver un nombre — ningún
+ * componente vuelve a leerlo "a mano".
+ */
+export function nombreEmpleado(
+  rol: RolEmpleado,
+  nombresEquipo?: Record<string, string> | null,
+): string {
+  const override = nombresEquipo?.[rol]?.trim();
+  if (override) return override;
+  return EMPLEADOS[rol].nombrePorDefecto ?? EMPLEADOS[rol].nombre;
+}
+
+/** Cargo (puesto) del empleado, para el subtítulo. Vacío para SOCRATES. */
+export function cargoEmpleado(rol: RolEmpleado): string {
+  return EMPLEADOS[rol].cargo ?? "";
+}
 
 // ── Estado de empleado de cara al Asesor (UX C-1) ───────────────────────────
 // Nunca "Procesando"/"Generando" (P-1): solo Libre / Trabajando / Entregó.
