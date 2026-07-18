@@ -27,9 +27,6 @@
     "test": "node --test --experimental-strip-types",
     "test:integracion": "tsx --test tests-integracion/seed.integracion.ts"
   },
-  "prisma": {
-    "seed": "tsx src/seed/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^6.2.1",
     "@socrates/shared": "workspace:*",

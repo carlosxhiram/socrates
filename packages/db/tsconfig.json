@@ -4,6 +4,6 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "tests-integracion/**/*.ts"],
+  "include": ["src/**/*.ts", "tests-integracion/**/*.ts", "prisma.config.ts"],
   "exclude": ["src/generated/**"]
 }
