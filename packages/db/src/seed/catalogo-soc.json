@@ -10,7 +10,8 @@
       "decisiones-bloqueantes.md (Director, 14 jun 2026)"
     ],
     "totalInstituciones": 17,
-    "totalProductos": 37,
+    "totalProductos": 22,
+    "totalTiposDeProducto": 10,
     "institucionesFaltantesParaLas55": "~38 instituciones adicionales pendientes de validación con Carlos y SOC Corporativo",
     "fechaConstruccion": "2026-06-14",
     "advertencia": "Este archivo es insumo para el motor de matching del Investigador. NO entregar al cliente sin revisión humana (gate obligatorio). Condiciones financieras cambian; verificar vigencia antes de cada recomendación."
