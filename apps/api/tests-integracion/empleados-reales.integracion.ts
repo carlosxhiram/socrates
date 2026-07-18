@@ -2,7 +2,7 @@
  * empleados-reales.integracion.ts — los 6 empleados REGISTRADOS de verdad
  * (registro.ts), sin inyectar ningún Empleado falso, contra el worker real.
  *
- * Corre en modo sin claves de IA (no hay ANTHROPIC_API_KEY en el entorno de
+ * Corre en modo sin claves de IA (no hay AI_GATEWAY_API_KEY en el entorno de
  * pruebas): confirma que la degradación de NFR-11 llega hasta el final del
  * cableado real — encargar → worker (registro por defecto) → Empleado real →
  * BLOQUEADA con el motivo digno del servicio no contratado, para los 6 roles.
@@ -45,10 +45,10 @@ before(async () => {
   }
   // Guardia adicional de esta suite: si alguien corre esto CON una llave real
   // puesta en el entorno, los asserts de abajo (BLOQUEADA/motivo digno) fallarían
-  // porque de verdad llamaría a Anthropic — mejor decirlo claro que confundir.
-  if (process.env.ANTHROPIC_API_KEY?.trim()) {
+  // porque de verdad llamaría al proveedor de IA — mejor decirlo claro que confundir.
+  if (process.env.AI_GATEWAY_API_KEY?.trim()) {
     throw new Error(
-      "empleados-reales.integracion.ts asume modo SIN llaves de IA; quita ANTHROPIC_API_KEY para correr esta suite.",
+      "empleados-reales.integracion.ts asume modo SIN llaves de IA; quita AI_GATEWAY_API_KEY para correr esta suite.",
     );
   }
   await prisma.$queryRaw`SELECT 1`;

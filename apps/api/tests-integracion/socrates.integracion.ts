@@ -1,7 +1,7 @@
 /**
  * socrates.integracion.ts — Sócrates propone, el Asesor confirma (spec §2.8).
  *
- * Corre en modo sin claves de IA (no se define ANTHROPIC_API_KEY en el
+ * Corre en modo sin claves de IA (no se define AI_GATEWAY_API_KEY en el
  * entorno de pruebas) — ejercita a propósito el fallback determinista de
  * /instruir y la atomicidad de /confirmar. Requiere DATABASE_URL local
  * migrada y sembrada. Corre con:
