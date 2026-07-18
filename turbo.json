@@ -34,6 +34,9 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "@socrates/db#typecheck": {
+      "dependsOn": ["^build", "build"]
     }
   }
 }
