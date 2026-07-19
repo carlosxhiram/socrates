@@ -6,11 +6,26 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  // Base para volver absolutas las URLs de las tarjetas de enlace (WhatsApp
+  // y compañía no aceptan rutas relativas). La imagen de la tarjeta la genera
+  // app/opengraph-image.tsx y Next la engancha solo.
+  metadataBase: new URL("https://socratia.mateinnovation.com"),
   title: {
     default: "Socratia — el equipo de tu oficina",
     template: "%s · Socratia",
   },
   description: "Tu equipo de asesoría financiera, en una sola oficina.",
+  openGraph: {
+    type: "website",
+    locale: "es_MX",
+    siteName: "Socratia",
+    url: "/",
+    title: "Socratia — el equipo de tu oficina",
+    description: "Tu equipo de asesoría financiera, en una sola oficina.",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 const clerkConfigurado = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
