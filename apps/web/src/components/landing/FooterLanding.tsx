@@ -69,8 +69,7 @@ export function FooterLanding() {
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-oficina-tenue">
-              Un equipo completo para la oficina del asesor de crédito
-              empresarial PYME.
+              Un equipo completo para la oficina del asesor financiero.
             </p>
             <p className="mt-4 text-xs text-oficina-tenue">Hecho en México 🇲🇽</p>
           </div>
