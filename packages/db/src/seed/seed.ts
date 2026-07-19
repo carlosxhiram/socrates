@@ -3,7 +3,7 @@
  *
  * Crea:
  *   1. Los 6 empleados + Socratia (catálogo de roles, lenguaje de oficina).
- *   2. El Catálogo SOC desde catalogo-soc.json (17 instituciones, 22 productos).
+ *   2. El Catálogo SOC desde catalogo-soc.json (18 instituciones, 23 productos).
  *   3. Un Asesor demo (clerkUserId = "demo-asesor") para el Modo sin claves.
  *   4. Dos Expedientes: Las Aliadas (RECOMENDADO) y Probemedic (INVESTIGADO),
  *      con etapas/progreso y tareas.
