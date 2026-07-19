@@ -108,7 +108,7 @@ export default async function ImagenOpenGraph() {
               color: TENUE,
             }}
           >
-            / PARA ASESORES DE CRÉDITO EMPRESARIAL
+            / PARA ASESORES FINANCIEROS
           </div>
 
           {/* titular: peso 500, tracking apretado, precio en salvia subrayado */}

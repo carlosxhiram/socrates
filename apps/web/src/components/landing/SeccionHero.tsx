@@ -44,7 +44,7 @@ export function SeccionHero() {
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-oficina-borde bg-oficina-panel px-3.5 py-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-estado-entrego" />
               <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-oficina-tinta/60">
-                Para asesores de crédito empresarial
+                Para asesores financieros
               </span>
             </div>
 
