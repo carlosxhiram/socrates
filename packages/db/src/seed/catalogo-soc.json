@@ -635,7 +635,7 @@
             "exclusiones": "Armas, drogas, explosivos y mercancía peligrosa; concesiones de gobierno. La cartera concentrada en el sector público reduce el monto autorizado, no descalifica",
             "moneda": "El financiamiento es en dólares; el pago al proveedor se realiza en su moneda local (p. ej. yuanes, euros o pesos a proveedores nacionales)",
             "diferenciales": "Tasa fraccionable: cobra por los días efectivamente usados, sin penalización por pago anticipado. Incluye seguro de carga puerta a puerta. La línea crece a partir de 2 operaciones pagadas",
-            "_supuesto": false,
+            "_supuesto": true,
             "_notaSupuesto": "Montos, plazos, porcentaje financiado, garantía, tiempos y requisitos validados con material oficial de Finkargo. Quedan pendientes de confirmar con la institución: la tasa mensual exacta y el porcentaje de comisión de apertura (hoy solo rango documental)."
           },
           "institucion": "finkargo",
