@@ -16,5 +16,8 @@ docs/reportes-referencia
 .playwright-mcp
 **/*.db
 **/.env*
-*.png
-*.jpeg
+# OJO: NO ignorar *.png / *.jpeg aquí. Los assets de producto (el logomark en
+# apps/web/public/marca, los iconos en apps/web/src/app) son .png y DEBEN
+# desplegarse; ignorarlos por extensión rompía el build de la tarjeta OG
+# (ENOENT al leer tortuga.png) y dejaba el favicon/logo en 404. Las capturas de
+# diseño sueltas se mantienen fuera con .gitignore, no desde aquí.
