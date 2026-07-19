@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/marca/Logo";
 
 interface Enlace {
   texto: string;
@@ -34,7 +35,7 @@ function ColumnaFooter({
 }) {
   return (
     <div className={className}>
-      <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
+      <h3 className="mb-4 font-mono text-[11px] uppercase tracking-[0.14em] text-oficina-tinta/60">
         {titulo}
       </h3>
       <ul className="space-y-2.5">
@@ -42,7 +43,7 @@ function ColumnaFooter({
           <li key={texto}>
             <Link
               href={href}
-              className="text-sm text-oficina-texto transition-colors hover:text-marca"
+              className="text-sm text-oficina-texto transition-colors duration-200 ease-suave hover:text-marca"
             >
               {texto}
             </Link>
@@ -58,14 +59,12 @@ export function FooterLanding() {
     <footer className="border-t border-oficina-borde bg-oficina-panel">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         {/* Cuerpo */}
-        <div className="grid grid-cols-2 gap-8 py-14 md:grid-cols-12">
+        <div className="grid grid-cols-2 gap-8 py-16 md:grid-cols-12">
           {/* Marca */}
           <div className="col-span-2 md:col-span-4">
             <div className="flex items-center gap-2.5">
-              <span className="text-xl leading-none" aria-hidden>
-                🐢
-              </span>
-              <span className="text-base font-black uppercase tracking-[0.2em] text-oficina-texto">
+              <Logo size={28} />
+              <span className="text-base font-medium uppercase tracking-[0.18em] text-oficina-texto">
                 SOCRATIA
               </span>
             </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { RevelarAlScroll } from "@/components/movimiento/RevelarAlScroll";
+import { Eyebrow } from "./Eyebrow";
 
 const INCLUYE = [
   "Tu equipo completo: los 6 especialistas",
@@ -13,52 +14,56 @@ const INCLUYE = [
 
 export function SeccionPrecio() {
   return (
-    <section id="precio" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
+    <section
+      id="precio"
+      className="scroll-mt-16 border-t border-oficina-borde bg-oficina-fondo py-24 md:py-32"
+    >
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <RevelarAlScroll className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
           {/* Texto izquierdo */}
           <div className="lg:col-span-5">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
-              Tu plan
-            </p>
-            <h2 className="mb-4 text-3xl font-black tracking-tight text-oficina-texto md:text-4xl">
+            <Eyebrow>precio</Eyebrow>
+            <h2 className="mt-4 text-seccion text-oficina-texto">
               Un solo plan.
               <br />
               Todo incluido.
             </h2>
-            <p className="text-base leading-relaxed text-oficina-tenue">
+            <p className="mt-5 text-cuerpo-lg text-oficina-tenue">
               Sin niveles, sin módulos opcionales, sin sorpresas. Todo el equipo
               disponible desde el primer día.
             </p>
             {/* Ancla de valor: el precio contra la alternativa real */}
-            <p className="mt-5 border-l-2 border-marca pl-4 text-base leading-relaxed text-oficina-texto">
+            <p className="mt-6 border-l-2 border-marca pl-4 text-base leading-relaxed text-oficina-texto">
               Un solo analista de verdad te costaría un sueldo. Aquí tienes al
-              equipo completo por <span className="font-semibold text-marca">$499 al mes</span>.
+              equipo completo por{" "}
+              <span className="font-medium text-marca">$499 al mes</span>.
             </p>
           </div>
 
           {/* Tarjeta de precio */}
           <div className="lg:col-span-7">
-            <div className="rounded-2xl border-2 border-marca bg-oficina-panel p-8 shadow-sm">
-              {/* Precio */}
+            <div className="rounded-tarjeta border border-marca/30 bg-oficina-panel p-8">
+              {/* Precio — cifra en mono tabular (precisión financiera) */}
               <div className="mb-6 flex items-baseline gap-2">
-                <span className="text-5xl font-black text-oficina-texto">$499</span>
-                <div>
-                  <span className="text-sm font-medium text-oficina-tenue">MXN</span>
+                <span className="font-mono text-5xl font-medium tabular-nums tracking-tight text-oficina-texto">
+                  $499
+                </span>
+                <div className="leading-tight">
+                  <span className="font-mono text-sm text-oficina-tenue">MXN</span>
                   <p className="text-xs text-oficina-tenue">por mes</p>
                 </div>
               </div>
 
               {/* Prueba gratis badge */}
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-estado-entrego/10 px-4 py-1.5">
+              <div className="mb-7 inline-flex items-center gap-2 rounded-full bg-estado-entrego/10 px-4 py-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-estado-entrego" />
-                <span className="text-xs font-semibold text-estado-entrego">
+                <span className="text-xs font-medium text-estado-entrego">
                   14 días de prueba gratis · Se requiere tarjeta
                 </span>
               </div>
 
               {/* Lo que incluye */}
-              <ul className="mb-8 space-y-2.5">
+              <ul className="mb-8 space-y-3">
                 {INCLUYE.map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
                     <Check
@@ -74,7 +79,7 @@ export function SeccionPrecio() {
               {/* CTA */}
               <Link
                 href="/crear-cuenta"
-                className="block w-full rounded-md bg-marca px-6 py-3.5 text-center text-sm font-semibold text-white transition-colors hover:bg-marca-fuerte"
+                className="flex h-control w-full items-center justify-center rounded-full bg-marca px-6 text-[15px] font-medium text-white transition-colors duration-200 ease-suave hover:bg-marca-fuerte active:bg-marca-fuerte focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca focus-visible:ring-offset-2 focus-visible:ring-offset-oficina-panel"
               >
                 Empieza tu prueba gratis
               </Link>

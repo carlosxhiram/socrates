@@ -4,6 +4,15 @@
 
 :root {
   color-scheme: light;
+
+  /* Tinta base (rgb, sin envolver) para aplicarla POR CAPAS con opacidad:
+     rgb(var(--tinta) / .60) = texto secundario/eyebrows, /.40 = terciario.
+     Tailwind la expone como el color `oficina-tinta` (text-oficina-tinta/60). */
+  --tinta: 27 38 33;
+
+  /* La curva de motion ÚNICA (swift-out) para CSS crudo. Gemelas: la utilidad
+     `ease-suave` de Tailwind y la constante EASE de src/lib/motion.ts. */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html,
@@ -13,10 +22,14 @@ body {
 }
 
 body {
+  /* Reflejan los tokens oficina.fondo / oficina.texto (fuente de verdad:
+     tailwind.config.ts). Aquí en hex porque el body se pinta antes de que
+     apliquen las clases de Tailwind. */
   background-color: #fefcf5; /* crema cálido (estilo Tavily) */
   color: #1e2a23;
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 * {

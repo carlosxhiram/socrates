@@ -2,6 +2,7 @@
 
 import { motion, useInView, useReducedMotion, type Variants } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { EASE } from "@/lib/motion";
 
 /**
  * "El reporte que se arma solo" — variante del gráfico estrella del Hero.
@@ -22,8 +23,6 @@ import { useEffect, useRef, useState } from "react";
  * (WCAG 2.2.2), se apaga fuera de pantalla y con "menos movimiento" queda una
  * foto fija: el reporte completo con su sello.
  */
-
-const EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
 interface Seccion {
   titulo: string;

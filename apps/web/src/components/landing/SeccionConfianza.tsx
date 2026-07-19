@@ -1,9 +1,7 @@
 import { ShieldCheck, BookOpen, MessageSquare } from "lucide-react";
 import { RevelarAlScroll } from "@/components/movimiento/RevelarAlScroll";
-import {
-  ListaEscalonada,
-  ElementoEscalonado,
-} from "@/components/movimiento/ListaEscalonada";
+import { Eyebrow } from "./Eyebrow";
+import { Logo } from "@/components/marca/Logo";
 
 const PILARES = [
   {
@@ -28,22 +26,20 @@ const PILARES = [
 
 export function SeccionConfianza() {
   return (
-    <section className="border-t border-oficina-borde bg-oficina-panel py-20 md:py-28">
+    <section className="border-t border-oficina-borde bg-oficina-panel py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        {/* Encabezado — dos columnas editoriales */}
+        {/* Encabezado — eyebrow → H2, dos columnas editoriales */}
         <RevelarAlScroll className="mb-14 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-6">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
-              Por qué confiar
-            </p>
-            <h2 className="text-3xl font-black leading-tight tracking-tight text-oficina-texto md:text-4xl">
+            <Eyebrow>tu resguardo</Eyebrow>
+            <h2 className="mt-4 text-seccion text-oficina-texto">
               Rigor financiero desde
               <br />
               el primer reporte.
             </h2>
           </div>
           <div className="lg:col-span-6">
-            <p className="max-w-md text-base leading-relaxed text-oficina-tenue">
+            <p className="max-w-md text-cuerpo-lg text-oficina-tenue">
               Diseñado para el crédito empresarial PYME en México. Cada proceso
               respeta el flujo real del asesor: primero explorar, luego proponer,
               siempre con el asesor en control.
@@ -51,31 +47,29 @@ export function SeccionConfianza() {
           </div>
         </RevelarAlScroll>
 
-        {/* Pilares */}
-        <ListaEscalonada className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {/* Pilares — panel único segmentado por hairlines (no tarjetas sueltas:
+            composición distinta a la plantilla, para no repetir la misma reja). */}
+        <RevelarAlScroll className="grid grid-cols-1 gap-px overflow-hidden rounded-tarjeta border border-oficina-borde bg-oficina-borde md:grid-cols-3">
           {PILARES.map(({ Icono, titulo, descripcion }) => (
-            <ElementoEscalonado
-              key={titulo}
-              className="rounded-xl border border-oficina-borde bg-oficina-fondo p-6"
-            >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md bg-marca text-white">
+            <div key={titulo} className="bg-oficina-panel p-7 md:p-8">
+              <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-interno bg-marca/10 text-marca">
                 <Icono size={20} aria-hidden />
               </div>
-              <h3 className="mb-2 text-sm font-bold text-oficina-texto">
+              <h3 className="text-base font-medium text-oficina-texto">
                 {titulo}
               </h3>
-              <p className="text-sm leading-relaxed text-oficina-tenue">
+              <p className="mt-2.5 text-sm leading-relaxed text-oficina-tenue">
                 {descripcion}
               </p>
-            </ElementoEscalonado>
+            </div>
           ))}
-        </ListaEscalonada>
+        </RevelarAlScroll>
 
-        {/* Nota institucional */}
-        <RevelarAlScroll className="mt-10 flex items-start gap-3 rounded-xl border border-marca/20 bg-marca/5 px-6 py-5">
-          <span className="mt-0.5 text-xl" aria-hidden>🐢</span>
+        {/* Nota institucional — el logomark real reemplaza al emoji */}
+        <RevelarAlScroll className="mt-10 flex items-start gap-4 rounded-tarjeta border border-marca/20 bg-marca/[0.05] px-6 py-5">
+          <Logo size={28} className="mt-0.5 shrink-0" />
           <p className="text-sm leading-relaxed text-oficina-texto">
-            <span className="font-semibold">Sócrates es tu gerente, no un oráculo.</span>{" "}
+            <span className="font-medium">Sócrates es tu gerente, no un oráculo.</span>{" "}
             Trabaja con la información que le das, cita sus fuentes y te dice cuando
             algo necesita verificación adicional. La experiencia y el juicio del asesor
             siempre tienen la última palabra.
