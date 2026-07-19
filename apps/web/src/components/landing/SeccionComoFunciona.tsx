@@ -3,6 +3,7 @@ import {
   ListaEscalonada,
   ElementoEscalonado,
 } from "@/components/movimiento/ListaEscalonada";
+import { Eyebrow } from "./Eyebrow";
 import { ConversacionGerente } from "./variantes/ConversacionGerente";
 
 const PASOS = [
@@ -28,53 +29,50 @@ const PASOS = [
 
 export function SeccionComoFunciona() {
   return (
-    <section id="como-funciona" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-fondo py-20 md:py-28">
+    <section
+      id="como-funciona"
+      className="scroll-mt-16 border-t border-oficina-borde bg-oficina-fondo py-24 md:py-32"
+    >
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        {/* Encabezado */}
-        <RevelarAlScroll className="mb-14">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
-            Cómo se siente usarlo
-          </p>
-          <h2 className="text-3xl font-black tracking-tight text-oficina-texto md:text-4xl">
+        {/* Encabezado — eyebrow → H2 */}
+        <RevelarAlScroll className="mb-16">
+          <Eyebrow>cómo funciona</Eyebrow>
+          <h2 className="mt-4 max-w-2xl text-seccion text-oficina-texto">
             Tan simple como hablar con tu gerente.
           </h2>
         </RevelarAlScroll>
 
-        {/* Layout de dos columnas: los tres pasos apilados verticalmente
-            (izquierda) y la conversación con Sócrates acompañándolos (derecha).
-            En móvil se apilan: primero los pasos, luego la conversación. */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
-          {/* Columna izquierda — los tres pasos en cascada vertical. No
-              colapsan: cada uno es su propia tarjeta, apiladas una sobre otra. */}
-          <ListaEscalonada className="flex flex-col gap-4">
-            {PASOS.map(({ numero, titulo, descripcion }) => (
-              <ElementoEscalonado
-                key={numero}
-                className="relative rounded-xl border border-oficina-borde bg-oficina-panel p-5 lg:p-6"
-              >
-                {/* Barra lateral de acento en el primer paso */}
-                {numero === "1" && (
-                  <div
-                    aria-hidden
-                    className="absolute left-0 top-6 bottom-6 w-[3px] bg-marca rounded-r-full"
-                  />
-                )}
-
-                {/* Número + título en la misma línea para compactar la altura */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-marca text-sm font-black text-marca">
+        {/* Dos columnas: los tres pasos como flujo numerado vertical (izquierda)
+            y la conversación con Sócrates (derecha). En móvil se apilan. */}
+        <div className="grid grid-cols-1 gap-14 lg:grid-cols-2 lg:items-center lg:gap-16">
+          {/* Columna izquierda — flujo numerado con riel vertical. No son
+              tarjetas en caja: es una secuencia, composición distinta a las
+              demás secciones (rompe la monotonía de rejillas). */}
+          <div className="relative">
+            {/* Riel que conecta los números (centro del círculo de 44px = 22px). */}
+            <span
+              aria-hidden
+              className="absolute left-[22px] top-[22px] bottom-[22px] w-px -translate-x-1/2 bg-oficina-borde"
+            />
+            <ListaEscalonada className="relative flex flex-col gap-8">
+              {PASOS.map(({ numero, titulo, descripcion }) => (
+                <ElementoEscalonado key={numero} className="flex gap-5">
+                  {/* Número mono en círculo — bg sólido para tapar el riel. */}
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-marca/40 bg-oficina-fondo font-mono text-base text-marca">
                     {numero}
+                  </span>
+                  <div className="pt-1.5">
+                    <h3 className="text-base font-medium text-oficina-texto">
+                      {titulo}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-oficina-tenue">
+                      {descripcion}
+                    </p>
                   </div>
-                  <h3 className="text-base font-bold text-oficina-texto">
-                    {titulo}
-                  </h3>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-oficina-tenue">
-                  {descripcion}
-                </p>
-              </ElementoEscalonado>
-            ))}
-          </ListaEscalonada>
+                </ElementoEscalonado>
+              ))}
+            </ListaEscalonada>
+          </div>
 
           {/* Columna derecha — la experiencia real: una conversación con
               Sócrates. Se monta DIRECTA (sin RevelarAlScroll): la conversación

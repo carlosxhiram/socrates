@@ -12,6 +12,7 @@ import {
   ElementoEscalonado,
 } from "@/components/movimiento/ListaEscalonada";
 import { RevelarAlScroll } from "@/components/movimiento/RevelarAlScroll";
+import { Eyebrow } from "./Eyebrow";
 import { OficinaViva } from "./variantes/OficinaViva";
 import { CadenaEncargoV2 } from "./variantes/CadenaEncargoV2";
 
@@ -74,23 +75,23 @@ const EMPLEADOS: Empleado[] = [
 
 export function SeccionEquipo() {
   return (
-    <section id="equipo" className="scroll-mt-14 border-t border-oficina-borde bg-oficina-panel py-20 md:py-28">
+    <section
+      id="equipo"
+      className="scroll-mt-16 border-t border-oficina-borde bg-oficina-panel py-24 md:py-32"
+    >
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        {/* Encabezado */}
-        <RevelarAlScroll className="mb-14 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Encabezado — eyebrow → H2, con el "6" como pieza tipográfica mono */}
+        <RevelarAlScroll className="mb-16 grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="lg:col-span-5">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
-              Tu plantilla
-            </p>
-            {/* El "6" como pieza tipográfica editorial */}
-            <div className="flex items-baseline gap-4">
+            <Eyebrow>tu equipo</Eyebrow>
+            <div className="mt-4 flex items-baseline gap-4">
               <span
                 aria-hidden
-                className="text-[80px] font-black leading-none text-marca select-none"
+                className="select-none font-mono text-[80px] font-medium leading-none tracking-tight text-marca"
               >
                 6
               </span>
-              <h2 className="text-3xl font-black leading-tight tracking-tight text-oficina-texto md:text-4xl">
+              <h2 className="text-seccion text-oficina-texto">
                 especialistas,
                 <br />
                 un solo gerente.
@@ -98,45 +99,43 @@ export function SeccionEquipo() {
             </div>
           </div>
           <div className="flex items-end lg:col-span-7">
-            <p className="max-w-lg text-base leading-relaxed text-oficina-tenue">
+            <p className="max-w-lg text-cuerpo-lg text-oficina-tenue">
               Seis empleados que se integran a tu oficina. No coordinas a nadie:
               le dices a Sócrates qué necesitas y él le asigna el trabajo al
               especialista correcto. Cada entregable llega listo para que tú lo
               revises y lo uses con tu prospecto. Y la plantilla es tuya:{" "}
-              <strong className="font-semibold text-oficina-texto">
+              <strong className="font-medium text-oficina-texto">
                 a cada especialista puedes nombrarlo como tú quieras.
               </strong>
             </p>
           </div>
         </RevelarAlScroll>
 
-        {/* Cuadrícula de tarjetas */}
+        {/* Cuadrícula de tarjetas — hover de resplandor ambiental (nunca lift). */}
         <ListaEscalonada className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {EMPLEADOS.map(({ numero, nombre, rol, descripcion, Icono }) => (
             <ElementoEscalonado key={numero}>
-              <div className="group h-full rounded-xl border border-oficina-borde bg-oficina-fondo p-5 transition-all hover:-translate-y-0.5 hover:shadow-md">
-                {/* Número + icono */}
-                <div className="mb-4 flex items-start justify-between">
-                  <span className="text-[11px] font-semibold tracking-widest text-oficina-tenue">
+              <div className="group h-full rounded-tarjeta border border-oficina-borde bg-oficina-panel-neutro p-6 transition duration-300 ease-suave hover:border-marca/30 hover:bg-oficina-panel hover:shadow-glow">
+                {/* Número (mono) + icono */}
+                <div className="mb-5 flex items-start justify-between">
+                  <span className="font-mono text-[13px] text-oficina-tinta/40">
                     {numero}
                   </span>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-md bg-marca/10 text-marca transition-colors group-hover:bg-marca group-hover:text-white">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-interno bg-marca/10 text-marca transition-colors duration-200 ease-suave group-hover:bg-marca group-hover:text-white">
                     <Icono size={18} aria-hidden />
                   </span>
                 </div>
 
-                {/* Rol */}
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
+                {/* Nombre (protagonista) + rol (etiqueta mono) */}
+                <h3 className="text-base font-medium text-oficina-texto">
+                  {nombre}
+                </h3>
+                <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-oficina-tinta/60">
                   {rol}
                 </p>
 
-                {/* Nombre */}
-                <h3 className="mb-1.5 text-sm font-bold text-oficina-texto">
-                  {nombre}
-                </h3>
-
                 {/* Descripción */}
-                <p className="text-sm leading-relaxed text-oficina-tenue">
+                <p className="mt-3 text-sm leading-relaxed text-oficina-tenue">
                   {descripcion}
                 </p>
               </div>
@@ -148,8 +147,8 @@ export function SeccionEquipo() {
             Apiladas y centradas en móvil; lado a lado en escritorio. El clip
             en X es la red de seguridad contra cualquier desbordamiento en
             pantallas angostas (nunca scroll horizontal). */}
-        <RevelarAlScroll className="mt-20 overflow-x-clip">
-          <p className="mb-8 text-center text-[11px] font-semibold uppercase tracking-widest text-oficina-tenue">
+        <RevelarAlScroll className="mt-24 overflow-x-clip">
+          <p className="mb-10 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-oficina-tinta/60">
             La oficina en acción
           </p>
           <div className="grid grid-cols-1 items-center justify-items-center gap-12 lg:grid-cols-2 lg:gap-8">

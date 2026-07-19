@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { EASE as SUAVE } from "@/lib/motion";
 
 /**
  * "Cadena de encargo" (v2) — el gráfico estrella del Hero, versión con VIAJE.
@@ -41,8 +42,8 @@ const RIEL_INICIO = centroDe(0); // 30
 const RIEL_LARGO = centroDe(3) - centroDe(0); // 240
 const PUNTO = 14; // diámetro del punto viajero (coincide con h-3.5)
 
-// —— Curvas: un solo easing decorativo; resorte suave solo para el viaje.
-const SUAVE = [0.4, 0, 0.2, 1] as const;
+// —— Curvas: el easing decorativo único (SUAVE, importado); resorte suave solo
+//    para el viaje del punto.
 const RESORTE = { type: "spring", stiffness: 130, damping: 22, mass: 0.9 } as const;
 
 // —— La casilla de especialista rota entre estos seis (mismos roles y encargos

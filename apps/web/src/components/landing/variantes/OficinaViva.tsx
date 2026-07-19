@@ -7,6 +7,7 @@ import {
   useReducedMotion,
 } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { EASE } from "@/lib/motion";
 
 /**
  * "Oficina viva" — variante del gráfico estrella del Hero.
@@ -25,8 +26,6 @@ import { useEffect, useRef, useState } from "react";
  * pantalla (useInView) y foto fija con "menos movimiento" (useReducedMotion).
  * La escena es decorativa (aria-hidden); una sola frase sr-only carga el sentido.
  */
-
-const EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
 // Centro de la tarjeta (sistema de coordenadas del lienzo, en px).
 const CENTRO = { x: 192, y: 252 };

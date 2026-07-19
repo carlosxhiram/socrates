@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import type { Variants } from "motion/react";
 import type { ReactNode } from "react";
+import { EASE } from "@/lib/motion";
 
 const contenedor: Variants = {
   oculto: {},
@@ -15,7 +16,7 @@ const elemento: Variants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.65, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.65, ease: EASE },
   },
 };
 

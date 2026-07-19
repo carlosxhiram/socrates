@@ -8,6 +8,7 @@ import {
   type Variants,
 } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { EASE } from "@/lib/motion";
 
 /**
  * "Conversación con el gerente" — variante del gráfico estrella del Hero.
@@ -26,8 +27,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
  * marcado como aria-hidden. Es mensajería interna premium, NO un chatbot:
  * Sócrates es una persona (tu gerente), no un asistente.
  */
-
-const EASE: [number, number, number, number] = [0.4, 0, 0.2, 1];
 
 // Ritmo del guion (ms). Suma ≈ 11.75 s de principio a fin.
 const T = {
