@@ -27,6 +27,12 @@ const esRutaPublica = createRouteMatcher([
   "/crear-cuenta(.*)",
   "/entrar(.*)",
   "/sign-in(.*)",
+  // La tarjeta de enlace (Open Graph). No tiene extensión de archivo, así que
+  // el matcher de abajo NO la salta y el middleware corre sobre ella; debe ser
+  // pública para que el robot de WhatsApp/X (sin sesión) pueda leerla. Los
+  // iconos (icon.png/apple-icon.png/favicon.ico) sí terminan en extensión y ya
+  // los salta el matcher, por eso no necesitan ir aquí.
+  "/opengraph-image(.*)",
 ]);
 
 export default clerkConfigurado
